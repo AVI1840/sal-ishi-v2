@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+    --primary: 212 55% 23%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 212 55% 95%;
+    --primary-glow: 212 60% 35%;
+    --secondary: 210 16% 96%;
+    --secondary-foreground: 215 25% 20%;
+    --muted: 210 16% 96%;
+    --muted-foreground: 215 12% 45%;
+    --accent: 212 55% 95%;
+    --accent-foreground: 212 55% 23%;
+    --destructive: 0 78% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 0 80% 96%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 50% 15%;
+    --warning-soft: 45 95% 95%;
+    --success: 152 60% 38%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 50% 94%;
+    --info: 212 80% 50%;
+    --info-soft: 212 80% 95%;
+    --border: 215 18% 92%;
+    --input: 215 18% 92%;
+    --ring: 212 55% 23%;
+    --radius: 0.75rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 25%;
+    --sidebar-primary: 212 55% 23%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 212 55% 95%;
+    --sidebar-accent-foreground: 212 55% 23%;
+    --sidebar-border: 215 18% 92%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { direction: rtl; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Heebo', 'Assistant', system-ui, sans-serif;
+    font-feature-settings: "ss01", "kern";
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Heebo', sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  .libi-card {
+    @apply bg-card border border-border/70 rounded-xl;
+  }
+  .libi-stat-card {
+    @apply bg-card border border-border/70 rounded-xl p-5 transition-all hover:border-primary/30 hover:shadow-sm;
+  }
+  .libi-chip {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
