@@ -6,9 +6,20 @@ import { Bell, Calendar, ChevronLeft, Heart, MapPin, Phone, Sparkles, Wallet } f
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CITIZENS, SERVICES } from "@/data/mockData";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const citizen = CITIZENS[0];
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "בוקר טוב";
+  if (hour < 17) return "צהריים טובים";
+  return "ערב טוב";
+};
+
+const getDateString = () => {
+  return new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
+};
 
 const CATEGORIES = [
   { id: "all", label: "הכל", emoji: "" },
@@ -70,8 +81,22 @@ export default function CitizenHome() {
       </header>
 
       <main className="px-5 lg:px-8 pt-5 space-y-6 max-w-6xl mx-auto">
+        {/* Personalized Welcome Header */}
+        <div className="animate-fade-in rounded-2xl p-5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fdf2f8 0%, #ede9fe 50%, #dbeafe 100%)" }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">{getGreeting()}, {citizen.name.split(" ")[0]} 🌸</h2>
+              <p className="text-sm text-gray-500 mt-1">{getDateString()}</p>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/70 border border-purple-200/50 backdrop-blur-sm">
+              <Sparkles className="w-3 h-3 text-purple-500" />
+              <span className="text-[10px] font-bold text-purple-600">AI מותאם אישית</span>
+            </div>
+          </div>
+        </div>
+
         {/* Hero + Wallet — side by side on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fade-in-delayed">
         {/* Hero Greeting */}
         <div className="rounded-2xl p-6 text-white relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1B3A5C 0%, #2563eb 100%)" }}>
           <div className="flex items-center gap-4">
@@ -85,7 +110,7 @@ export default function CitizenHome() {
         </div>
 
         {/* Wallet Card */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100 animate-glow">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5 text-[#1B3A5C]" />
@@ -119,11 +144,11 @@ export default function CitizenHome() {
         </div>{/* end Hero+Wallet grid */}
 
         {/* Services Section */}
-        <div>
+        <div className="animate-fade-in-delayed-2">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
               <Heart className="w-5 h-5 text-red-400" />
-              שירותים מומלצים עבורך
+              שירותים מומלצים עבורך ✨
             </h2>
           </div>
 
@@ -170,11 +195,11 @@ export default function CitizenHome() {
         </div>
 
         {/* Weekly Schedule */}
-        <div>
+        <div className="animate-fade-in-delayed-3">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-[#1B3A5C]" />
-              מה מתוכנן עבורך השבוע
+              מה מתוכנן עבורך השבוע 📅
             </h2>
           </div>
           <div className="space-y-2">

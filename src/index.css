@@ -80,6 +80,21 @@
   .animate-slide-up {
     animation: slide-up 0.4s ease-out;
   }
+  .animate-fade-in-delayed {
+    animation: fade-in 0.5s ease-out 0.1s both;
+  }
+  .animate-fade-in-delayed-2 {
+    animation: fade-in 0.5s ease-out 0.2s both;
+  }
+  .animate-fade-in-delayed-3 {
+    animation: fade-in 0.5s ease-out 0.3s both;
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 2s ease-in-out infinite;
+  }
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite;
+  }
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -87,5 +102,13 @@
   @keyframes slide-up {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(27, 58, 92, 0.15); }
+    50% { box-shadow: 0 0 20px rgba(27, 58, 92, 0.3); }
   }
 }

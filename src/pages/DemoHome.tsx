@@ -114,7 +114,15 @@ export default function DemoHome() {
         </div>
 
         {/* Footer */}
-        <div className="text-center py-12">
+        <div className="text-center py-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#232F3E]/5 border border-[#232F3E]/10">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+              <path d="M6.5 17.5c-1.5-1-2.5-2.5-2.5-4.5 0-3 2.5-5 5.5-5 .5-2.5 2.5-4 5-4 3 0 5 2 5 5 0 .5 0 1-.1 1.5 1.5.5 2.6 2 2.6 3.5 0 2.5-2 4-4.5 4h-11z" stroke="#FF9900" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="text-xs font-medium text-[#232F3E]">
+              Powered by <span className="font-bold text-[#FF9900]">Amazon Bedrock</span> • Amazon Transcribe • Amazon Personalize
+            </span>
+          </div>
           <p className="text-sm text-muted-foreground">
             דמו אינטראקטיבי — כל הנתונים סינתטיים לצורך הדגמה
           </p>

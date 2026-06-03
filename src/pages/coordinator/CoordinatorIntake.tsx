@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Heart, Activity, Mic, CheckCircle2, ChevronLeft, ChevronRight, Check, AlertTriangle, Wallet, Sparkles } from "lucide-react";
+import { User, Heart, Activity, Mic, CheckCircle2, ChevronLeft, ChevronRight, Check, AlertTriangle, Wallet, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { Chip } from "@/components/shared/Chip";
@@ -24,6 +24,9 @@ export default function CoordinatorIntake() {
   const [desires, setDesires] = useState({ preferences: [] as string[], dream: "", meaningText: "" });
   const [health, setHealth] = useState({ mobility: 3, cognition: 3, emotional: 3, social: 3, vision: 3, hearing: 3, conditions: [] as string[], riskFlags: [] as string[] });
   const [recording, setRecording] = useState({ isRecording: false, seconds: 0, notes: "" });
+  const [demoTranscription, setDemoTranscription] = useState<"idle" | "recording" | "processing" | "done">("idle");
+  const [demoTimer, setDemoTimer] = useState(0);
+  const demoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -32,6 +35,19 @@ export default function CoordinatorIntake() {
     } else if (timerRef.current) { clearInterval(timerRef.current); }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [recording.isRecording]);
+
+  const startDemoTranscription = () => {
+    setDemoTranscription("recording");
+    setDemoTimer(0);
+    demoTimerRef.current = setInterval(() => setDemoTimer((t) => t + 1), 1000);
+    setTimeout(() => {
+      if (demoTimerRef.current) clearInterval(demoTimerRef.current);
+      setDemoTranscription("processing");
+      setTimeout(() => {
+        setDemoTranscription("done");
+      }, 2000);
+    }, 3000);
+  };
 
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
   const next = () => { if (step < 4) setStep(step + 1); };
@@ -209,6 +225,103 @@ export default function CoordinatorIntake() {
               </button>
               <p className="text-sm text-muted-foreground">{recording.isRecording ? "מקליט... לחץ לעצירה" : "לחץ להתחלת הקלטה"}</p>
             </div>
+
+            {/* Demo Transcription Button */}
+            <div className="border-t border-border/50 pt-5">
+              {demoTranscription === "idle" && (
+                <button
+                  onClick={startDemoTranscription}
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-gradient-to-l from-[#FF9900]/10 to-[#FF9900]/5 border-2 border-dashed border-[#FF9900]/40 text-sm font-semibold text-[#FF9900] hover:border-[#FF9900]/70 hover:bg-[#FF9900]/10 transition-all"
+                >
+                  <Mic className="w-5 h-5" />
+                  הקלט שיחה (דמו)
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FF9900]/20 text-[#FF9900] font-bold">AI</span>
+                </button>
+              )}
+
+              {demoTranscription === "recording" && (
+                <div className="animate-fade-in flex flex-col items-center gap-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="relative flex h-4 w-4">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                    </span>
+                    <span className="text-sm font-medium text-destructive">מקליט...</span>
+                    <span className="text-lg font-mono font-bold text-foreground tabular-nums">{formatTime(demoTimer)}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    {[...Array(12)].map((_, i) => (
+                      <div key={i} className="w-1 bg-red-400 rounded-full animate-pulse" style={{ height: `${Math.random() * 24 + 8}px`, animationDelay: `${i * 0.1}s` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {demoTranscription === "processing" && (
+                <div className="animate-fade-in flex flex-col items-center gap-3 py-6">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  <span className="text-sm font-medium text-primary">מעבד...</span>
+                  <span className="text-xs text-muted-foreground">מתמלל ומנתח את השיחה</span>
+                </div>
+              )}
+
+              {demoTranscription === "done" && (
+                <div className="animate-fade-in space-y-4">
+                  {/* Transcription Result */}
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle2 className="w-4 h-4 text-success" />
+                      <span className="text-sm font-semibold text-foreground">תמלול שיחה</span>
+                    </div>
+                    <div className="text-sm text-foreground/80 leading-relaxed space-y-1.5 bg-white rounded-lg p-3 border border-border/30">
+                      <p><span className="font-semibold text-primary">מתאמת:</span> ספרי לי שרה, מה חשוב לך ביום יום?</p>
+                      <p><span className="font-semibold text-muted-foreground">שרה:</span> אני אוהבת לצאת לטיול בוקר, לפגוש חברות. קשה לי עם המדרגות.</p>
+                      <p><span className="font-semibold text-primary">מתאמת:</span> מה היית רוצה שישתנה?</p>
+                      <p><span className="font-semibold text-muted-foreground">שרה:</span> חלמתי תמיד ללמוד ציור. ואני רוצה לשמור על הכושר הגופני.</p>
+                    </div>
+                  </div>
+
+                  {/* Extracted Insights */}
+                  <div className="bg-primary-soft/30 rounded-xl p-4 border border-primary/10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">תובנות שזוהו</span>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground mb-1.5 block">מוטיבציות</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {["חברה", "טבע", "אומנות", "ספורט"].map((tag) => (
+                            <span key={tag} className="px-2.5 py-1 rounded-full text-xs font-medium bg-success-soft text-success border border-success/20">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground mb-1.5 block">חסמים</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {["ניידות מוגבלת", "מדרגות"].map((tag) => (
+                            <span key={tag} className="px-2.5 py-1 rounded-full text-xs font-medium bg-warning-soft text-warning-foreground border border-warning/20">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground mb-1.5 block">שלב מוכנות</span>
+                        <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-info-soft text-[hsl(var(--info))] border border-[hsl(var(--info))]/20">מוכנה להתחיל — מוטיבציה גבוהה</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AWS Badge */}
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#232F3E]/5 border border-[#232F3E]/10">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M6.5 17.5c-1.5-1-2.5-2.5-2.5-4.5 0-3 2.5-5 5.5-5 .5-2.5 2.5-4 5-4 3 0 5 2 5 5 0 .5 0 1-.1 1.5 1.5.5 2.6 2 2.6 3.5 0 2.5-2 4-4.5 4h-11z" stroke="#FF9900" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <span className="text-[11px] font-semibold text-[#232F3E]">Amazon Transcribe + Bedrock</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">הערות מהשיחה</label>
               <textarea value={recording.notes} onChange={(e) => setRecording({ ...recording, notes: e.target.value })} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[120px]" placeholder="רשום כאן הערות חשובות מהשיחה..." />
