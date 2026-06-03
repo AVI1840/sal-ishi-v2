@@ -222,6 +222,50 @@ export default function CoordinatorDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Agentic Flow — AI Pipeline Visualization */}
+      <div className="libi-card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1B3A5C] to-[#2d5a8c] text-white flex items-center justify-center">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">Agentic AI Flow</h3>
+            <p className="text-xs text-muted-foreground">שרשרת פעולות אוטומטית — Amazon Bedrock</p>
+          </div>
+          <span className="mr-auto px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold animate-pulse">LIVE</span>
+        </div>
+
+        <div className="relative">
+          {/* Flow Steps */}
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            {[
+              { emoji: "🎙️", title: "תמלול", desc: "Amazon Transcribe", detail: "זיהה: בדידות, כאב ברגל", color: "bg-blue-50 border-blue-200" },
+              { emoji: "🧠", title: "ניתוח AI", desc: "Bedrock (Claude)", detail: "מוטיבציה: שייכות | חסם: ניידות", color: "bg-purple-50 border-purple-200" },
+              { emoji: "🎯", title: "התאמה", desc: "5 שכבות + persona", detail: "חוג שירה 94% | שחייה 88%", color: "bg-amber-50 border-amber-200" },
+              { emoji: "⚡", title: "פעולה", desc: "CRM פרואקטיבי", detail: "נוצרה משימה: להתקשר לרבקה", color: "bg-emerald-50 border-emerald-200" },
+              { emoji: "💌", title: "Nudge", desc: "WhatsApp", detail: "״רבקה, מחר חוג שירה ב-10!״", color: "bg-pink-50 border-pink-200" },
+            ].map((step, i) => (
+              <div key={i} className={`relative rounded-xl border p-3 ${step.color} animate-in fade-in duration-500`} style={{ animationDelay: `${i * 200}ms` }}>
+                {i < 4 && <div className="hidden sm:block absolute -left-3 top-1/2 -translate-y-1/2 text-muted-foreground/30 text-lg">→</div>}
+                <div className="text-lg mb-1">{step.emoji}</div>
+                <div className="text-xs font-bold text-foreground">{step.title}</div>
+                <div className="text-[10px] text-muted-foreground">{step.desc}</div>
+                <div className="text-[10px] font-medium text-foreground/70 mt-1.5 border-t border-current/10 pt-1">{step.detail}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Result */}
+          <div className="mt-4 p-3 rounded-xl bg-gradient-to-l from-[#1B3A5C]/5 to-transparent border border-[#1B3A5C]/10">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#1B3A5C]" />
+              <span className="text-xs font-semibold text-[#1B3A5C]">תוצאה:</span>
+              <span className="text-xs text-foreground">רבקה לוי (21 יום ללא פעילות) → AI זיהה בדידות → הותאם חוג שירה → נשלח nudge → מחכה לאישור</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
