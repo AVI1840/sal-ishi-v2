@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Users, Phone, Building2, Heart, Wallet } from "lucide-react";
 
@@ -41,13 +42,30 @@ const MODULES = [
 ];
 
 export default function DemoHome() {
+  const [clickCount, setClickCount] = useState(0);
+  const [showHidden, setShowHidden] = useState(false);
+
+  const handleLogoClick = () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (newCount >= 3) {
+      setShowHidden(true);
+    }
+    // Reset after 2 seconds if not completed
+    setTimeout(() => { if (newCount < 3) setClickCount(0); }, 2000);
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-background">
       {/* Hero */}
       <div className="bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] text-white">
         <div className="max-w-5xl mx-auto px-6 py-16 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
+            <div
+              className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center cursor-pointer select-none"
+              onClick={handleLogoClick}
+              title=""
+            >
               <Wallet className="w-7 h-7" />
             </div>
           </div>
@@ -101,6 +119,40 @@ export default function DemoHome() {
             דמו אינטראקטיבי — כל הנתונים סינתטיים לצורך הדגמה
           </p>
         </div>
+
+        {/* Hidden Panel - appears after 3 clicks on logo */}
+        {showHidden && (
+          <div className="mb-8 p-5 rounded-2xl border border-dashed border-primary/30 bg-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-between mb-3">
+              <button onClick={() => setShowHidden(false)} className="text-xs text-muted-foreground hover:text-foreground">✕ סגור</button>
+              <h3 className="text-sm font-bold text-primary">🧠 מערכות AI נוספות</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <a
+                href="https://avi1840.github.io/SAL-ISHI-SIUD/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-sm transition-all"
+              >
+                <div className="w-10 h-10 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center text-lg">💗</div>
+                <div>
+                  <div className="text-sm font-semibold">דשבורד מלווה סיעוד</div>
+                  <div className="text-xs text-muted-foreground">SDI/RDI • 75 מטופלים • משימות יומיות</div>
+                </div>
+              </a>
+              <a
+                href="https://avi1840.github.io/sal-ishi-v2/#/coordinator"
+                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-sm transition-all"
+              >
+                <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-lg">✨</div>
+                <div>
+                  <div className="text-sm font-semibold">מתאמת + AI מתקדם</div>
+                  <div className="text-xs text-muted-foreground">5 שכבות התאמה • מוטיבציות • VIA</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
