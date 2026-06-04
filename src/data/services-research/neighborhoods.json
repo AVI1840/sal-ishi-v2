@@ -1,0 +1,7 @@
+[
+  {"id":"pisgat_zeev","name":"פסגת זאב","name_en":"Pisgat Ze'ev","sector":"mixed","socio":"medium","population_65_plus":4200,"nursing_eligible":1692,"prevention_group":1692,"pilot_status":"active","pilot_name":"עכשיו אני","services_count":25,"coverage_target":"20-40%"},
+  {"id":"talpiot_mizrach","name":"תלפיות מזרח/ארנונה","name_en":"East Talpiot / Arnona","sector":"secular_young","socio":"medium_high","population_65_plus":2900,"nursing_eligible":727,"prevention_group":727,"pilot_status":"active","pilot_name":"ארנונה הצעירה","services_count":20,"coverage_target":"20-40%"},
+  {"id":"beit_hanina","name":"בית חנינא/ואדי ג'וז","name_en":"Beit Hanina / Wadi Joz","sector":"arab","socio":"medium","population_65_plus":2200,"nursing_eligible":480,"prevention_group":480,"pilot_status":"active","pilot_name":"","services_count":18,"coverage_target":"20-40%"},
+  {"id":"neve_yaakov_haredi","name":"נווה יעקב/בית וגן/בוכרים","name_en":"Neve Yaakov / Beit VeGan / Bucharim","sector":"haredi","socio":"low","population_65_plus":3400,"nursing_eligible":680,"prevention_group":680,"pilot_status":"active","pilot_name":"","services_count":20,"coverage_target":"20-40%"},
+  {"id":"ein_kerem","name":"עין כרם","name_en":"Ein Kerem","sector":"secular","socio":"high","population_65_plus":350,"nursing_eligible":57,"prevention_group":57,"pilot_status":"active","pilot_name":"","services_count":12,"coverage_target":"60-90%"}
+]
