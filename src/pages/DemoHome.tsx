@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Users, Phone, Building2, Heart, Wallet } from "lucide-react";
+import { Users, Phone, Building2, Heart, Wallet, Zap } from "lucide-react";
 
 const MODULES = [
   {
@@ -126,6 +126,13 @@ export default function DemoHome() {
           <p className="text-sm text-muted-foreground">
             דמו אינטראקטיבי — כל הנתונים סינתטיים לצורך הדגמה
           </p>
+          <Link
+            to="/hackathon"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#232F3E] text-white rounded-xl text-sm font-bold hover:bg-[#1a2530] transition-colors shadow-md"
+          >
+            <Zap className="w-4 h-4 text-[#FF9900]" />
+            דף האקתון AWS — פיץ' 4 דקות
+          </Link>
         </div>
 
         {/* Hidden Panel - appears after 3 clicks on logo */}
