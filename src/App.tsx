@@ -94,6 +94,9 @@ export default function App() {
               {/* Provider Portal */}
               <Route path="/providers" element={<AppShell variant="provider" />}>
                 <Route index element={<ProviderDashboard />} />
+                <Route path="bookings" element={<ProviderDashboard />} />
+                <Route path="services" element={<ProviderDashboard />} />
+                <Route path="payments" element={<ProviderDashboard />} />
               </Route>
 
               {/* National / Inter-ministerial Prototype */}

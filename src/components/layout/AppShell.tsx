@@ -14,20 +14,17 @@ interface NavItem {
 const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator", label: "דף הבית", icon: Home, end: true },
   { to: "/coordinator/patients", label: "אזרחים", icon: Users },
-  { to: "/coordinator/actions", label: "פעולות", icon: Heart },
-  { to: "/coordinator/deterioration", label: "הידרדרות", icon: Bell, badge: 4 },
-  { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
+  { to: "/coordinator/services-map", label: "מיפוי שירותים", icon: Activity },
   { to: "/coordinator/ai", label: "עוזר AI", icon: Sparkles },
-  { to: "/coordinator/intake", label: "קליטה", icon: Heart },
-  { to: "/coordinator/algorithm", label: "אלגוריתם", icon: Sparkles },
-  { to: "/coordinator/settings", label: "הגדרות", icon: Settings },
+  { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
+  { to: "/coordinator/algorithm", label: "אלגוריתם", icon: BarChart3 },
+  { to: "/coordinator/deterioration", label: "הידרדרות", icon: Bell, badge: 4 },
+  { to: "/coordinator/actions", label: "משימות", icon: Heart },
+  { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
 ];
 
 const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
-  { to: "/executive/pilots", label: "פיילוטים", icon: Building2 },
-  { to: "/executive/kpis", label: "מדדים", icon: BarChart3 },
-  { to: "/executive/controls", label: "בקרה", icon: Settings },
 ];
 
 const PROVIDER_NAV: NavItem[] = [
