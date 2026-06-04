@@ -57,11 +57,11 @@ const CATEGORY_LABELS: Record<number, string> = {
 };
 
 const CATEGORY_EMOJI: Record<number, string> = {
-  1: "🤝",
-  2: "💪",
-  3: "🏠",
-  4: "📱",
-  5: "🔧",
+  1: "",
+  2: "",
+  3: "",
+  4: "",
+  5: "",
 };
 
 const COST_LABELS: Record<CostType, string> = {
