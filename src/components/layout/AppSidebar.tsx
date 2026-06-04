@@ -9,10 +9,12 @@ interface AppSidebarProps {
 const COORDINATOR_NAV = [
   { to: "/coordinator", label: "דף הבית", icon: Home, end: true },
   { to: "/coordinator/patients", label: "אזרחים", icon: Users },
+  { to: "/coordinator/services-map", label: "מיפוי שירותים", icon: Heart },
+  { to: "/coordinator/algorithm", label: "אלגוריתם", icon: Activity },
+  { to: "/coordinator/intake", label: "אינטייק AI", icon: Sparkles },
   { to: "/coordinator", label: "יומן", icon: Calendar },
   { to: "/coordinator", label: "התראות", icon: Bell, badge: 3 },
   { to: "/coordinator", label: "דיווחים", icon: FileText },
-  { to: "/coordinator", label: "שירותים", icon: Heart },
   { to: "/coordinator", label: "הגדרות", icon: Settings },
 ];
 
