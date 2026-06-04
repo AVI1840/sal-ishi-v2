@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CITIZENS } from "@/data/mockData";
 import { getRecommendedForProfile, filterServices, CATEGORY_FILTERS, type RealService } from "@/data/realServices";
+import { matchServicesForCitizen, type MatchResult } from "@/lib/matchingEngine";
 import { MOTIVATION_LABELS, BARRIER_LABELS } from "@/data/types";
 import { useState, useMemo } from "react";
 
@@ -39,15 +40,16 @@ const CATEGORY_ICON: Record<number, string> = {
   1: "👥", 2: "🏃", 3: "🤝", 4: "💻", 5: "🏠",
 };
 
-function ServiceCard({ service }: { service: RealService }) {
+function ServiceCard({ result }: { result: MatchResult }) {
+  const service = result.service;
   const badge = COST_BADGE[service.cost];
   return (
     <Link
       to={`/citizen/services/${service.id}`}
       className="block bg-white rounded-xl border border-gray-100 hover:border-[#1B3A5C]/30 hover:shadow-md transition-all group"
     >
-      {/* Top bar with category color */}
-      <div className="h-1.5 rounded-t-xl bg-[#1B3A5C]" />
+      {/* Top bar with score indicator */}
+      <div className="h-1.5 rounded-t-xl" style={{ background: result.isTopMatch ? "#1B3A5C" : "#e5e7eb" }} />
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="text-sm font-semibold text-gray-900 leading-tight group-hover:text-[#1B3A5C] transition-colors line-clamp-2">
@@ -57,16 +59,24 @@ function ServiceCard({ service }: { service: RealService }) {
             {badge.label}
           </span>
         </div>
-        <p className="text-xs text-gray-500 mb-3 line-clamp-1">{service.provider}</p>
+        <p className="text-xs text-gray-500 mb-2 line-clamp-1">{service.provider}</p>
+
+        {/* Why recommended */}
+        {result.explanations.length > 0 && (
+          <p className="text-[11px] text-[#1B3A5C] bg-[#1B3A5C]/5 rounded-md px-2 py-1 mb-2 line-clamp-1 font-medium">
+            {result.explanations[0]}
+          </p>
+        )}
+
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1 text-[11px] text-gray-400">
             <MapPin className="w-3 h-3" /> {service.neighborhood}
           </span>
           <div className="flex items-center gap-1">
             <div className="w-8 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-              <div className="h-full bg-[#1B3A5C] rounded-full" style={{ width: `${service.match_score}%` }} />
+              <div className="h-full bg-[#1B3A5C] rounded-full" style={{ width: `${result.totalScore}%` }} />
             </div>
-            <span className="text-[10px] text-gray-500 font-medium">{service.match_score}%</span>
+            <span className="text-[10px] text-gray-500 font-medium">{result.totalScore}%</span>
           </div>
         </div>
       </div>
@@ -82,13 +92,13 @@ export default function CitizenHome() {
   const walletPercent = Math.round((walletBalance / walletTotal) * 100);
 
   const recommended = useMemo(
-    () => getRecommendedForProfile({ neighborhood: "פסגת זאב", mobility: "independent", topN: 8 }),
+    () => matchServicesForCitizen(citizen, { topN: 8 }),
     []
   );
 
   const categoryServices = useMemo(() => {
     if (activeCategory === 0) return recommended;
-    return filterServices({ neighborhood: "פסגת זאב", category: activeCategory }).slice(0, 8);
+    return recommended.filter(r => r.service.category === activeCategory);
   }, [activeCategory, recommended]);
 
   const topMotivations = citizen.motivations.slice(0, 3);
@@ -156,7 +166,7 @@ export default function CitizenHome() {
             <p className="text-[10px] text-gray-500 mt-1">מתוך 102 שירותים</p>
             <div className="mt-2 flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[10px] text-emerald-600">אלגוריתם AI פעיל</span>
+              <span className="text-[10px] text-emerald-600">אלגוריתם 5 שכבות</span>
             </div>
           </div>
 
@@ -250,8 +260,8 @@ export default function CitizenHome() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {categoryServices.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+            {categoryServices.map((result) => (
+              <ServiceCard key={result.service.id} result={result} />
             ))}
           </div>
         </div>
