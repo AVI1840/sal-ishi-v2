@@ -16,6 +16,14 @@
 - [x] services-research: קטלוג 102 שירותים, 5 שכונות, אלגוריתם התאמה
 - [x] FeedbackModal + FAB
 - [x] ErrorBoundary, ScrollToTop, RouteFallback
+- [x] realServices.ts — ממיר 102 שירותים + filterServices + getRecommendedForProfile
+- [x] CitizenServices — חיפוש + סינון קטגוריה + שכונה + עלות + תגיות
+- [x] CoordinatorServices (/coordinator/services-map) — מיפוי + פאנל פרטים + stats
+- [x] CitizenHome — שירותים אמיתיים מקטלוג, AI badge, לפני/אחרי
+- [x] CitizenServiceDetail — שירות אמיתי, נגישות, שפות, דירוג
+- [x] ServiceRating — כוכבים 1-5 + ממליץ + טקסט + localStorage
+- [x] Hackathon pitch page (/hackathon) — טיימר 4 דקות, AWS services, פיץ' מלא
+- [x] DemoHome — כפתור האקתון בולט
 
 ## מה בוצע — hackathon-aws (לא ב-main)
 
@@ -29,19 +37,20 @@
 
 ### עדיפות 1 — שירותים אמיתיים ב-UI
 - [x] השלם services-catalog.json ל-102 שירותים
-- [ ] צור `src/data/realServices.ts` — ייבוא מה-JSON + החלפת mock
-- [ ] סינון לפי שכונה בממשקי citizen + coordinator
-- [ ] קומפוננטת דירוג (1-5 כוכבים + "היית ממליץ?" + טקסט)
-- [ ] דף "מיפוי שירותים" עם רשימה מסוננת
+- [x] צור `src/data/realServices.ts`
+- [x] סינון לפי שכונה בממשקי citizen + coordinator
+- [x] קומפוננטת דירוג ServiceRating
+- [x] דף "מיפוי שירותים" /coordinator/services-map
 
 ### עדיפות 2 — שדרוג UI
-- [ ] ממשק אזרח חם יותר (תמונות, הסבר AI)
-- [ ] "לפני/אחרי" — מה היה vs מה המערכת נותנת
+- [x] ממשק אזרח עם שירותים אמיתיים + AI badge
+- [x] "לפני/אחרי" בממשק אזרח
+- [ ] תקן דפים שבורים בפורטל ספקים
 
-### עדיפות 3 — האקתון (ב-hackathon-aws branch)
-- [ ] דף /hackathon עם pitch 4 דקות
-- [ ] ודא AWS badges נראים (Bedrock, Transcribe, Personalize)
-- [ ] Cherry-pick services-catalog ל-hackathon-aws
+### עדיפות 3 — האקתון
+- [x] דף /hackathon עם pitch + טיימר 4 דקות
+- [x] AWS badges (Bedrock, Transcribe, Personalize)
+- [ ] Cherry-pick services-catalog ל-hackathon-aws branch
 
 ## טיפים לשיחה הבאה
 
