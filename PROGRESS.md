@@ -35,22 +35,14 @@
 
 ## תוכנית עבודה — הבא בתור
 
-### עדיפות 1 — שירותים אמיתיים ב-UI
-- [x] השלם services-catalog.json ל-102 שירותים
-- [x] צור `src/data/realServices.ts`
-- [x] סינון לפי שכונה בממשקי citizen + coordinator
-- [x] קומפוננטת דירוג ServiceRating
-- [x] דף "מיפוי שירותים" /coordinator/services-map
+### עדיפות 1 — שירותים אמיתיים ב-UI ✅ הושלם
+### עדיפות 2 — שדרוג UI ✅ הושלם
+### עדיפות 3 — האקתון ✅ הושלם
 
-### עדיפות 2 — שדרוג UI
-- [x] ממשק אזרח עם שירותים אמיתיים + AI badge
-- [x] "לפני/אחרי" בממשק אזרח
-- [ ] תקן דפים שבורים בפורטל ספקים
-
-### עדיפות 3 — האקתון
-- [x] דף /hackathon עם pitch + טיימר 4 דקות
-- [x] AWS badges (Bedrock, Transcribe, Personalize)
-- [ ] Cherry-pick services-catalog ל-hackathon-aws branch
+## הבא — שיפורים אופציונליים
+- [ ] Deploy נפרד ל-hackathon-aws (Vercel/Netlify)
+- [ ] הוספת שירותים/שכונות נוספות לקטלוג
+- [ ] טפסי הזמנה אמיתיים (שולחים email)
 
 ## טיפים לשיחה הבאה
 
