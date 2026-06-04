@@ -17,6 +17,7 @@ import DemoHome from "@/pages/DemoHome";
 import CitizenHome from "@/pages/citizen/CitizenHome";
 import CitizenServices from "@/pages/citizen/CitizenServices";
 import CitizenServiceDetail from "@/pages/citizen/CitizenServiceDetail";
+import ServicesCatalog from "@/pages/citizen/ServicesCatalog";
 import CitizenChat from "@/pages/citizen/CitizenChat";
 import CitizenProfile from "@/pages/citizen/CitizenProfile";
 import CoordinatorDashboard from "@/pages/coordinator/CoordinatorDashboard";
@@ -68,6 +69,7 @@ export default function App() {
                 <Route index element={<CitizenHome />} />
                 <Route path="services" element={<CitizenServices />} />
                 <Route path="services/:id" element={<CitizenServiceDetail />} />
+                <Route path="catalog" element={<ServicesCatalog />} />
                 <Route path="chat" element={<CitizenChat />} />
                 <Route path="profile" element={<CitizenProfile />} />
               </Route>
