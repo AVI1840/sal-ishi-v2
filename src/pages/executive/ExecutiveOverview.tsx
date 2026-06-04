@@ -18,10 +18,11 @@ const TIMELINE_STEPS = [
 ];
 
 const SITES = [
-  { name: "פסגת זאב", citizens: 736, coordinators: 5, providers: 24, utilization: 67, prevention: 41, budget: "₪2.4M", status: "פעיל" },
-  { name: "גילה", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "קטמון", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "עיר גנים", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
+  { name: "פסגת זאב", citizens: 286, coordinators: 3, providers: 18, utilization: 67, prevention: 41, budget: "₪980K", status: "פעיל" },
+  { name: "תלפיות מזרח", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
+  { name: "בית חנינא", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
+  { name: "נווה יעקב", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
+  { name: "עין כרם", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
 ];
 
 const PILOTS = [
@@ -53,11 +54,11 @@ export default function ExecutiveOverview() {
       {/* 6 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={Building2} label="רשויות פעילות" value="1/5" sub="ירושלים" tone="primary" />
-        <StatCard icon={Users} label="אזרחים במערכת" value={736} sub="+12% מהחודש" tone="success" />
-        <StatCard icon={Heart} label="מתאמות שירות" value={5} sub="פסגת זאב" tone="info" />
-        <StatCard icon={TrendingUp} label="SDI ממוצע" value="24.3" sub="+2.1 חברתי" tone="success" />
-        <StatCard icon={TrendingDown} label="RDI ממוצע" value="1.14" sub="-0.11 (ירידה=טוב)" tone="success" />
-        <StatCard icon={Star} label="שביעות רצון" value="4.7/5" sub="⭐⭐⭐⭐⭐" tone="warning" />
+        <StatCard icon={Users} label="אזרחים בפיילוט" value={286} sub="פסגת זאב" tone="success" />
+        <StatCard icon={Heart} label="מתאמות שירות" value={3} sub="פסגת זאב" tone="info" />
+        <StatCard icon={TrendingUp} label="מימוש זכויות" value="67%" sub="יעד: 75%" tone="success" />
+        <StatCard icon={TrendingDown} label="דחיית הידרדרות" value="20%" sub="~3 חודשים" tone="success" />
+        <StatCard icon={Star} label="חיסכון פוטנציאלי" value="₪2B" sub="בהרחבה לאומית" tone="warning" />
       </div>
 
       {/* Timeline */}
