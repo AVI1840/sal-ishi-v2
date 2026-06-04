@@ -10,4 +10,31 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          // UI libs
+          "vendor-ui": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-progress",
+            "@radix-ui/react-slot",
+          ],
+          // Charts
+          "vendor-charts": ["recharts"],
+          // Data
+          "data-mock": [
+            "/src/data/mockData.ts",
+            "/src/data/clients.ts",
+            "/src/data/national.ts",
+          ],
+        },
+      },
+    },
+  },
 });
