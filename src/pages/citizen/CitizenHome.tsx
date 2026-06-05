@@ -37,7 +37,7 @@ const COST_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 const CATEGORY_ICON: Record<number, string> = {
-  1: "👥", 2: "🏃", 3: "🤝", 4: "💻", 5: "🏠",
+  1: "", 2: "", 3: "", 4: "", 5: "",
 };
 
 function ServiceCard({ result }: { result: MatchResult }) {
