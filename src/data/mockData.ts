@@ -305,6 +305,7 @@ export const KPIS: KPI[] = [
 // ═══════════════════════════════════════════════════════════════
 
 export const COORDINATORS: Coordinator[] = [
-  { id: "co1", name: "רונית לוי", citizenCount: 68, region: "פסגת זאב" },
-  { id: "co2", name: "מיכל כהן", citizenCount: 55, region: "גילה + קטמון" },
+  { id: "co1", name: "רונית לוי", citizenCount: 143, region: "פסגת זאב" },
+  { id: "co2", name: "מיכל כהן", citizenCount: 88, region: "תלפיות + בית חנינא" },
+  { id: "co3", name: "סמאח חוסיין", citizenCount: 55, region: "בית חנינא + ואדי ג'וז" },
 ];

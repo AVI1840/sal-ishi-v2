@@ -45,8 +45,8 @@ export default function CoordinatorDashboard() {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">בוקר טוב, רונית 👋</h1>
-          <p className="text-sm text-muted-foreground mt-1">יום חמישי, י״ד במאי 2026 — {unresolvedAlerts.length} התראות פתוחות, {criticalCitizens.length} אזרחים בסיכון</p>
+          <h1 className="text-2xl font-bold text-foreground">בוקר טוב, רונית</h1>
+          <p className="text-sm text-muted-foreground mt-1">פיילוט ירושלים — 286 אזרחים · {unresolvedAlerts.length} התראות פתוחות · {criticalCitizens.length} בסיכון</p>
         </div>
       </div>
 

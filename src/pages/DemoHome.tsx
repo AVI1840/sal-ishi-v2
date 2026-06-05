@@ -3,6 +3,7 @@
  * "סל אישי — להזדקנות מיטבית"
  * נקי, מקצועי, ממשלתי
  */
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Users, Phone, Building2, Heart, Wallet, Bot } from "lucide-react";
 
@@ -46,13 +47,26 @@ const MODULES = [
 ];
 
 export default function DemoHome() {
+  const [clickCount, setClickCount] = useState(0);
+  const [showHackathon, setShowHackathon] = useState(false);
+
+  const handleLogoClick = () => {
+    const n = clickCount + 1;
+    setClickCount(n);
+    if (n >= 3) { setShowHackathon(true); setClickCount(0); }
+    setTimeout(() => { if (n < 3) setClickCount(0); }, 2000);
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50">
 
       {/* Hero */}
       <div className="bg-[#1B3A5C] text-white">
         <div className="max-w-5xl mx-auto px-6 py-14 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-5">
+          <div
+            className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-5 cursor-pointer select-none"
+            onClick={handleLogoClick}
+          >
             <Wallet className="w-7 h-7" />
           </div>
           <h1 className="text-4xl font-bold">סל אישי</h1>
@@ -115,6 +129,17 @@ export default function DemoHome() {
             החלטות ממשלה 127 ו-150 · מפת מדדים לאומיים להזדקנות מיטבית
           </p>
         </div>
+
+        {/* Hidden hackathon link - 3 clicks on logo */}
+        {showHackathon && (
+          <div className="mb-8 p-4 rounded-xl border border-dashed border-[#1B3A5C]/30 bg-[#1B3A5C]/5 text-center">
+            <p className="text-xs text-gray-600 mb-2">גישה מהירה</p>
+            <Link to="/hackathon" className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B3A5C] text-white rounded-lg text-sm font-medium hover:bg-[#15304d] transition-colors">
+              דף האקתון AWS
+            </Link>
+            <button onClick={() => setShowHackathon(false)} className="block mx-auto mt-2 text-[10px] text-gray-400 hover:text-gray-600">סגור</button>
+          </div>
+        )}
       </div>
     </div>
   );

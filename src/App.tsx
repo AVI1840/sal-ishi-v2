@@ -120,6 +120,13 @@ export default function App() {
             </div>
           </HashRouter>
 
+          {/* AWS Badge - discreet footer */}
+          <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-center py-1.5 bg-white/80 backdrop-blur border-t border-gray-100 pointer-events-none">
+            <span className="text-[10px] text-gray-400">
+              Powered by <span className="font-semibold text-[#FF9900]">Amazon Bedrock</span> · Transcribe · Personalize
+            </span>
+          </div>
+
           {/* Feedback FAB */}
           <button
             onClick={() => setFeedbackOpen(true)}
