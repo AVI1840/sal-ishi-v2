@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2 } from "lucide-react";
+import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -14,11 +14,12 @@ interface NavItem {
 const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator", label: "דף הבית", icon: Home, end: true },
   { to: "/coordinator/patients", label: "אזרחים", icon: Users },
-  { to: "/coordinator/services-map", label: "מיפוי שירותים", icon: Activity },
+  { to: "/coordinator/services-map", label: "קטלוג שירותים", icon: Activity },
+  { to: "/coordinator/agents", label: "אייג'נטים", icon: Bot },
   { to: "/coordinator/ai", label: "עוזר AI", icon: Sparkles },
   { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
   { to: "/coordinator/algorithm", label: "אלגוריתם", icon: BarChart3 },
-  { to: "/coordinator/deterioration", label: "הידרדרות", icon: Bell, badge: 4 },
+  { to: "/coordinator/deterioration", label: "ניטור הידרדרות", icon: Bell, badge: 4 },
   { to: "/coordinator/actions", label: "משימות", icon: Heart },
   { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
 ];

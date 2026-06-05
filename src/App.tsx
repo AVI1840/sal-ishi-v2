@@ -30,6 +30,7 @@ import CoordinatorAI from "@/pages/coordinator/CoordinatorAI";
 import CoordinatorActions from "@/pages/coordinator/CoordinatorActions";
 import CoordinatorBookings from "@/pages/coordinator/CoordinatorBookings";
 import CoordinatorServices from "@/pages/coordinator/CoordinatorServices";
+import CoordinatorAgents from "@/pages/coordinator/CoordinatorAgents";
 import ExecutiveOverview from "@/pages/executive/ExecutiveOverview";
 import ProviderDashboard from "@/pages/providers/ProviderDashboard";
 import NotFound from "@/pages/NotFound";
@@ -86,6 +87,7 @@ export default function App() {
                 <Route path="actions" element={<CoordinatorActions />} />
                 <Route path="bookings" element={<CoordinatorBookings />} />
                 <Route path="services-map" element={<CoordinatorServices />} />
+                <Route path="agents" element={<CoordinatorAgents />} />
               </Route>
 
               {/* Executive Dashboard */}
