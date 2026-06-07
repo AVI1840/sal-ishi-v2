@@ -28,10 +28,10 @@ const PERSISTENCE_DATA = [
 
 const SCHEDULE = [
   { time: "09:00", title: "שיחה עם רבקה לוי", subtitle: "מעקב — 21 יום ללא פעילות", type: "call", tone: "destructive" },
-  { time: "10:30", title: "ביקור בית — אהרון מזרחי", subtitle: "הערכה קוגניטיבית + הצעת שירות", type: "visit", tone: "info" },
-  { time: "12:00", title: "ליווי קבוצת התעמלות", subtitle: "פסגת זאב — 12 משתתפים", type: "class", tone: "success" },
-  { time: "14:00", title: "פגישת צוות", subtitle: "סיכום שבועי + חלוקת משימות", type: "meeting", tone: "primary" },
-  { time: "15:30", title: "שיחה עם משה דהן", subtitle: "ירידה בהתמדה — בירור סיבה", type: "followup", tone: "warning" },
+  { time: "10:30", title: "ביקור בית — אהרון מזרחי", subtitle: "הערכה תפקודית + הצעת שירות", type: "visit", tone: "info" },
+  { time: "12:00", title: "ליווי קבוצת התעמלות", subtitle: "פסגת זאב — 14 משתתפים", type: "class", tone: "success" },
+  { time: "14:00", title: "פגישת צוות שבועית", subtitle: "סיכום + חלוקת משימות", type: "meeting", tone: "primary" },
+  { time: "15:30", title: "שיחה עם משה דהן", subtitle: "ירידה בהתמדה — בירור", type: "followup", tone: "warning" },
 ];
 
 const ICON_MAP: Record<string, typeof Phone> = { call: Phone, visit: Home, class: Activity, meeting: Users, followup: MessageCircle };
