@@ -133,9 +133,26 @@ export default function CoordinatorAgents() {
     <div className="space-y-6" dir="rtl">
 
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">ניהול אייג'נטים</h1>
-        <p className="text-sm text-gray-500 mt-0.5">5 אייג'נטים פעילים · סריקה אוטומטית · הפעלה ידנית</p>
+      <div className="bg-[#1B3A5C] rounded-xl p-6 text-white">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+            <Bot className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold">מערכת אייג'נטים אוטונומיים</h1>
+            <p className="text-xs text-white/50">5 אייג'נטים · Amazon Bedrock · פעילים 24/7</p>
+          </div>
+        </div>
+        <p className="text-sm text-white/70 leading-relaxed">
+          מערכת AI שסורקת, מתאימה, מנטרת ומתקשרת — ללא התערבות ידנית. 
+          כל אייג'נט מתמחה בתפקיד ספציפי וה-Super Agent מתזמן ביניהם.
+        </p>
+        <div className="grid grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/10 text-center">
+          <div><div className="text-lg font-bold">5</div><div className="text-[10px] text-white/40">אייג'נטים</div></div>
+          <div><div className="text-lg font-bold">24/7</div><div className="text-[10px] text-white/40">פעילות</div></div>
+          <div><div className="text-lg font-bold">29K</div><div className="text-[10px] text-white/40">ציונים/שבוע</div></div>
+          <div><div className="text-lg font-bold">0</div><div className="text-[10px] text-white/40">תקלות</div></div>
+        </div>
       </div>
 
       {/* Agent cards grid */}
