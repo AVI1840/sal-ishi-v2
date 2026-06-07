@@ -16,7 +16,6 @@ const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator/patients", label: "אזרחים", icon: Users },
   { to: "/coordinator/services-map", label: "שירותים ממופים", icon: Activity },
   { to: "/coordinator/catalog", label: "קטלוג סל", icon: BookOpen },
-  { to: "/coordinator/agents", label: "אייג'נטים", icon: Bot },
   { to: "/coordinator/ai", label: "עוזר AI", icon: Sparkles },
   { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
   { to: "/coordinator/algorithm", label: "אלגוריתם", icon: BarChart3 },
