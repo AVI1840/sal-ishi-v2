@@ -274,9 +274,9 @@ export default function CoordinatorIntake() {
                       <span className="text-sm font-semibold text-foreground">תמלול שיחה</span>
                     </div>
                     <div className="text-sm text-foreground/80 leading-relaxed space-y-1.5 bg-white rounded-lg p-3 border border-border/30">
-                      <p><span className="font-semibold text-primary">מתאמת:</span> ספרי לי שרה, מה חשוב לך ביום יום?</p>
+                      <p><span className="font-semibold text-primary">מלווה:</span> ספרי לי שרה, מה חשוב לך ביום יום?</p>
                       <p><span className="font-semibold text-muted-foreground">שרה:</span> אני אוהבת לצאת לטיול בוקר, לפגוש חברות. קשה לי עם המדרגות.</p>
-                      <p><span className="font-semibold text-primary">מתאמת:</span> מה היית רוצה שישתנה?</p>
+                      <p><span className="font-semibold text-primary">מלווה:</span> מה היית רוצה שישתנה?</p>
                       <p><span className="font-semibold text-muted-foreground">שרה:</span> חלמתי תמיד ללמוד ציור. ואני רוצה לשמור על הכושר הגופני.</p>
                     </div>
                   </div>

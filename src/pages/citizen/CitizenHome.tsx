@@ -323,7 +323,7 @@ export default function CitizenHome() {
             </div>
             <div>
               <p className="text-sm font-semibold">שיחה עם רונית</p>
-              <p className="text-xs text-white/60">מתאמת אישית · זמינה עכשיו</p>
+              <p className="text-xs text-white/60">מלווה אישית · זמינה עכשיו</p>
             </div>
           </Link>
 

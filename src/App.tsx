@@ -70,7 +70,6 @@ export default function App() {
                 <Route index element={<CitizenHome />} />
                 <Route path="services" element={<CitizenServices />} />
                 <Route path="services/:id" element={<CitizenServiceDetail />} />
-                <Route path="catalog" element={<ServicesCatalog />} />
                 <Route path="chat" element={<CitizenChat />} />
                 <Route path="profile" element={<CitizenProfile />} />
               </Route>
@@ -87,12 +86,14 @@ export default function App() {
                 <Route path="actions" element={<CoordinatorActions />} />
                 <Route path="bookings" element={<CoordinatorBookings />} />
                 <Route path="services-map" element={<CoordinatorServices />} />
+                <Route path="catalog" element={<ServicesCatalog />} />
                 <Route path="agents" element={<CoordinatorAgents />} />
               </Route>
 
               {/* Executive Dashboard */}
               <Route path="/executive" element={<AppShell variant="executive" />}>
                 <Route index element={<ExecutiveOverview />} />
+                <Route path="catalog" element={<ServicesCatalog />} />
               </Route>
 
               {/* Provider Portal */}

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const MODULES = [
   { to: "/", label: "בית", icon: Wallet, end: true },
   { to: "/citizen", label: "אזרח", icon: Phone },
-  { to: "/coordinator", label: "מתאמת", icon: Heart },
+  { to: "/coordinator", label: "מלווה", icon: Heart },
   { to: "/executive", label: "ניהולי", icon: Building2 },
   { to: "/providers", label: "ספקים", icon: Users },
 ];

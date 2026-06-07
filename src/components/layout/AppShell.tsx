@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot } from "lucide-react";
+import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -14,7 +14,8 @@ interface NavItem {
 const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator", label: "דף הבית", icon: Home, end: true },
   { to: "/coordinator/patients", label: "אזרחים", icon: Users },
-  { to: "/coordinator/services-map", label: "קטלוג שירותים", icon: Activity },
+  { to: "/coordinator/services-map", label: "שירותים ממופים", icon: Activity },
+  { to: "/coordinator/catalog", label: "קטלוג סל", icon: BookOpen },
   { to: "/coordinator/agents", label: "אייג'נטים", icon: Bot },
   { to: "/coordinator/ai", label: "עוזר AI", icon: Sparkles },
   { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
@@ -26,6 +27,7 @@ const COORDINATOR_NAV: NavItem[] = [
 
 const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
+  { to: "/executive/catalog", label: "קטלוג סל", icon: BookOpen },
 ];
 
 const PROVIDER_NAV: NavItem[] = [
@@ -39,7 +41,7 @@ interface AppShellProps {
 export default function AppShell({ variant }: AppShellProps) {
   const nav = variant === "coordinator" ? COORDINATOR_NAV : variant === "executive" ? EXECUTIVE_NAV : PROVIDER_NAV;
   const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי — ניהולי" : "פורטל ספקים";
-  const subtitle = variant === "coordinator" ? "לוח בקרה למתאמות" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
+  const subtitle = variant === "coordinator" ? "לוח בקרה למלווה חברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
   const { pathname } = useLocation();
 
   return (
@@ -114,7 +116,7 @@ export default function AppShell({ variant }: AppShellProps) {
                 {variant === "coordinator" ? "רונית לוי" : variant === "executive" ? "מנהל בכיר" : "מתנ״ס פסגת זאב"}
               </div>
               <div className="text-[11px] text-muted-foreground truncate">
-                {variant === "coordinator" ? "מתאמת חברתית" : variant === "executive" ? "סמנכ״ל" : "ספק שירות"}
+                {variant === "coordinator" ? "מלווה חברתית" : variant === "executive" ? "סמנכ״ל" : "ספק שירות"}
               </div>
             </div>
             <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-background hover:text-destructive transition-colors" aria-label="יציאה">

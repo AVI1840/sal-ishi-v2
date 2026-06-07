@@ -74,7 +74,7 @@ export default function AppSidebar({ variant = "coordinator" }: AppSidebarProps)
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-foreground truncate">רונית לוי</div>
-            <div className="text-[11px] text-muted-foreground truncate">מתאמת חברתית</div>
+            <div className="text-[11px] text-muted-foreground truncate">מלווה חברתית</div>
           </div>
           <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive transition-colors" aria-label="יציאה">
             <LogOut className="w-4 h-4" />

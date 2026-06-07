@@ -1,11 +1,10 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
-import { Home, Star, MessageCircle, User, BookOpen } from "lucide-react";
+import { Home, Star, MessageCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { to: "/citizen", label: "בית", icon: Home, end: true },
   { to: "/citizen/services", label: "שירותים", icon: Star },
-  { to: "/citizen/catalog", label: "קטלוג", icon: BookOpen },
   { to: "/citizen/chat", label: "שיחה", icon: MessageCircle },
   { to: "/citizen/profile", label: "פרופיל", icon: User },
 ];

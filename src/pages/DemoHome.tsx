@@ -19,12 +19,12 @@ const MODULES = [
   },
   {
     to: "/coordinator",
-    title: "דשבורד מתאמת",
-    subtitle: "לוח בקרה למתאמת חברתית",
+    title: "דשבורד מלווה חברתית",
+    subtitle: "לוח בקרה למלווה",
     description: "ניהול 286 אזרחים, מיפוי שירותים, המלצות AI, ניטור הידרדרות",
     icon: Heart,
     color: "#1B3A5C",
-    persona: "רונית, מתאמת חברתית",
+    persona: "רונית, מלווה חברתית",
   },
   {
     to: "/executive",

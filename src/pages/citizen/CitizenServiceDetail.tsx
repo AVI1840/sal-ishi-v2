@@ -47,7 +47,7 @@ export default function CitizenServiceDetail() {
 
   const handleBook = () => {
     toast.success(`${service.name} — הבקשה נשלחה`, {
-      description: "המתאמת שלך תיצור קשר לתיאום",
+      description: "המלווה שלך תיצור קשר לתיאום",
     });
   };
 
