@@ -30,9 +30,6 @@ const EXECUTIVE_NAV: NavItem[] = [
 
 const PROVIDER_NAV: NavItem[] = [
   { to: "/providers", label: "דשבורד", icon: Home, end: true },
-  { to: "/providers/bookings", label: "הזמנות", icon: Calendar },
-  { to: "/providers/services", label: "שירותים", icon: Activity },
-  { to: "/providers/payments", label: "תשלומים", icon: Wallet },
 ];
 
 interface AppShellProps {
