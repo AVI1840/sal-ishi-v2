@@ -5,7 +5,7 @@
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Users, Phone, Building2, Heart, Wallet, Bot } from "lucide-react";
+import { Users, Phone, Building2, Heart, Wallet } from "lucide-react";
 
 const MODULES = [
   {

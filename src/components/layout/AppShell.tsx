@@ -20,7 +20,7 @@ const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
   { to: "/coordinator/algorithm", label: "אלגוריתם", icon: BarChart3 },
   { to: "/coordinator/deterioration", label: "ניטור הידרדרות", icon: Bell, badge: 4 },
-  { to: "/coordinator/actions", label: "משימות", icon: Heart },
+  { to: "/coordinator/actions", label: "משימות", icon: FileText },
   { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
 ];
 
@@ -90,7 +90,21 @@ export default function AppShell({ variant }: AppShellProps) {
           })}
         </nav>
 
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 space-y-2">
+          {/* External: SAL-ISHI-SIUD link for coordinator only */}
+          {variant === "coordinator" && (
+            <a
+              href="https://avi1840.github.io/SAL-ISHI-SIUD/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-border/50"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>דשבורד SDI/RDI מפורט</span>
+              <span className="text-[9px] mr-auto text-muted-foreground/50">↗</span>
+            </a>
+          )}
+
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent transition-colors">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-glow text-primary-foreground flex items-center justify-center text-sm font-semibold">
               {variant === "coordinator" ? "רל" : variant === "executive" ? "מנ" : "ספ"}
