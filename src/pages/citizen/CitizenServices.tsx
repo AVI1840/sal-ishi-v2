@@ -11,6 +11,15 @@ import {
   type CostType, type RealService,
 } from "@/data/realServices";
 
+// Category banner images (category index 1-5, 0 = all)
+const CATEGORY_IMG: Record<number, { src: string; alt: string }> = {
+  1: { src: "/images/community-club.png",   alt: "שייכות ומשמעות" },
+  2: { src: "/images/exercise-weights.png", alt: "תפקוד ובריאות" },
+  3: { src: "/images/volunteering.png",     alt: "חוסן אישי וכלכלי" },
+  4: { src: "/images/telemedicine.png",     alt: "דיגיטציה תומכת" },
+  5: { src: "/images/art-class.png",        alt: "מוצרים מסייעים" },
+};
+
 const COST_BADGE: Record<string, { label: string; cls: string }> = {
   free:       { label: "חינם",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   subsidized: { label: "מסובסד",   cls: "bg-blue-50 text-blue-700 border-blue-200" },
@@ -22,16 +31,29 @@ const MOBILITY_HE: Record<string, string> = {
   frail: "תפקוד נמוך", homebound: "מרותק בית", any: "כולם",
 };
 
+const CAT_IMG_SRC: Record<number, string> = {
+  1: "/images/community-club.png",
+  2: "/images/exercise-balls.png",
+  3: "/images/volunteering.png",
+  4: "/images/telemedicine.png",
+  5: "/images/art-class.png",
+};
+
 function ServiceRow({ service }: { service: RealService }) {
   const [expanded, setExpanded] = useState(false);
   const badge = COST_BADGE[service.cost];
+  const imgSrc = CAT_IMG_SRC[service.category] ?? "/images/activities-hero.png";
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-[#1B3A5C]/20 transition-colors">
       {/* Main row */}
       <div className="p-4">
         <div className="flex items-start gap-3">
-          {/* Score circle */}
+          {/* Category thumbnail */}
+          <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden">
+            <img src={imgSrc} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+          </div>
+          {/* Score circle (smaller, overlapping) — keep as metadata */}
           <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
             style={{
               borderColor: service.match_score >= 80 ? "#22c55e" : service.match_score >= 60 ? "#f59e0b" : "#d1d5db",
@@ -192,6 +214,25 @@ export default function CitizenServices() {
           </button>
         ))}
       </div>
+
+      {/* Category image banner — shown when a category is selected */}
+      {category !== 0 && CATEGORY_IMG[category] && (
+        <div className="relative rounded-xl overflow-hidden h-28">
+          <img
+            src={CATEGORY_IMG[category].src}
+            alt={CATEGORY_IMG[category].alt}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-[#1B3A5C]/80 via-[#1B3A5C]/40 to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-end pr-5">
+            <div>
+              <p className="text-white font-bold text-base">{CATEGORY_FILTERS.find(c => c.value === category)?.label}</p>
+              <p className="text-white/60 text-xs mt-0.5">{results.length} שירותים · {results.filter(s => s.cost === "free").length} חינם</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters panel */}
       {showFilters && (

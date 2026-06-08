@@ -87,7 +87,7 @@ export default function CitizenHome() {
           </Link>
         </div>
 
-        {/* Recommended services */}
+        {/* Recommended services — card with image */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-900">מומלץ עבורך</h2>
@@ -96,34 +96,76 @@ export default function CitizenHome() {
             </Link>
           </div>
           <div className="space-y-3">
-            {recommended.map((result) => (
-              <Link
-                key={result.service.id}
-                to={`/citizen/services/${result.service.id}`}
-                className="block bg-white border border-gray-200 rounded-xl p-4 hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
-              >
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <h3 className="text-base font-bold text-gray-900">{result.service.name}</h3>
-                  <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
-                    result.service.cost === "free" ? "bg-emerald-50 text-emerald-700" :
-                    "bg-blue-50 text-blue-700"
-                  )}>
-                    {result.service.cost === "free" ? "חינם" : "מסובסד"}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">{result.service.provider}</p>
-                <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {result.service.neighborhood}</span>
-                  {result.service.days && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {result.service.days}</span>}
-                </div>
-                {/* Why recommended */}
-                {result.explanations[0] && (
-                  <div className="mt-3 p-2.5 bg-[#1B3A5C]/5 rounded-lg border border-[#1B3A5C]/10">
-                    <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
-                  </div>
-                )}
-              </Link>
-            ))}
+            {recommended.map((result, idx) => {
+              // Map categories to images
+              const IMG_MAP: Record<number, string> = {
+                1: "/images/community-club.png",
+                2: "/images/exercise-weights.png",
+                3: "/images/volunteering.png",
+                4: "/images/telemedicine.png",
+                5: "/images/art-class.png",
+              };
+              const img = IMG_MAP[result.service.category] ?? "/images/activities-hero.png";
+              return (
+                <Link
+                  key={result.service.id}
+                  to={`/citizen/services/${result.service.id}`}
+                  className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
+                >
+                  {/* Image header — first card only gets full image, rest get thumbnail strip */}
+                  {idx === 0 ? (
+                    <div className="relative h-36 w-full overflow-hidden">
+                      <img src={img} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between">
+                        <h3 className="text-white font-bold text-base drop-shadow">{result.service.name}</h3>
+                        <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
+                          result.service.cost === "free" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"
+                        )}>
+                          {result.service.cost === "free" ? "חינם" : "מסובסד"}
+                        </span>
+                      </div>
+                      {/* Score badge */}
+                      <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border-2 border-emerald-400">
+                        <span className="text-xs font-bold text-gray-900">{result.totalScore}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 p-4">
+                      <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                        <img src={img} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
+                        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-black/50 py-0.5">
+                          <span className="text-[9px] text-white font-bold">{result.totalScore}</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-sm font-bold text-gray-900 leading-tight">{result.service.name}</h3>
+                          <span className={cn("shrink-0 text-[10px] px-2 py-0.5 rounded font-semibold",
+                            result.service.cost === "free" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
+                          )}>
+                            {result.service.cost === "free" ? "חינם" : "מסובסד"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{result.service.provider}</p>
+                        <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400">
+                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{result.service.neighborhood}</span>
+                          {result.service.days && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{result.service.days}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Why recommended — shown for first card */}
+                  {idx === 0 && result.explanations[0] && (
+                    <div className="px-4 pb-3">
+                      <div className="p-2.5 bg-[#1B3A5C]/5 rounded-lg border border-[#1B3A5C]/10">
+                        <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
+                      </div>
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
