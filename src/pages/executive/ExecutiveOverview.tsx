@@ -26,7 +26,7 @@ const SITES = [
 ];
 
 const PILOTS = [
-  { name: "ירושלים", status: "active", citizens: 736, x: 65, y: 45 },
+  { name: "ירושלים", status: "active", citizens: 286, x: 65, y: 45 },
   { name: "תל אביב", status: "planned", citizens: 0, x: 40, y: 40 },
   { name: "חיפה", status: "planned", citizens: 0, x: 45, y: 20 },
   { name: "באר שבע", status: "future", citizens: 0, x: 50, y: 70 },
@@ -55,7 +55,7 @@ export default function ExecutiveOverview() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={Building2} label="רשויות פעילות" value="1/5" sub="ירושלים" tone="primary" />
         <StatCard icon={Users} label="אזרחים בפיילוט" value={286} sub="פסגת זאב" tone="success" />
-        <StatCard icon={Heart} label="מתאמות שירות" value={3} sub="פסגת זאב" tone="info" />
+        <StatCard icon={Heart} label="מלוות חברתיות" value={3} sub="פסגת זאב" tone="info" />
         <StatCard icon={TrendingUp} label="מימוש זכויות" value="67%" sub="יעד: 75%" tone="success" />
         <StatCard icon={TrendingDown} label="דחיית הידרדרות" value="20%" sub="~3 חודשים" tone="success" />
         <StatCard icon={Star} label="חיסכון פוטנציאלי" value="₪2B" sub="בהרחבה לאומית" tone="warning" />
