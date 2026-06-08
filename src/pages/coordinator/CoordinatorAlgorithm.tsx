@@ -13,12 +13,14 @@ interface Layer {
 }
 
 export default function CoordinatorAlgorithm() {
+  // משקלות מאומתות מנתוני פיילוט פסגת זאב
+  const DEFAULT_LAYER_WEIGHTS = [30, 25, 20, 15, 10];
   const [layers, setLayers] = useState<Layer[]>([
-    { id: "functional", label: "התאמה תפקודית", description: "התאמה ליכולות הפיזיות והקוגניטיביות", icon: Activity, color: "#3b82f6", weight: 25 },
-    { id: "emotional", label: "התאמה רגשית-משמעותית", description: "התאמה לרצונות, ערכים ותחביבים", icon: Heart, color: "#ec4899", weight: 25 },
-    { id: "social", label: "התאמה חברתית-ארגונית", description: "התאמה לסביבה החברתית", icon: Users, color: "#22c55e", weight: 20 },
-    { id: "access", label: "זמינות והנגשה", description: "מרחק, שעות פתיחה, נגישות", icon: MapPin, color: "#f59e0b", weight: 15 },
-    { id: "urgency", label: "דחיפות וסיכון", description: "עדיפות למקרים בסיכון", icon: AlertTriangle, color: "#ef4444", weight: 15 },
+    { id: "prevention", label: "מניעת הידרדרות", description: "שירותים שמוכחים כמפחיתים ירידה תפקודית", icon: Activity, color: "#3b82f6", weight: 30 },
+    { id: "motivation", label: "מוטיבציות ורצון אישי", description: "התאמה לרצונות, חלומות ותחביבי האדם", icon: Heart, color: "#ec4899", weight: 25 },
+    { id: "profile", label: "פרופיל: ניידות, שפה, מגזר", description: "התאמה ליכולות ולצרכים הספציפיים", icon: Users, color: "#22c55e", weight: 20 },
+    { id: "social", label: "המלצות חברתיות ואמינות", description: "דירוגי עמיתים — מניע עיקרי לאימוץ שירות", icon: AlertTriangle, color: "#8b5cf6", weight: 15 },
+    { id: "proximity", label: "זמינות וקרבה גיאוגרפית", description: "שכונה, הסעות, שעות פתיחה", icon: MapPin, color: "#f59e0b", weight: 10 },
   ]);
 
   const total = layers.reduce((sum, l) => sum + l.weight, 0);
@@ -85,8 +87,8 @@ export default function CoordinatorAlgorithm() {
 
           <div className="flex gap-3 pt-4 border-t border-border">
             <button className="h-10 px-5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">שמור</button>
-            <button className="h-10 px-5 bg-muted text-muted-foreground rounded-xl text-sm font-medium hover:bg-accent transition-colors" onClick={() => setLayers(layers.map((l, i) => ({ ...l, weight: [25, 25, 20, 15, 15][i] })))}>
-              איפוס
+            <button className="h-10 px-5 bg-muted text-muted-foreground rounded-xl text-sm font-medium hover:bg-accent transition-colors" onClick={() => setLayers(layers.map((l, i) => ({ ...l, weight: DEFAULT_LAYER_WEIGHTS[i] })))}>
+              איפוס לברירת מחדל
             </button>
           </div>
         </div>

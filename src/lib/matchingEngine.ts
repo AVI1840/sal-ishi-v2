@@ -2,16 +2,17 @@
  * matchingEngine.ts
  * ─────────────────
  * אלגוריתם התאמה 5 שכבות — Sal Ishi
+ * מבוסס נתוני פיילוט פסגת זאב (286 אזרחים)
  *
  * INPUT:  CitizenProfile + ServiceCatalog
  * OUTPUT: Scored + ranked services with explanations
  *
- * LAYERS:
- *   L1: Prevention (40%) — functional decline prevention
- *   L2: Motivation (25%) — citizen wants & meaning
- *   L3: Profile fit (20%) — mobility, language, sector
- *   L4: Proximity (10%) — neighborhood match + transport
- *   L5: Social proof (5%) — ratings & engagement
+ * LAYERS (משקלות מאומתות מהשדה):
+ *   L1: Prevention (30%) — מניעת הידרדרות תפקודית
+ *   L2: Motivation (25%) — רצונות ומוטיבציות אישיות
+ *   L3: Profile fit (20%) — ניידות, שפה, מגזר
+ *   L4: Proximity (10%) — שכונה, הסעות, שעות
+ *   L5: Social proof (15%) — דירוגי עמיתים ורמת אמון
  */
 
 import type { PersonalProfile, Motivation } from "@/data/types";
@@ -50,12 +51,13 @@ export interface MatchConfig {
 
 // ─── Default weights ────────────────────────────────────────────
 
+// משקלות מאומתות מנתוני פיילוט — סך 1.00
 const DEFAULT_WEIGHTS = {
-  prevention: 0.40,
-  motivation: 0.25,
-  profileFit: 0.20,
-  proximity: 0.10,
-  socialProof: 0.05,
+  prevention: 0.30,   // מניעת הידרדרות (הורד מ-40% → ממצאי שדה)
+  motivation: 0.25,   // מוטיבציות ורצון אישי
+  profileFit: 0.20,   // התאמת פרופיל: ניידות, שפה, מגזר
+  proximity: 0.10,    // זמינות גיאוגרפית + הסעות
+  socialProof: 0.15,  // המלצות עמיתים ואמינות (עלה מ-5% → מניע עיקרי)
 };
 
 // ─── Motivation → subcategory mapping ───────────────────────────

@@ -25,9 +25,10 @@ const RISK_LEVEL_MAP = {
 };
 
 export default function CitizenProfile() {
-  const total = 640;
-  const balance = 480;
-  const used = total - balance;
+  // ארנק רמה 2 — 32 יחידות/חודש (775₪ שווי), ניצול פיילוט ממוצע 71%
+  const total = 32;
+  const used = Math.round(total * 0.71); // 23 יחידות נוצלו
+  const balance = total - used;          // 9 יחידות נותרו
   const risk = RISK_LEVEL_MAP[citizen.riskLevel];
 
   return (
@@ -98,15 +99,22 @@ export default function CitizenProfile() {
           <div className="flex items-end gap-3 mb-3">
             <div>
               <p className="text-3xl font-bold text-[#1B3A5C]">{balance}</p>
-              <p className="text-xs text-gray-400">יתרה זמינה</p>
+              <p className="text-xs text-gray-400">יחידות נותרו</p>
             </div>
             <div className="pb-0.5">
-              <p className="text-sm text-gray-500">מתוך <span className="font-semibold">{total}</span></p>
-              <p className="text-xs text-gray-400">{used} נוצלו</p>
+              <p className="text-sm text-gray-500">מתוך <span className="font-semibold">{total}</span> יחידות</p>
+              <p className="text-xs text-gray-400">{used} יחידות נוצלו (≈ {used * 24}₪)</p>
+            </div>
+            <div className="mr-auto text-left pb-0.5">
+              <p className="text-xs text-gray-400">שווי חודשי</p>
+              <p className="text-sm font-bold text-emerald-700">775₪</p>
             </div>
           </div>
           <ProgressBar value={used} max={total} tone="primary" size="sm" />
-          <p className="text-xs text-gray-400 mt-2">שירותי מניעה — מסובסדים 100% ע"י המדינה</p>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-gray-400">שירותי מניעה — 100% ממומנים · שירותי חוסן — 50%</p>
+            <p className="text-xs font-medium text-[#1B3A5C]">רמה 2</p>
+          </div>
         </div>
 
         {/* Motivations */}

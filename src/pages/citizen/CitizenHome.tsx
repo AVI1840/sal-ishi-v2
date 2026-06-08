@@ -29,8 +29,10 @@ const SCHEDULE = [
 
 export default function CitizenHome() {
   const showImages = useShowImages();
-  const walletBalance = 480; // מתוך 640 סה"כ
-  const walletTotal = 640;
+  // ארנק רמה 2 — 32 יחידות/חודש (775₪), ניצול 71%
+  const walletTotal = 32;
+  const walletUsed = Math.round(walletTotal * 0.71); // 23 נוצלו
+  const walletBalance = walletTotal - walletUsed;    // 9 נותרו
 
   const recommended = useMemo(
     () => matchServicesForCitizen(citizen, { topN: 4 }),
@@ -58,18 +60,19 @@ export default function CitizenHome() {
         <div className="mt-6 bg-white/10 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-white/50">יתרת סל</p>
-              <p className="text-3xl font-bold">{walletBalance} <span className="text-base font-normal text-white/50">יחידות</span></p>
+              <p className="text-sm text-white/50">יחידות נותרו החודש</p>
+              <p className="text-3xl font-bold">{walletBalance} <span className="text-base font-normal text-white/50">מתוך {walletTotal}</span></p>
             </div>
             <div className="text-left">
-              <p className="text-sm text-white/50">שימוש</p>
-              <p className="text-lg font-bold">{Math.round(((walletTotal - walletBalance) / walletTotal) * 100)}%</p>
+              <p className="text-sm text-white/50">שווי חודשי</p>
+              <p className="text-lg font-bold text-emerald-300">775₪</p>
+              <p className="text-[10px] text-white/30 mt-0.5">רמה 2</p>
             </div>
           </div>
           <div className="mt-3 h-2 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-white rounded-full" style={{ width: `${Math.round((walletBalance / walletTotal) * 100)}%` }} />
+            <div className="h-full bg-white rounded-full" style={{ width: `${Math.round((walletUsed / walletTotal) * 100)}%` }} />
           </div>
-          <p className="text-xs text-white/40 mt-2">שירותי מניעה — ללא עלות. המדינה ממנת 100%</p>
+          <p className="text-xs text-white/40 mt-2">שירותי מניעה חינם 100% · חוסן ומוצרים מסובסדים 50%</p>
         </div>
       </div>
 

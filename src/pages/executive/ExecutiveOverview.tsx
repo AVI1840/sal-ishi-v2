@@ -18,7 +18,7 @@ const TIMELINE_STEPS = [
 ];
 
 const SITES = [
-  { name: "פסגת זאב", citizens: 286, coordinators: 3, providers: 18, utilization: 67, prevention: 41, budget: "₪980K", status: "פעיל" },
+  { name: "פסגת זאב", citizens: 286, coordinators: 4, providers: 12, utilization: 71, prevention: 54, budget: "₪930K", status: "פעיל" },
   { name: "תלפיות מזרח", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
   { name: "בית חנינא", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
   { name: "נווה יעקב", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
@@ -55,8 +55,8 @@ export default function ExecutiveOverview() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={Building2} label="רשויות פעילות" value="1/5" sub="ירושלים" tone="primary" />
         <StatCard icon={Users} label="אזרחים בפיילוט" value={286} sub="פסגת זאב" tone="success" />
-        <StatCard icon={Heart} label="מלוות חברתיות" value={3} sub="פסגת זאב" tone="info" />
-        <StatCard icon={TrendingUp} label="מימוש זכויות" value="67%" sub="יעד: 75%" tone="success" />
+        <StatCard icon={Heart} label="מלוות חברתיות" value={4} sub="מודל 1:75" tone="info" />
+        <StatCard icon={TrendingUp} label="ניצול ארנק" value="71%" sub="54% למניעה" tone="success" />
         <StatCard icon={TrendingDown} label="דחיית הידרדרות" value="20%" sub="~3 חודשים" tone="success" />
         <StatCard icon={Star} label="חיסכון פוטנציאלי" value="₪2B" sub="בהרחבה לאומית" tone="warning" />
       </div>
@@ -153,7 +153,7 @@ export default function ExecutiveOverview() {
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">שם אתר</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">אזרחים</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מתאמות</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מלוות</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">ספקים</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">ניצול</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">מניעה %</th>

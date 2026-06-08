@@ -45,10 +45,10 @@ const MODULES = [
 ];
 
 const STATS = [
-  { num: "220K", label: "זכאי סיעוד", sub: "בישראל" },
-  { num: "30%",  label: "מממשים זכויות", sub: "יעד: 75%" },
-  { num: "₪20B", label: "תקציב שנתי", sub: "לא מנוצל" },
-  { num: "286",  label: "אזרחים בפיילוט", sub: "פסגת זאב" },
+  { num: "220K", label: "זכאי סיעוד",         sub: "בישראל" },
+  { num: "80%",  label: "לשירותי בית",         sub: "לא למניעה" },
+  { num: "₪20B", label: "תקציב שנתי",          sub: "רפורמה" },
+  { num: "286",  label: "אזרחים בפיילוט",       sub: "פסגת זאב" },
 ];
 
 const SERVICES_GRID = [
@@ -151,17 +151,17 @@ export default function DemoHome() {
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-red-400 mb-3 block">הבעיה</span>
             <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-              70% מהזכאים לא מקבלים את השירותים שמגיעים להם
+              הכסף מנוצל — אבל ל-בית ולניקיון, לא למניעת הידרדרות
             </h2>
             <p className="mt-3 text-sm text-gray-500 leading-relaxed">
-              המידע מפוזר ב-100+ גורמים. אין ליווי אישי. אין התאמה.
-              כל שנה שמאחרים — ההידרדרות מואצת.
+              80% מתקציב הסיעוד הולך לשירותי בית (ניקיון, ליווי).
+              שירותי מניעה שמפחיתים אשפוזים ב-30-40% — כמעט לא מקבלים מימון.
             </p>
             <div className="mt-5 space-y-2.5">
               {[
-                "חסמי שפה ותרבות — ערבי, חרדי, עולים",
-                "בירוקרטיה: ממוצע 8 גורמים לשירות אחד",
-                "אין ניטור מונע — מגיבים רק אחרי הידרדרות",
+                "ממוצע 760₪/חודש לאזרח — אך 80% לניקיון, לא לשייכות",
+                "שירותי מניעה = ירידת 30-40% באשפוזים — לא בסל",
+                "אין ליווי אישי, אין ניטור, אין התאמה לפרופיל",
               ].map((p) => (
                 <div key={p} className="flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />

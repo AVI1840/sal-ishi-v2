@@ -25,10 +25,10 @@ const PITCH_CARDS = [
     color: "border-red-200 bg-red-50",
     iconColor: "text-red-500",
     points: [
-      "220K זכאי סיעוד — רק 30% מממשים זכויות",
-      "מידע מפוזר ב-100+ גורמים, בירוקרטיה",
-      "חסמי שפה ותרבות (ערבי, חרדי, עולים)",
-      "העדר ליווי אישי וניטור מונע",
+      "₪20B/שנה לסיעוד — 80% הולך לבית, לא למניעה",
+      "שירותי מניעה מפחיתים אשפוזים 30-40% — לא בסל",
+      "ממוצע 760₪/חודש לאדם — ללא התאמה אישית",
+      "אין ניטור, אין ליווי, חסמי שפה ותרבות",
     ],
   },
   {
@@ -51,10 +51,10 @@ const PITCH_CARDS = [
     color: "border-emerald-200 bg-emerald-50",
     iconColor: "text-emerald-600",
     points: [
-      "30% → 75% מימוש זכויות (×2.5 שיפור)",
-      "דחיית הידרדרות ב-20% ≈ 3 חודשים נוספים",
+      "54% מהתקציב → שירותי מניעה (לא בית) — מ-20%",
+      "71% ניצול ארנק · 4.7/5 שביעות רצון",
+      "30-40% פחות אשפוזים עם מניעה פעילה",
       "חיסכון ₪2B שנתי בהרחבה לאומית",
-      "SDI מ-0 ל-17+ שירותי מניעה פעילים",
     ],
   },
   {
@@ -104,16 +104,16 @@ export default function Hackathon() {
           </div>
           <h1 className="text-3xl font-bold">סל אישי — להזדקנות מיטבית</h1>
           <p className="text-base text-white/70 mt-2 max-w-xl mx-auto">
-            מניעת הידרדרות לאזרחים ותיקים באמצעות Agentic AI — מ-30% מימוש זכויות ל-75%
+            הפניית תקציב הסיעוד ממניעה פסיבית למניעה פעילה — AI מותאם אישית, 54% לשירותי מניעה
           </p>
 
           {/* KPIs */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { num: "220K", label: "זכאי סיעוד", sub: "בישראל" },
-              { num: "₪20B", label: "תקציב שנתי", sub: "רפורמה" },
-              { num: "30%", label: "מימוש היום", sub: "יעד: 75%" },
-              { num: "₪2B", label: "חיסכון שנתי", sub: "20% דחיית הידרדרות" },
+              { num: "220K", label: "זכאי סיעוד",       sub: "בישראל" },
+              { num: "80%",  label: "לשירותי בית",      sub: "לא למניעה" },
+              { num: "54%",  label: "למניעה בפיילוט",   sub: "286 אזרחים, פ' זאב" },
+              { num: "₪2B",  label: "חיסכון פוטנציאלי", sub: "הרחבה לאומית" },
             ].map((s) => (
               <div key={s.num} className="bg-white/10 rounded-xl p-4 text-center border border-white/10">
                 <div className="text-2xl font-bold text-white">{s.num}</div>
@@ -209,10 +209,10 @@ export default function Hackathon() {
         {/* Pilot results */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { num: "286", label: "משתתפים", sub: "פסגת זאב, ירושלים" },
-            { num: "102", label: "שירותים ממופים", sub: "5 תחומי ליבה" },
-            { num: "64%", label: "התמדה ממוצעת", sub: "+5% מחודש קודם" },
-            { num: "5", label: "אייג'נטים AI", sub: "פעילים 24/7" },
+            { num: "286",  label: "משתתפים",        sub: "פסגת זאב, ירושלים" },
+            { num: "71%",  label: "ניצול ארנק",      sub: "54% לשירותי מניעה" },
+            { num: "4.7",  label: "שביעות רצון",     sub: "מתוך 5 · 12 ספקים" },
+            { num: "4",    label: "מלוות חברתיות",   sub: "מודל 1:75" },
           ].map((s) => (
             <div key={s.num} className="bg-[#1B3A5C] text-white rounded-xl p-4 text-center">
               <div className="text-2xl font-bold">{s.num}</div>
