@@ -52,12 +52,12 @@ const STATS = [
 ];
 
 const SERVICES_GRID = [
-  { label: "מיצוי זכויות",   img: "/images/volunteering.png" },
-  { label: "שירה ומוזיקה",   img: "/images/choir.png" },
-  { label: "בריאות ופעילות", img: "/images/exercise-weights.png" },
-  { label: "חיבור משפחתי",   img: "/images/telemedicine.png" },
-  { label: "יצירה ואמנות",   img: "/images/art-class.png" },
-  { label: "קהילה ושייכות",  img: "/images/community-club.png" },
+  { label: "מיצוי זכויות",   img: "./images/volunteering.png" },
+  { label: "שירה ומוזיקה",   img: "./images/choir.png" },
+  { label: "בריאות ופעילות", img: "./images/exercise-weights.png" },
+  { label: "חיבור משפחתי",   img: "./images/telemedicine.png" },
+  { label: "יצירה ואמנות",   img: "./images/art-class.png" },
+  { label: "קהילה ושייכות",  img: "./images/community-club.png" },
 ];
 
 export default function DemoHome() {
@@ -78,7 +78,7 @@ export default function DemoHome() {
       <section className="relative bg-[#1B3A5C] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/images/activities-hero.png"
+            src="./images/activities-hero.png"
             alt="אזרחים ותיקים פעילים בקהילה"
             className="w-full h-full object-cover opacity-20"
           />
@@ -173,7 +173,7 @@ export default function DemoHome() {
 
           <div className="relative rounded-2xl overflow-hidden h-64 shadow-md group">
             <img
-              src="/images/volunteering.png"
+              src="./images/volunteering.png"
               alt="יחד בקהילה"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
@@ -281,7 +281,7 @@ export default function DemoHome() {
       {/* ── FULL-WIDTH COMMUNITY PHOTO ── */}
       <section className="relative h-44 md:h-56 overflow-hidden">
         <img
-          src="/images/community-club.png"
+          src="./images/community-club.png"
           alt="קהילה חיה ופעילה — מתנס נווה יעקב"
           className="w-full h-full object-cover object-top"
         />

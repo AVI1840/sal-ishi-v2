@@ -14,7 +14,7 @@
  */
 
 export interface ServiceImageInfo {
-  image?: string;    // path under /public, e.g. "/images/choir.png"
+  image?: string;    // path under /public, e.g. "./images/choir.png"
   gradient: string;  // Tailwind bg-gradient-to-br from-X to-Y
   gradientDark: string; // darker variant for overlays
 }
@@ -22,10 +22,10 @@ export interface ServiceImageInfo {
 // ─── Category defaults ───────────────────────────────────────────
 
 const CATEGORY_IMAGE: Record<number, string | undefined> = {
-  1: "/images/community-club.png",   // שייכות ומשמעות
-  2: "/images/exercise-weights.png", // בריאות ותפקוד
-  3: "/images/volunteering.png",     // חוסן אישי וכלכלי
-  4: "/images/telemedicine.png",     // נגישות דיגיטלית
+  1: "./images/community-club.png",   // שייכות ומשמעות
+  2: "./images/exercise-weights.png", // בריאות ותפקוד
+  3: "./images/volunteering.png",     // חוסן אישי וכלכלי
+  4: "./images/telemedicine.png",     // נגישות דיגיטלית
   5: undefined,                      // מוצרים מסייעים — gradient only
 };
 
@@ -41,13 +41,13 @@ const CATEGORY_GRADIENT: Record<number, { light: string; dark: string }> = {
 // When a service name/subcategory contains these patterns → use specific image
 
 const KEYWORD_IMAGE: { pattern: RegExp; image: string }[] = [
-  { pattern: /שיר|מקהלה|מוזיק|זמר/i,         image: "/images/choir.png"            },
-  { pattern: /ציור|אמנות|יצירה|קרמיק/i,       image: "/images/art-class.png"        },
-  { pattern: /הליכה|קבוצת הלי/i,              image: "/images/exercise-balls.png"   },
-  { pattern: /התעמלות|כושר|ספורט|כדור|כדורי/i, image: "/images/exercise-weights.png" },
-  { pattern: /סמארטפון|דיגיטל|מחשב|טלמד/i,   image: "/images/telemedicine.png"     },
-  { pattern: /מועדון|חברת|מתנ.?ס/i,           image: "/images/community-club.png"   },
-  { pattern: /התנדב|מיצוי|עזרה|קהיל/i,        image: "/images/volunteering.png"     },
+  { pattern: /שיר|מקהלה|מוזיק|זמר/i,         image: "./images/choir.png"            },
+  { pattern: /ציור|אמנות|יצירה|קרמיק/i,       image: "./images/art-class.png"        },
+  { pattern: /הליכה|קבוצת הלי/i,              image: "./images/exercise-balls.png"   },
+  { pattern: /התעמלות|כושר|ספורט|כדור|כדורי/i, image: "./images/exercise-weights.png" },
+  { pattern: /סמארטפון|דיגיטל|מחשב|טלמד/i,   image: "./images/telemedicine.png"     },
+  { pattern: /מועדון|חברת|מתנ.?ס/i,           image: "./images/community-club.png"   },
+  { pattern: /התנדב|מיצוי|עזרה|קהיל/i,        image: "./images/volunteering.png"     },
 ];
 
 // ─── Public API ──────────────────────────────────────────────────
