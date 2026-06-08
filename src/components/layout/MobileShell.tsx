@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
-import { Home, Star, MessageCircle, User } from "lucide-react";
+import { Home, Star, MessageCircle, User, ImageOff, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useVisualMode } from "@/hooks/use-visual-mode";
 
 const TABS = [
   { to: "/citizen", label: "בית", icon: Home, end: true },
@@ -11,13 +12,32 @@ const TABS = [
 
 export default function MobileShell() {
   const { pathname } = useLocation();
+  const [mode, toggleMode] = useVisualMode();
+  const isImages = mode === "images";
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#f8fafc]">
-      {/* Content — full width, responsive */}
+      {/* Content */}
       <div className="pb-24">
         <Outlet />
       </div>
+
+      {/* Visual mode toggle — floating chip, top-left, only in citizen section */}
+      <button
+        onClick={toggleMode}
+        className={cn(
+          "fixed top-12 left-3 z-40 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-semibold shadow-md border transition-all",
+          isImages
+            ? "bg-white border-[#1B3A5C]/20 text-[#1B3A5C] hover:bg-[#1B3A5C]/5"
+            : "bg-[#1B3A5C] border-[#1B3A5C] text-white"
+        )}
+        title={isImages ? "עבור לתצוגה נקייה" : "עבור לתצוגה עם תמונות"}
+      >
+        {isImages
+          ? <><ImageOff className="w-3 h-3" /> ללא תמונות</>
+          : <><Image className="w-3 h-3" /> עם תמונות</>
+        }
+      </button>
 
       {/* Bottom Navigation — always visible */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">

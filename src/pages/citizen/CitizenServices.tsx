@@ -11,6 +11,7 @@ import {
   type CostType, type RealService,
 } from "@/data/realServices";
 import { getServiceImageInfo } from "@/lib/serviceImages";
+import { useShowImages } from "@/hooks/use-visual-mode";
 
 const COST_BADGE: Record<string, { label: string; cls: string }> = {
   free:       { label: "חינם",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -26,7 +27,10 @@ const MOBILITY_HE: Record<string, string> = {
 function ServiceRow({ service }: { service: RealService }) {
   const [expanded, setExpanded] = useState(false);
   const badge = COST_BADGE[service.cost];
-  const { image, gradient } = getServiceImageInfo(service);
+  const showImages = useShowImages();
+  const { image, gradient } = showImages
+    ? getServiceImageInfo(service)
+    : { image: undefined, gradient: "" };
   const scoreBg = service.match_score >= 80 ? "#16a34a" : service.match_score >= 60 ? "#d97706" : "#6b7280";
 
   return (
@@ -34,20 +38,28 @@ function ServiceRow({ service }: { service: RealService }) {
       {/* Main row */}
       <div className="p-4">
         <div className="flex items-start gap-3">
-          {/* Thumbnail 48×48 with score strip — image or gradient fallback */}
-          <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden">
-            {image ? (
-              <img src={image} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className={cn("w-full h-full", gradient)} />
-            )}
-            <div
-              className="absolute bottom-0 right-0 left-0 text-center py-0.5 text-[9px] font-bold text-white"
-              style={{ backgroundColor: scoreBg }}
-            >
+          {/* Thumbnail (images mode) or score circle (clean mode) */}
+          {showImages ? (
+            <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden">
+              {image ? (
+                <img src={image} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <div className={cn("w-full h-full", gradient)} />
+              )}
+              <div
+                className="absolute bottom-0 right-0 left-0 text-center py-0.5 text-[9px] font-bold text-white"
+                style={{ backgroundColor: scoreBg }}
+              >
+                {service.match_score}
+              </div>
+            </div>
+          ) : (
+            /* Original score circle */
+            <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
+              style={{ borderColor: scoreBg, color: scoreBg }}>
               {service.match_score}
             </div>
-          </div>
+          )}
 
           {/* Content */}
           <div className="flex-1 min-w-0">
@@ -141,6 +153,7 @@ export default function CitizenServices() {
   const [category, setCategory] = useState(0);
   const [cost, setCost] = useState<CostType | "all">("all");
   const [showFilters, setShowFilters] = useState(false);
+  const showImages = useShowImages();
 
   const results = useMemo(
     () => filterServices({ neighborhood, category, cost, query }),
@@ -202,8 +215,8 @@ export default function CitizenServices() {
         ))}
       </div>
 
-      {/* Category banner — image or gradient, shown when category selected */}
-      {category !== 0 && (() => {
+      {/* Category banner — only in image mode */}
+      {showImages && category !== 0 && (() => {
         const { image, gradientDark } = getServiceImageInfo({ category, name: "" });
         const catLabel = CATEGORY_FILTERS.find(c => c.value === category)?.label ?? "";
         return (

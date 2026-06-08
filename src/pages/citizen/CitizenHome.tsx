@@ -7,6 +7,7 @@ import { Bell, ChevronLeft, MapPin, Phone, Wallet, CheckCircle, Clock, Heart } f
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getServiceImageInfo } from "@/lib/serviceImages";
+import { useShowImages } from "@/hooks/use-visual-mode";
 import { CITIZENS } from "@/data/mockData";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { useMemo } from "react";
@@ -27,6 +28,7 @@ const SCHEDULE = [
 ];
 
 export default function CitizenHome() {
+  const showImages = useShowImages();
   const walletBalance = 480; // מתוך 640 סה"כ
   const walletTotal = 640;
 
@@ -97,8 +99,10 @@ export default function CitizenHome() {
           </div>
           <div className="space-y-3">
             {recommended.map((result, idx) => {
-              const { image, gradient, gradientDark } = getServiceImageInfo(result.service);
               const isHero = idx === 0;
+              const { image, gradient, gradientDark } = showImages
+                ? getServiceImageInfo(result.service)
+                : { image: undefined, gradient: "", gradientDark: "" };
 
               return (
                 <Link
@@ -106,8 +110,8 @@ export default function CitizenHome() {
                   to={`/citizen/services/${result.service.id}`}
                   className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
                 >
-                  {isHero ? (
-                    /* ── Hero card: full-width image (h-36) ── */
+                  {/* ── Image mode: hero card (idx=0) or thumbnail (idx>0) ── */}
+                  {showImages && isHero ? (
                     <>
                       <div className="relative h-36 w-full">
                         {image ? (
@@ -116,11 +120,9 @@ export default function CitizenHome() {
                           <div className={cn("w-full h-full", gradientDark)} />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                        {/* Score badge top-left */}
                         <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border-2 border-emerald-400 shadow-sm">
                           <span className="text-xs font-bold text-gray-900">{result.totalScore}</span>
                         </div>
-                        {/* Name + cost bottom */}
                         <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between gap-2">
                           <h3 className="text-white font-bold text-base leading-tight drop-shadow line-clamp-1">{result.service.name}</h3>
                           <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
@@ -130,7 +132,6 @@ export default function CitizenHome() {
                           </span>
                         </div>
                       </div>
-                      {/* Why recommended */}
                       {result.explanations[0] && (
                         <div className="px-4 py-2.5">
                           <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
@@ -138,20 +139,31 @@ export default function CitizenHome() {
                       )}
                     </>
                   ) : (
-                    /* ── List card: thumbnail 64×64 ── */
+                    /* ── Clean mode OR thumbnail (idx>0 in image mode) ── */
                     <div className="flex items-start gap-3 p-4">
-                      {/* Thumbnail */}
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                        {image ? (
-                          <img src={image} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
-                        ) : (
-                          <div className={cn("w-full h-full", gradient)} />
-                        )}
-                        {/* Score strip */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/55 text-center py-0.5">
-                          <span className="text-[9px] text-white font-bold">{result.totalScore}</span>
+                      {/* Thumbnail — image or gradient (only in image mode) */}
+                      {showImages && (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                          {image ? (
+                            <img src={image} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className={cn("w-full h-full", gradient)} />
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/55 text-center py-0.5">
+                            <span className="text-[9px] text-white font-bold">{result.totalScore}</span>
+                          </div>
                         </div>
-                      </div>
+                      )}
+                      {/* Score circle — clean mode only */}
+                      {!showImages && (
+                        <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
+                          style={{
+                            borderColor: result.totalScore >= 80 ? "#22c55e" : result.totalScore >= 60 ? "#f59e0b" : "#d1d5db",
+                            color: result.totalScore >= 80 ? "#16a34a" : result.totalScore >= 60 ? "#d97706" : "#6b7280",
+                          }}>
+                          {result.totalScore}
+                        </div>
+                      )}
                       {/* Text */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -173,6 +185,12 @@ export default function CitizenHome() {
                             </span>
                           )}
                         </div>
+                        {/* Why recommended — clean mode: show here */}
+                        {!showImages && result.explanations[0] && (
+                          <div className="mt-2.5 p-2 bg-[#1B3A5C]/5 rounded-lg border border-[#1B3A5C]/10">
+                            <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
