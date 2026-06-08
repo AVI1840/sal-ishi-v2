@@ -7,8 +7,7 @@ import { Bell, Calendar, ChevronLeft, MapPin, Phone, Wallet, CheckCircle, Clock,
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CITIZENS } from "@/data/mockData";
-import { matchServicesForCitizen, type MatchResult } from "@/lib/matchingEngine";
-import { MOTIVATION_LABELS } from "@/data/types";
+import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { useMemo } from "react";
 
 const citizen = CITIZENS[0];

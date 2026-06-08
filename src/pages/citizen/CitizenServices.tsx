@@ -49,17 +49,15 @@ function ServiceRow({ service }: { service: RealService }) {
       {/* Main row */}
       <div className="p-4">
         <div className="flex items-start gap-3">
-          {/* Category thumbnail */}
-          <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden">
+          {/* Thumbnail with score badge */}
+          <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden">
             <img src={imgSrc} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
-          </div>
-          {/* Score circle (smaller, overlapping) — keep as metadata */}
-          <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
-            style={{
-              borderColor: service.match_score >= 80 ? "#22c55e" : service.match_score >= 60 ? "#f59e0b" : "#d1d5db",
-              color: service.match_score >= 80 ? "#16a34a" : service.match_score >= 60 ? "#d97706" : "#6b7280",
-            }}>
-            {service.match_score}
+            <div
+              className="absolute bottom-0 right-0 left-0 text-center py-0.5 text-[9px] font-bold text-white"
+              style={{ backgroundColor: service.match_score >= 80 ? "#16a34a" : service.match_score >= 60 ? "#d97706" : "#6b7280" }}
+            >
+              {service.match_score}
+            </div>
           </div>
 
           {/* Content */}
