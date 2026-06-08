@@ -11,6 +11,7 @@ import { ScrollToTop } from "@/components/system/ScrollToTop";
 import DemoNav from "@/components/layout/DemoNav";
 import AppShell from "@/components/layout/AppShell";
 import MobileShell from "@/components/layout/MobileShell";
+import { GuidedDemo } from "@/components/GuidedDemo";
 
 // Pages
 import DemoHome from "@/pages/DemoHome";
@@ -117,6 +118,8 @@ export default function App() {
             </Routes>
             </div>
           </HashRouter>
+
+          <GuidedDemo />
 
           {/* AWS Badge - discreet footer */}
           <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-center py-1.5 bg-white/80 backdrop-blur border-t border-gray-100 pointer-events-none">

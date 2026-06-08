@@ -1,4 +1,4 @@
-import { Building2, Users, Heart, TrendingUp, TrendingDown, Star, ArrowUpRight, CheckCircle2, MapPin } from "lucide-react";
+import { Building2, Users, Heart, TrendingUp, TrendingDown, Star, ArrowUpRight, CheckCircle2, MapPin, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/shared/StatCard";
 import { ProgressBar } from "@/components/shared/ProgressBar";
@@ -186,7 +186,7 @@ export default function ExecutiveOverview() {
       {/* Control Panel */}
       <div className="libi-card p-5 border-destructive/30 bg-destructive-soft/20">
         <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-          🛑 בקרה ועצירה (חירום)
+          <AlertTriangle className="w-5 h-5 text-destructive" /> בקרה ועצירה (חירום)
         </h3>
         <div className="flex flex-wrap gap-3">
           {["עצירת אתר", "החלפת מפעיל", "הקפאת תקציב", "גריעת ספק", "עצירת שירות"].map((action) => (

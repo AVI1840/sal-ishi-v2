@@ -4,10 +4,14 @@
  * ללא אימוגי — מקצועי
  */
 import { useParams, Link } from "react-router-dom";
+import { useMemo } from "react";
 import { ArrowRight, MapPin, Clock, Phone, Globe, AlertCircle, CheckCircle, Heart, Activity, Users, Laptop, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { realServices } from "@/data/realServices";
 import { serviceCatalog } from "@/data/serviceCatalog";
+import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { CITIZENS } from "@/data/mockData";
+import { MatchExplainability } from "@/components/shared/MatchExplainability";
 import ServiceRating from "@/components/shared/ServiceRating";
 import { toast } from "sonner";
 
@@ -42,6 +46,13 @@ export default function CitizenServiceDetail() {
   const service = realServices.find((s) => s.id === id) ?? realServices[0];
   const catalogEntry = serviceCatalog.find((s) => s.id === id);
   const costInfo = COST_MAP[service.cost];
+
+  // Personalized match result for שרה כהן (citizen[0])
+  const citizen = CITIZENS[0];
+  const matchResult = useMemo(() => {
+    const all = matchServicesForCitizen(citizen, { topN: 102, minScore: 0 });
+    return all.find((r) => r.service.id === id) ?? null;
+  }, [id, citizen]);
   const certaintyInfo = CERTAINTY_MAP[service.certainty];
   const Icon = CATEGORY_ICON[service.category] ?? Heart;
 
@@ -60,7 +71,7 @@ export default function CitizenServiceDetail() {
           <ArrowRight className="w-4 h-4 text-gray-500" />
         </Link>
         <h1 className="text-sm font-bold text-gray-900 flex-1 line-clamp-1">{service.name}</h1>
-        <span className={cn("text-[10px] px-2 py-0.5 rounded border font-medium shrink-0", costInfo.cls)}>
+        <span className={cn("text-xs px-2 py-0.5 rounded border font-medium shrink-0", costInfo.cls)}>
           {service.cost === "free" ? "חינם" : service.cost === "subsidized" ? "מסובסד" : "בתשלום"}
         </span>
       </header>
@@ -115,41 +126,29 @@ export default function CitizenServiceDetail() {
           )}
         </div>
 
-        {/* Match score + certainty */}
+        {/* Personalized match breakdown */}
         <div className="bg-white rounded-xl p-5 border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-gray-900">ציון התאמה</p>
-            <span className={cn("text-[10px] px-2 py-0.5 rounded border font-medium", certaintyInfo.cls)}>{certaintyInfo.label}</span>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-semibold text-gray-900">התאמה אישית — 5 שכבות</p>
+            <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", certaintyInfo.cls)}>{certaintyInfo.label}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative w-14 h-14 shrink-0">
-              <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={service.match_score >= 80 ? "#22c55e" : "#f59e0b"} strokeWidth="4" strokeDasharray={`${service.match_score}, 100`} />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold text-gray-900">{service.match_score}%</span>
+          {matchResult ? (
+            <MatchExplainability result={matchResult} />
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="relative w-14 h-14 shrink-0">
+                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={service.match_score >= 80 ? "#22c55e" : "#f59e0b"} strokeWidth="4" strokeDasharray={`${service.match_score}, 100`} />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-bold text-gray-900">{service.match_score}%</span>
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
-              <p className="text-xs text-gray-400 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
-            </div>
-          </div>
-
-          {/* Dimensions */}
-          {catalogEntry && (
-            <div className="mt-4 pt-3 border-t border-gray-100 grid grid-cols-5 gap-2 text-center">
-              {(["functional_fit","emotional_fit","social_fit","accessibility_fit","urgency_fit"] as const).map((dim) => {
-                const labels: Record<string, string> = { functional_fit:"תפקודי", emotional_fit:"רגשי", social_fit:"חברתי", accessibility_fit:"נגישות", urgency_fit:"דחיפות" };
-                const val = catalogEntry.dimensions[dim];
-                return (
-                  <div key={dim}>
-                    <div className="text-base font-bold text-[#1B3A5C]">{val}</div>
-                    <div className="text-[9px] text-gray-400">{labels[dim]}</div>
-                  </div>
-                );
-              })}
+              <div>
+                <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
+                <p className="text-xs text-gray-400 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
+              </div>
             </div>
           )}
         </div>

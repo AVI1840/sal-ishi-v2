@@ -1,5 +1,6 @@
 import { Send, Bot, Sparkles, Mic } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { streamText } from "@/lib/ai";
 
 interface Message {
   id: number;
@@ -23,6 +24,14 @@ const INITIAL_MESSAGES: Message[] = [
   { id: 1, text: "שלום שרה, אני לימור, המלווה הדיגיטלית שלך. איך את מרגישה היום?", sender: "ai", time: "09:15", badge: "Limor AI Agent" },
 ];
 
+function findAIResponse(text: string) {
+  const lower = text.toLowerCase();
+  for (const r of AI_RESPONSES) {
+    if (r.trigger.some(t => lower.includes(t))) return r;
+  }
+  return { response: "אני כאן בשבילך, שרה. ספרי לי עוד — מה מעסיק אותך היום?", badge: undefined };
+}
+
 export default function CitizenChat() {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
@@ -33,42 +42,37 @@ export default function CitizenChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const findAIResponse = (text: string) => {
-    const lower = text.toLowerCase();
-    for (const r of AI_RESPONSES) {
-      if (r.trigger.some(t => lower.includes(t))) return r;
-    }
-    return { response: "אני כאן בשבילך, שרה. ספרי לי עוד — מה מעסיק אותך היום? 💛", badge: undefined };
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = useCallback(() => {
+    if (!input.trim() || isTyping) return;
+    const userText = input.trim();
     const userMsg: Message = {
       id: Date.now(),
-      text: input.trim(),
+      text: userText,
       sender: "citizen",
       time: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
     };
     setMessages(prev => [...prev, userMsg]);
-    const userText = input.trim();
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI thinking + typing
-    const delay = 1200 + Math.random() * 1500;
+    const aiRes = findAIResponse(userText);
+    const aiId = Date.now() + 1;
+    const timestamp = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+
+    // Brief thinking pause, then stream response character by character
     setTimeout(() => {
-      const aiRes = findAIResponse(userText);
-      const aiMsg: Message = {
-        id: Date.now() + 1,
-        text: aiRes.response,
-        sender: "ai",
-        time: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
-        badge: aiRes.badge,
-      };
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, delay);
-  };
+      setMessages(prev => [...prev, { id: aiId, text: "", sender: "ai", time: timestamp, badge: aiRes.badge }]);
+      streamText(aiRes.response, {
+        onToken: (token) => {
+          setMessages(prev =>
+            prev.map(m => m.id === aiId ? { ...m, text: m.text + token } : m)
+          );
+        },
+        onDone: () => setIsTyping(false),
+        onError: () => setIsTyping(false),
+      });
+    }, 500 + Math.random() * 400);
+  }, [input, isTyping]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)]">

@@ -25,8 +25,8 @@ const RISK_LEVEL_MAP = {
 };
 
 export default function CitizenProfile() {
-  const total = 120;
-  const balance = Math.round(citizen.engagementScore * 1.2);
+  const total = 640;
+  const balance = 480;
   const used = total - balance;
   const risk = RISK_LEVEL_MAP[citizen.riskLevel];
 
@@ -60,15 +60,15 @@ export default function CitizenProfile() {
           <div className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
             <div className="text-center">
               <p className="text-lg font-bold">{citizen.weeklyActivities}</p>
-              <p className="text-[10px] text-white/50">פעילויות/שבוע</p>
+              <p className="text-xs text-white/50">פעילויות/שבוע</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold">{citizen.persistenceRate}%</p>
-              <p className="text-[10px] text-white/50">התמדה</p>
+              <p className="text-xs text-white/50">התמדה</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold">{citizen.engagementScore}%</p>
-              <p className="text-[10px] text-white/50">מעורבות</p>
+              <p className="text-xs text-white/50">מעורבות</p>
             </div>
           </div>
         </div>
@@ -76,13 +76,13 @@ export default function CitizenProfile() {
         {/* Risk + Readiness */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">רמת סיכון</p>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">רמת סיכון</p>
             <span className={cn("text-xs px-3 py-1.5 rounded-md font-semibold border", risk.cls)}>
               {risk.label}
             </span>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">מוכנות לשינוי</p>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">מוכנות לשינוי</p>
             <span className="text-xs px-3 py-1.5 rounded-md font-semibold bg-[#1B3A5C]/5 text-[#1B3A5C] border border-[#1B3A5C]/10">
               {READINESS_LABELS[citizen.readiness]}
             </span>
@@ -106,7 +106,7 @@ export default function CitizenProfile() {
             </div>
           </div>
           <ProgressBar value={used} max={total} tone="primary" size="sm" />
-          <p className="text-[10px] text-gray-400 mt-2">שירותי מניעה — מסובסדים 100% ע"י המדינה</p>
+          <p className="text-xs text-gray-400 mt-2">שירותי מניעה — מסובסדים 100% ע"י המדינה</p>
         </div>
 
         {/* Motivations */}
@@ -124,7 +124,7 @@ export default function CitizenProfile() {
           </div>
           {citizen.dream && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-[10px] text-gray-400 mb-1">המטרה האישית</p>
+              <p className="text-xs text-gray-400 mb-1">המטרה האישית</p>
               <p className="text-sm text-gray-700">{citizen.dream}</p>
             </div>
           )}
@@ -136,7 +136,7 @@ export default function CitizenProfile() {
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-4 h-4 text-amber-500" />
               <h2 className="text-sm font-semibold text-gray-900">חסמים מזוהים</h2>
-              <span className="text-[10px] text-gray-400">— המערכת מתאימה שירותים בהתאם</span>
+              <span className="text-xs text-gray-400">— המערכת מתאימה שירותים בהתאם</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {citizen.barriers.map((b) => (
@@ -171,12 +171,12 @@ export default function CitizenProfile() {
                 {b.status === "confirmed" ? (
                   <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200">
                     <CheckCircle className="w-3 h-3 text-emerald-600" />
-                    <span className="text-[10px] text-emerald-700">אושר</span>
+                    <span className="text-xs text-emerald-700">אושר</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-50 border border-amber-200">
                     <Clock className="w-3 h-3 text-amber-600" />
-                    <span className="text-[10px] text-amber-700">ממתין</span>
+                    <span className="text-xs text-amber-700">ממתין</span>
                   </div>
                 )}
               </div>

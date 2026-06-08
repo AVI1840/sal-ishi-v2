@@ -8,6 +8,7 @@ import { Wallet, Phone, Heart, Building2, Users, ExternalLink } from "lucide-rea
 
 const MODULES = [
   {
+    num: 1,
     title: "ממשק האזרח הוותיק",
     description: "סל שירותים אישי, המלצות מותאמות, ארנק דיגיטלי",
     href: "https://libi-sal-ishi.vercel.app/",
@@ -15,6 +16,7 @@ const MODULES = [
     icon: Phone,
   },
   {
+    num: 2,
     title: "מערכת המלווה החברתית",
     description: "75 אזרחים, SDI/RDI, משימות יומיות, ניטור הידרדרות",
     href: "https://avi1840.github.io/SAL-ISHI-SIUD/",
@@ -22,25 +24,28 @@ const MODULES = [
     icon: Heart,
   },
   {
+    num: 3,
     title: "מלווה מורחב — AI ואייג'נטים",
     description: "קטלוג 102 שירותים, 5 אייג'נטים, אינטייק AI, אלגוריתם",
     href: "/coordinator",
     external: false,
-    icon: Heart,
+    icon: Building2,
   },
   {
+    num: 4,
     title: "דשבורד ניהולי",
     description: "KPIs, מפת פיילוטים, 286 אזרחים, תקציב, בקרה",
     href: "/executive",
     external: false,
-    icon: Building2,
+    icon: Users,
   },
   {
+    num: 5,
     title: "פורטל ספקי שירות",
     description: "הזמנות, שירותים, תשלומים, דירוגים",
     href: "/providers",
     external: false,
-    icon: Users,
+    icon: Wallet,
   },
 ];
 
@@ -102,6 +107,9 @@ export default function DemoHome() {
                       כניסה {mod.external && <ExternalLink className="w-3 h-3" />}
                     </span>
                   </div>
+                  <span className="w-7 h-7 rounded-full bg-emerald-600/10 text-emerald-700 flex items-center justify-center text-xs font-bold shrink-0">
+                    {mod.num}
+                  </span>
                 </div>
               </div>
             );

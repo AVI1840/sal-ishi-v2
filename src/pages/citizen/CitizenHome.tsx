@@ -27,8 +27,8 @@ const SCHEDULE = [
 ];
 
 export default function CitizenHome() {
-  const walletBalance = Math.round(citizen.engagementScore * 1.2);
-  const walletTotal = 120;
+  const walletBalance = 480; // מתוך 640 סה"כ
+  const walletTotal = 640;
 
   const recommended = useMemo(
     () => matchServicesForCitizen(citizen, { topN: 4 }),

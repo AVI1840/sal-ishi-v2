@@ -84,7 +84,7 @@ const generatedCitizens = Array.from({ length: 69 }, (_, i) => generateCitizen(i
 
 export const CITIZENS: PersonalProfile[] = [
   {
-    id: "c1", name: "שרה רוזנברג", age: 78, gender: "female",
+    id: "c1", name: "שרה כהן", age: 78, gender: "female",
     city: "ירושלים", neighborhood: "פסגת זאב", familyStatus: "אלמנה",
     hasCloseFamily: true, language: "עברית", digitalLiteracy: 2,
     perceivedHealth: 3, loneliness: 4, activityLevel: 2, socialBelonging: 2, independence: 4, selfEfficacy: 3,
@@ -217,7 +217,7 @@ export const SERVICES: Service[] = [
 
 export const AI_RECOMMENDATIONS: AIRecommendation[] = [
   {
-    id: "r1", citizenId: "c1", citizenName: "שרה רוזנברג",
+    id: "r1", citizenId: "c1", citizenName: "שרה כהן",
     title: "הצטרפות למקהלה הקהילתית",
     whyRecommended: "שרה ציינה שהשירה נותנת לה תחושת חיים. המקהלה מתאימה למוטיבציית השייכות והמשמעות שלה.",
     valueForCitizen: "חיבור חברתי + ביטוי עצמי + תחושת מסוגלות",
@@ -270,7 +270,7 @@ export const NUDGES: Nudge[] = [
 export const RISK_ALERTS: RiskAlert[] = [
   { id: "ra1", citizenId: "c4", citizenName: "רבקה לוי", signal: "social_withdrawal", severity: "critical", description: "לא בפעילות 21 יום. ביטלה 3 הזמנות. ירידה חדה במעורבות.", detectedAt: "היום, 07:30", resolved: false, suggestedAction: "ביקור בית דחוף + שיחה עם בן משפחה" },
   { id: "ra2", citizenId: "c2", citizenName: "אהרון מזרחי", signal: "activity_drop", severity: "critical", description: "ירידה מ-3 פעילויות שבועיות ל-0 בשבועיים האחרונים. ירידה קוגניטיבית אפשרית.", detectedAt: "היום, 08:15", resolved: false, suggestedAction: "שיחת טלפון + תיאום הערכה תפקודית" },
-  { id: "ra3", citizenId: "c1", citizenName: "שרה רוזנברג", signal: "loneliness_increase", severity: "warning", description: "ציון בדידות עלה מ-3 ל-4. לא יצאה מהבית 7 ימים.", detectedAt: "אתמול, 16:00", resolved: false, suggestedAction: "שיחה אישית + הצעת שירות מותאם" },
+  { id: "ra3", citizenId: "c1", citizenName: "שרה כהן", signal: "loneliness_increase", severity: "warning", description: "ציון בדידות עלה מ-3 ל-4. לא יצאה מהבית 7 ימים.", detectedAt: "אתמול, 16:00", resolved: false, suggestedAction: "שיחה אישית + הצעת שירות מותאם" },
   { id: "ra4", citizenId: "c6", citizenName: "משה דהן", signal: "low_persistence", severity: "warning", description: "התמדה ירדה מ-75% ל-60%. ביטל 2 פעילויות ברצף.", detectedAt: "לפני יומיים", resolved: false, suggestedAction: "בירור סיבה + התאמת לוח זמנים" },
 ];
 

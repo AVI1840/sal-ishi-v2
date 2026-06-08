@@ -44,6 +44,7 @@ export interface RealService {
   categoryLabel: string;
   costLabel: string;
   emoji: string;
+  image?: string;
 }
 
 // ─── maps ───────────────────────────────────────────────────────

@@ -50,7 +50,7 @@ function ServiceRow({ service }: { service: RealService }) {
                 {service.name}
               </Link>
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className={cn("text-[10px] px-2 py-0.5 rounded border font-medium", badge.cls)}>
+                <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", badge.cls)}>
                   {badge.label}
                 </span>
               </div>
@@ -59,17 +59,17 @@ function ServiceRow({ service }: { service: RealService }) {
             <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{service.provider}</p>
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
-              <span className="flex items-center gap-1 text-[11px] text-gray-400">
+              <span className="flex items-center gap-1 text-xs text-gray-400">
                 <MapPin className="w-3 h-3" /> {service.neighborhood}
               </span>
               {service.days && (
-                <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                <span className="flex items-center gap-1 text-xs text-gray-400">
                   <Clock className="w-3 h-3" /> {service.days}
                   {service.hours && ` · ${service.hours}`}
                 </span>
               )}
               {service.phone && (
-                <a href={`tel:${service.phone}`} className="flex items-center gap-1 text-[11px] text-[#1B3A5C] hover:underline">
+                <a href={`tel:${service.phone}`} className="flex items-center gap-1 text-xs text-[#1B3A5C] hover:underline">
                   <Phone className="w-3 h-3" /> {service.phone}
                 </a>
               )}
@@ -97,20 +97,20 @@ function ServiceRow({ service }: { service: RealService }) {
             <p className="text-xs text-gray-600"><span className="font-medium">הערות:</span> {service.notes}</p>
           )}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] px-2 py-1 rounded-md bg-white border border-gray-200 text-gray-600">
+            <span className="text-xs px-2 py-1 rounded-md bg-white border border-gray-200 text-gray-600">
               {service.categoryLabel}
             </span>
             {service.accessibility.map((a) => (
-              <span key={a} className="text-[10px] px-2 py-1 rounded-md bg-teal-50 border border-teal-200 text-teal-700">
+              <span key={a} className="text-xs px-2 py-1 rounded-md bg-teal-50 border border-teal-200 text-teal-700">
                 {a === "wheelchair" ? "♿ נגיש" : a === "transport" ? "הסעות" : a === "home_visit" ? "ביקור בית" : a === "remote" ? "מרחוק" : a}
               </span>
             ))}
             {service.languages.filter(l => l !== "hebrew").map((lang) => (
-              <span key={lang} className="text-[10px] px-2 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700">
+              <span key={lang} className="text-xs px-2 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700">
                 {lang === "arabic" ? "ערבית" : lang === "russian" ? "רוסית" : lang === "english" ? "אנגלית" : lang === "yiddish" ? "יידיש" : lang}
               </span>
             ))}
-            <span className="text-[10px] px-2 py-1 rounded-md bg-gray-100 text-gray-500 mr-auto">
+            <span className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-500 mr-auto">
               {MOBILITY_HE[service.target_mobility] ?? service.target_mobility}
             </span>
           </div>
