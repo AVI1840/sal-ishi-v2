@@ -141,6 +141,73 @@ export default function CoordinatorDeterioration() {
           ))}
         </div>
       </div>
+      {/* SDI/RDI Explanation + Table */}
+      <div className="libi-card p-5">
+        <h3 className="text-base font-semibold text-foreground mb-3">מדדי הידרדרות — SDI / RDI</h3>
+        <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs text-muted-foreground leading-relaxed space-y-2 mb-4">
+          <div><strong className="text-foreground">RDI (Risk Deterioration Index)</strong> — מדד סיכון הידרדרות. ככל שגבוה יותר, הסיכון להחמרה במצב גדול יותר. מעל 1.3 = דורש התערבות מיידית.</div>
+          <div><strong className="text-foreground">SDI (Service Diversity Index)</strong> — מדד מגוון שירותים פעילים. 0 = לא משתמש בשום שירות מניעה. ככל שגבוה יותר = טוב יותר (יעד: 17+).</div>
+          <div className="pt-1 border-t border-border/50"><strong className="text-foreground">על בסיס מה מחושב:</strong> מספר ימים ללא פעילות, ביטולי שירותים, ציון בדידות, ירידת מצב רוח, שינויים תפקודיים.</div>
+        </div>
+
+        {/* Mini stats */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="bg-red-50 rounded-lg p-3 text-center border border-red-100">
+            <div className="text-xl font-bold text-red-600">5</div>
+            <div className="text-[10px] text-gray-500">RDI &gt; 1.3</div>
+          </div>
+          <div className="bg-red-50 rounded-lg p-3 text-center border border-red-100">
+            <div className="text-xl font-bold text-red-600">2</div>
+            <div className="text-[10px] text-gray-500">SDI = 0</div>
+          </div>
+          <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-100">
+            <div className="text-xl font-bold text-blue-700">24.3</div>
+            <div className="text-[10px] text-gray-500">SDI ממוצע</div>
+          </div>
+          <div className="bg-emerald-50 rounded-lg p-3 text-center border border-emerald-100">
+            <div className="text-xl font-bold text-emerald-700">1.14</div>
+            <div className="text-[10px] text-gray-500">RDI ממוצע</div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-right">
+                <th className="py-2 font-semibold text-muted-foreground">שם</th>
+                <th className="py-2 font-semibold text-muted-foreground">גיל</th>
+                <th className="py-2 font-semibold text-muted-foreground">RDI</th>
+                <th className="py-2 font-semibold text-muted-foreground">SDI</th>
+                <th className="py-2 font-semibold text-muted-foreground">סטטוס</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { name: "רבקה לוי", age: 75, rdi: 1.52, sdi: 0, status: "דחוף", cls: "bg-red-50 text-red-700" },
+                { name: "אהרון מזרחי", age: 82, rdi: 1.49, sdi: 3, status: "דחוף", cls: "bg-red-50 text-red-700" },
+                { name: "שרה רוזנברג", age: 78, rdi: 1.34, sdi: 8, status: "לבדיקה", cls: "bg-amber-50 text-amber-700" },
+                { name: "משה דהן", age: 79, rdi: 1.22, sdi: 11, status: "מעקב", cls: "bg-blue-50 text-blue-700" },
+                { name: "יוסף כהן", age: 72, rdi: 0.91, sdi: 33, status: "תקין", cls: "bg-emerald-50 text-emerald-700" },
+              ].map((p) => (
+                <tr key={p.name} className="border-b border-border/30">
+                  <td className="py-2.5 font-medium text-foreground">{p.name}</td>
+                  <td className="py-2.5 text-muted-foreground">{p.age}</td>
+                  <td className={cn("py-2.5 font-bold", p.rdi > 1.3 ? "text-red-600" : p.rdi >= 1.2 ? "text-amber-600" : "text-emerald-600")}>{p.rdi.toFixed(2)}</td>
+                  <td className={cn("py-2.5 font-bold", p.sdi === 0 ? "text-red-600" : p.sdi < 17 ? "text-amber-600" : "text-emerald-600")}>{p.sdi}</td>
+                  <td className="py-2.5"><span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", p.cls)}>{p.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Link to detailed */}
+        <a href="https://avi1840.github.io/SAL-ISHI-SIUD/#/deterioration" target="_blank" rel="noopener noreferrer"
+          className="mt-4 flex items-center gap-2 text-xs text-[#1B3A5C] hover:underline">
+          דשבורד SDI/RDI מפורט (SAL-ISHI-SIUD) ↗
+        </a>
+      </div>
     </div>
   );
 }
