@@ -10,15 +10,7 @@ import {
   filterServices, NEIGHBORHOODS_LIST, CATEGORY_FILTERS, COST_FILTERS,
   type CostType, type RealService,
 } from "@/data/realServices";
-
-// Category banner images (category index 1-5, 0 = all)
-const CATEGORY_IMG: Record<number, { src: string; alt: string }> = {
-  1: { src: "/images/community-club.png",   alt: "שייכות ומשמעות" },
-  2: { src: "/images/exercise-weights.png", alt: "תפקוד ובריאות" },
-  3: { src: "/images/volunteering.png",     alt: "חוסן אישי וכלכלי" },
-  4: { src: "/images/telemedicine.png",     alt: "דיגיטציה תומכת" },
-  5: { src: "/images/art-class.png",        alt: "מוצרים מסייעים" },
-};
+import { getServiceImageInfo } from "@/lib/serviceImages";
 
 const COST_BADGE: Record<string, { label: string; cls: string }> = {
   free:       { label: "חינם",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -31,30 +23,27 @@ const MOBILITY_HE: Record<string, string> = {
   frail: "תפקוד נמוך", homebound: "מרותק בית", any: "כולם",
 };
 
-const CAT_IMG_SRC: Record<number, string> = {
-  1: "/images/community-club.png",
-  2: "/images/exercise-balls.png",
-  3: "/images/volunteering.png",
-  4: "/images/telemedicine.png",
-  5: "/images/art-class.png",
-};
-
 function ServiceRow({ service }: { service: RealService }) {
   const [expanded, setExpanded] = useState(false);
   const badge = COST_BADGE[service.cost];
-  const imgSrc = CAT_IMG_SRC[service.category] ?? "/images/activities-hero.png";
+  const { image, gradient } = getServiceImageInfo(service);
+  const scoreBg = service.match_score >= 80 ? "#16a34a" : service.match_score >= 60 ? "#d97706" : "#6b7280";
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-[#1B3A5C]/20 transition-colors">
       {/* Main row */}
       <div className="p-4">
         <div className="flex items-start gap-3">
-          {/* Thumbnail with score badge */}
+          {/* Thumbnail 48×48 with score strip — image or gradient fallback */}
           <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden">
-            <img src={imgSrc} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+            {image ? (
+              <img src={image} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <div className={cn("w-full h-full", gradient)} />
+            )}
             <div
               className="absolute bottom-0 right-0 left-0 text-center py-0.5 text-[9px] font-bold text-white"
-              style={{ backgroundColor: service.match_score >= 80 ? "#16a34a" : service.match_score >= 60 ? "#d97706" : "#6b7280" }}
+              style={{ backgroundColor: scoreBg }}
             >
               {service.match_score}
             </div>
@@ -213,24 +202,29 @@ export default function CitizenServices() {
         ))}
       </div>
 
-      {/* Category image banner — shown when a category is selected */}
-      {category !== 0 && CATEGORY_IMG[category] && (
-        <div className="relative rounded-xl overflow-hidden h-28">
-          <img
-            src={CATEGORY_IMG[category].src}
-            alt={CATEGORY_IMG[category].alt}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-[#1B3A5C]/80 via-[#1B3A5C]/40 to-transparent" />
-          <div className="absolute inset-0 flex items-center justify-end pr-5">
-            <div>
-              <p className="text-white font-bold text-base">{CATEGORY_FILTERS.find(c => c.value === category)?.label}</p>
-              <p className="text-white/60 text-xs mt-0.5">{results.length} שירותים · {results.filter(s => s.cost === "free").length} חינם</p>
+      {/* Category banner — image or gradient, shown when category selected */}
+      {category !== 0 && (() => {
+        const { image, gradientDark } = getServiceImageInfo({ category, name: "" });
+        const catLabel = CATEGORY_FILTERS.find(c => c.value === category)?.label ?? "";
+        return (
+          <div className="relative rounded-xl overflow-hidden h-28">
+            {image ? (
+              <img src={image} alt={catLabel} className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <div className={cn("w-full h-full", gradientDark)} />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-l from-[#1B3A5C]/80 via-[#1B3A5C]/30 to-transparent" />
+            <div className="absolute inset-0 flex items-center justify-end pr-5">
+              <div>
+                <p className="text-white font-bold text-base">{catLabel}</p>
+                <p className="text-white/60 text-xs mt-0.5">
+                  {results.length} שירותים · {results.filter(s => s.cost === "free").length} חינם
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Filters panel */}
       {showFilters && (

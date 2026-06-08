@@ -51,6 +51,8 @@ export interface CatalogService {
   certainty: string;
   accessibility: string[];
   notes: string;
+  // Optional service image (path under /public)
+  image?: string;
   // Computed dimensions
   dimensions: ServiceDimensions;
   sector: "secular" | "arab" | "haredi" | "mixed";

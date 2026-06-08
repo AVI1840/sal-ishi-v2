@@ -5,6 +5,7 @@
  */
 import { useParams, Link } from "react-router-dom";
 import { useMemo } from "react";
+import { getServiceImageInfo } from "@/lib/serviceImages";
 import { ArrowRight, MapPin, Clock, Phone, Globe, AlertCircle, CheckCircle, Heart, Activity, Users, Laptop, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { realServices } from "@/data/realServices";
@@ -55,6 +56,7 @@ export default function CitizenServiceDetail() {
   }, [id, citizen]);
   const certaintyInfo = CERTAINTY_MAP[service.certainty];
   const Icon = CATEGORY_ICON[service.category] ?? Heart;
+  const imgInfo = getServiceImageInfo(service);
 
   const handleBook = () => {
     toast.success(`${service.name} — הבקשה נשלחה`, {
@@ -78,17 +80,35 @@ export default function CitizenServiceDetail() {
 
       <main className="px-5 pt-5 space-y-4 max-w-3xl mx-auto">
 
-        {/* Hero - category icon + name */}
-        <div className="bg-[#1B3A5C] rounded-xl p-6 text-white">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-              <Icon className="w-6 h-6" />
-            </div>
+        {/* Hero — image (h-48) or gradient fallback */}
+        <div className="relative h-48 rounded-xl overflow-hidden">
+          {imgInfo.image ? (
+            <img
+              src={imgInfo.image}
+              alt={service.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className={cn("w-full h-full", imgInfo.gradientDark)} />
+          )}
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          {/* Content */}
+          <div className="absolute bottom-0 right-0 left-0 p-5 flex items-end justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold">{service.name}</h2>
-              <p className="text-sm text-white/70 mt-0.5">{service.provider}</p>
-              <p className="text-xs text-white/40 mt-1">{service.categoryLabel}</p>
+              <h2 className="text-xl font-bold text-white drop-shadow leading-tight">{service.name}</h2>
+              <p className="text-sm text-white/75 mt-1">{service.provider}</p>
             </div>
+            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center shrink-0">
+              <Icon className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          {/* Category label top-right */}
+          <div className="absolute top-3 right-3">
+            <span className="text-[10px] px-2 py-1 rounded-lg bg-black/30 backdrop-blur text-white/80 font-medium">
+              {service.categoryLabel}
+            </span>
           </div>
         </div>
 

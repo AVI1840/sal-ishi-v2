@@ -3,9 +3,10 @@
  * עיצוב חם, ברור, טקסט גדול, נגיש
  * מותאם ל-65+ — פשוט, ללא עומס, מזמין
  */
-import { Bell, Calendar, ChevronLeft, MapPin, Phone, Wallet, CheckCircle, Clock, Heart } from "lucide-react";
+import { Bell, ChevronLeft, MapPin, Phone, Wallet, CheckCircle, Clock, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { getServiceImageInfo } from "@/lib/serviceImages";
 import { CITIZENS } from "@/data/mockData";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { useMemo } from "react";
@@ -96,69 +97,82 @@ export default function CitizenHome() {
           </div>
           <div className="space-y-3">
             {recommended.map((result, idx) => {
-              // Map categories to images
-              const IMG_MAP: Record<number, string> = {
-                1: "/images/community-club.png",
-                2: "/images/exercise-weights.png",
-                3: "/images/volunteering.png",
-                4: "/images/telemedicine.png",
-                5: "/images/art-class.png",
-              };
-              const img = IMG_MAP[result.service.category] ?? "/images/activities-hero.png";
+              const { image, gradient, gradientDark } = getServiceImageInfo(result.service);
+              const isHero = idx === 0;
+
               return (
                 <Link
                   key={result.service.id}
                   to={`/citizen/services/${result.service.id}`}
                   className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
                 >
-                  {/* Image header — first card only gets full image, rest get thumbnail strip */}
-                  {idx === 0 ? (
-                    <div className="relative h-36 w-full overflow-hidden">
-                      <img src={img} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between">
-                        <h3 className="text-white font-bold text-base drop-shadow">{result.service.name}</h3>
-                        <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
-                          result.service.cost === "free" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"
-                        )}>
-                          {result.service.cost === "free" ? "חינם" : "מסובסד"}
-                        </span>
+                  {isHero ? (
+                    /* ── Hero card: full-width image (h-36) ── */
+                    <>
+                      <div className="relative h-36 w-full">
+                        {image ? (
+                          <img src={image} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className={cn("w-full h-full", gradientDark)} />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                        {/* Score badge top-left */}
+                        <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border-2 border-emerald-400 shadow-sm">
+                          <span className="text-xs font-bold text-gray-900">{result.totalScore}</span>
+                        </div>
+                        {/* Name + cost bottom */}
+                        <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between gap-2">
+                          <h3 className="text-white font-bold text-base leading-tight drop-shadow line-clamp-1">{result.service.name}</h3>
+                          <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
+                            result.service.cost === "free" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"
+                          )}>
+                            {result.service.cost === "free" ? "חינם" : "מסובסד"}
+                          </span>
+                        </div>
                       </div>
-                      {/* Score badge */}
-                      <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border-2 border-emerald-400">
-                        <span className="text-xs font-bold text-gray-900">{result.totalScore}</span>
-                      </div>
-                    </div>
+                      {/* Why recommended */}
+                      {result.explanations[0] && (
+                        <div className="px-4 py-2.5">
+                          <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
+                        </div>
+                      )}
+                    </>
                   ) : (
+                    /* ── List card: thumbnail 64×64 ── */
                     <div className="flex items-start gap-3 p-4">
+                      {/* Thumbnail */}
                       <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                        <img src={img} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
-                        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-black/50 py-0.5">
+                        {image ? (
+                          <img src={image} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className={cn("w-full h-full", gradient)} />
+                        )}
+                        {/* Score strip */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/55 text-center py-0.5">
                           <span className="text-[9px] text-white font-bold">{result.totalScore}</span>
                         </div>
                       </div>
+                      {/* Text */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-bold text-gray-900 leading-tight">{result.service.name}</h3>
+                          <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-1">{result.service.name}</h3>
                           <span className={cn("shrink-0 text-[10px] px-2 py-0.5 rounded font-semibold",
                             result.service.cost === "free" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
                           )}>
                             {result.service.cost === "free" ? "חינם" : "מסובסד"}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-0.5">{result.service.provider}</p>
-                        <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400">
-                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{result.service.neighborhood}</span>
-                          {result.service.days && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{result.service.days}</span>}
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{result.service.provider}</p>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <MapPin className="w-3 h-3" />{result.service.neighborhood}
+                          </span>
+                          {result.service.days && (
+                            <span className="flex items-center gap-1 text-xs text-gray-400">
+                              <Clock className="w-3 h-3" />{result.service.days}
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </div>
-                  )}
-                  {/* Why recommended — shown for first card */}
-                  {idx === 0 && result.explanations[0] && (
-                    <div className="px-4 pb-3">
-                      <div className="p-2.5 bg-[#1B3A5C]/5 rounded-lg border border-[#1B3A5C]/10">
-                        <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
                       </div>
                     </div>
                   )}
