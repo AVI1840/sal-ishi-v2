@@ -14,6 +14,7 @@ import { serviceCatalog } from "@/data/serviceCatalog";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { CITIZENS } from "@/data/mockData";
 import { MatchExplainability } from "@/components/shared/MatchExplainability";
+import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import ServiceRating from "@/components/shared/ServiceRating";
 import { toast } from "sonner";
 
@@ -75,9 +76,7 @@ export default function CitizenServiceDetail() {
           <ArrowRight className="w-4 h-4 text-gray-500" />
         </Link>
         <h1 className="text-sm font-bold text-gray-900 flex-1 line-clamp-1">{service.name}</h1>
-        <span className={cn("text-xs px-2 py-0.5 rounded border font-medium shrink-0", costInfo.cls)}>
-          {service.cost === "free" ? "חינם" : service.cost === "subsidized" ? "מסובסד" : "בתשלום"}
-        </span>
+        <SubsidyBadge cost={service.cost} />
       </header>
 
       <main className="px-5 pt-5 space-y-4 max-w-3xl mx-auto">

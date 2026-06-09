@@ -101,7 +101,7 @@ export default function CoordinatorActions() {
 
                     {/* Suggestion */}
                     <div className="mt-3 p-3 bg-info-soft rounded-lg border border-info/10">
-                      <p className="text-xs text-info font-medium">💡 {action.suggestion}</p>
+                      <p className="text-xs text-info font-medium">{action.suggestion}</p>
                     </div>
 
                     {/* Suggested Services */}

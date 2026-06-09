@@ -1,4 +1,4 @@
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Star } from "lucide-react";
 import { useState } from "react";
 import { SERVICES } from "@/data/mockData";
 
@@ -67,21 +67,23 @@ export default function ServicesList() {
               className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: service.color + "15" }}
             >
-              <span className="text-lg">🏃</span>
+              <div className="w-9 h-9 rounded-lg bg-[#1B3A5C]/10 flex items-center justify-center shrink-0">
+                <Star className="w-4 h-4 text-[#1B3A5C]" />
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-bold text-foreground">{service.name}</h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{service.description}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{service.description}</p>
               <div className="flex items-center gap-2 mt-1.5">
                 {service.cost === 0 ? (
-                  <span className="text-[10px] font-medium text-green-600 bg-success-soft px-2 py-0.5 rounded-full">חינם ✨</span>
+                  <span className="text-xs font-medium text-green-600 bg-success-soft px-2 py-0.5 rounded-full">חינם</span>
                 ) : (
-                  <span className="text-[10px] font-medium text-blue-600 bg-info-soft px-2 py-0.5 rounded-full">{service.cost} יחידות</span>
+                  <span className="text-xs font-medium text-blue-600 bg-info-soft px-2 py-0.5 rounded-full">{service.cost} יחידות</span>
                 )}
-                <span className="text-[10px] text-muted-foreground">📊 {service.engagementRate}% התמדה</span>
+                <span className="text-xs text-muted-foreground">{service.engagementRate}% התמדה</span>
               </div>
             </div>
-            <button className="h-9 px-4 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors shrink-0">
+            <button className="h-12 px-4 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors shrink-0 min-w-[72px]">
               הזמנה
             </button>
           </div>

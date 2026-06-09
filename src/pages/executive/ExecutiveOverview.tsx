@@ -1,4 +1,4 @@
-import { Building2, Users, Heart, TrendingUp, TrendingDown, Star, ArrowUpRight, CheckCircle2, MapPin, AlertTriangle } from "lucide-react";
+import { Building2, Users, Heart, TrendingUp, TrendingDown, Star, CheckCircle2, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/shared/StatCard";
 import { ProgressBar } from "@/components/shared/ProgressBar";
@@ -25,13 +25,6 @@ const SITES = [
   { name: "עין כרם", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
 ];
 
-const PILOTS = [
-  { name: "ירושלים", status: "active", citizens: 286, x: 65, y: 45 },
-  { name: "תל אביב", status: "planned", citizens: 0, x: 40, y: 40 },
-  { name: "חיפה", status: "planned", citizens: 0, x: 45, y: 20 },
-  { name: "באר שבע", status: "future", citizens: 0, x: 50, y: 70 },
-  { name: "נצרת", status: "future", citizens: 0, x: 50, y: 25 },
-];
 
 export default function ExecutiveOverview() {
   return (
@@ -83,33 +76,36 @@ export default function ExecutiveOverview() {
         </div>
       </div>
 
-      {/* Map + Charts */}
+      {/* Neighborhoods + Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Map */}
+        {/* Neighborhood status list — replaces decorative dot-map */}
         <div className="libi-card p-5">
-          <h3 className="text-base font-semibold text-foreground mb-4">מפת פיילוטים</h3>
-          <div className="relative bg-muted/30 rounded-xl h-64 border border-border/50">
-            {PILOTS.map((pilot) => (
-              <div
-                key={pilot.name}
-                className="absolute flex flex-col items-center group"
-                style={{ top: `${pilot.y}%`, right: `${pilot.x}%`, transform: "translate(50%, -50%)" }}
-              >
-                <div className={cn(
-                  "w-4 h-4 rounded-full border-2 border-white shadow-sm",
-                  pilot.status === "active" ? "bg-success" : pilot.status === "planned" ? "bg-warning" : "bg-muted-foreground/30"
-                )} />
-                <span className="text-[10px] font-medium text-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity bg-card px-1 rounded shadow-sm">
-                  {pilot.name} {pilot.citizens > 0 && `(${pilot.citizens})`}
+          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-muted-foreground" /> אתרי הפיילוט — ירושלים
+          </h3>
+          <div className="space-y-2">
+            {[
+              { name: "פסגת זאב",     status: "פעיל",    citizens: 286, coordinators: 4, providers: 12 },
+              { name: "תלפיות מזרח", status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
+              { name: "בית חנינא",    status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
+              { name: "נווה יעקב",    status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
+              { name: "עין כרם",      status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
+            ].map((n) => (
+              <div key={n.name} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
+                <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", n.status === "פעיל" ? "bg-success" : "bg-muted-foreground/30")} />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-foreground">{n.name}</span>
+                  {n.citizens && (
+                    <span className="text-xs text-muted-foreground mr-2">· {n.citizens} אזרחים · {n.coordinators} מלוות · {n.providers} ספקים</span>
+                  )}
+                </div>
+                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium border", n.status === "פעיל" ? "bg-success/10 text-success border-success/20" : "bg-muted text-muted-foreground border-border")}>
+                  {n.status}
                 </span>
               </div>
             ))}
-            <div className="absolute bottom-3 right-3 flex items-center gap-3 text-[10px]">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-success" /> פעיל</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-warning" /> מתוכנן</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" /> בתכנון</span>
-            </div>
           </div>
+          <p className="text-[10px] text-muted-foreground mt-3">הרחבה מתוכננת ל-5 שכונות לאחר סיום פיילוט פסגת זאב</p>
         </div>
 
         {/* Mini KPI charts with Recharts */}
@@ -183,23 +179,6 @@ export default function ExecutiveOverview() {
         </div>
       </div>
 
-      {/* Control Panel */}
-      <div className="libi-card p-5 border-destructive/30 bg-destructive-soft/20">
-        <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-destructive" /> בקרה ועצירה (חירום)
-        </h3>
-        <div className="flex flex-wrap gap-3">
-          {["עצירת אתר", "החלפת מפעיל", "הקפאת תקציב", "גריעת ספק", "עצירת שירות"].map((action) => (
-            <button
-              key={action}
-              className="h-10 px-4 rounded-xl border border-destructive/30 text-destructive text-xs font-medium hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            >
-              {action}
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground mt-3">כל פעולה דורשת 2 אישורים נוספים</p>
-      </div>
     </div>
   );
 }

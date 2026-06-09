@@ -12,12 +12,9 @@ import {
 } from "@/data/realServices";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
+import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 
-const COST_BADGE: Record<string, { label: string; cls: string }> = {
-  free:       { label: "חינם",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  subsidized: { label: "מסובסד",   cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  paid:       { label: "בתשלום",   cls: "bg-gray-50 text-gray-500 border-gray-200" },
-};
+// Cost badge is now rendered by SubsidyBadge component
 
 const MOBILITY_HE: Record<string, string> = {
   independent: "עצמאי", "frail-light": "תפקוד נמוך-קל",
@@ -26,7 +23,6 @@ const MOBILITY_HE: Record<string, string> = {
 
 function ServiceRow({ service }: { service: RealService }) {
   const [expanded, setExpanded] = useState(false);
-  const badge = COST_BADGE[service.cost];
   const showImages = useShowImages();
   const { image, gradient } = showImages
     ? getServiceImageInfo(service)
@@ -71,9 +67,7 @@ function ServiceRow({ service }: { service: RealService }) {
                 {service.name}
               </Link>
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", badge.cls)}>
-                  {badge.label}
-                </span>
+                <SubsidyBadge cost={service.cost} />
               </div>
             </div>
 

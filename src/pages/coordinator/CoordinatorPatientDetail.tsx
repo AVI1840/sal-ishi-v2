@@ -3,13 +3,21 @@
  * Timeline טיפולי + מעגל חוזקות + תוכנית אישית + Nudges + Risk
  */
 import { useParams, Link } from "react-router-dom";
-import { ArrowRight, Phone, Heart, Activity, Target, AlertTriangle, Sparkles, Clock, MessageCircle, CheckCircle2, Calendar, User } from "lucide-react";
+import { useMemo } from "react";
+import {
+  ArrowRight, Phone, Heart, Activity, Target, AlertTriangle, Sparkles,
+  Clock, MessageCircle, CheckCircle2, Calendar, User,
+  Brain, Shield, Scale, Leaf,            // VIA strength icons
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/shared/Avatar";
 import { Chip } from "@/components/shared/Chip";
 import { ProgressBar } from "@/components/shared/ProgressBar";
-import { CITIZENS, SERVICES, TIMELINE_EVENTS, NUDGES, AI_RECOMMENDATIONS } from "@/data/mockData";
+import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
+import { CITIZENS, TIMELINE_EVENTS, NUDGES, AI_RECOMMENDATIONS } from "@/data/mockData";
 import { MOTIVATION_LABELS, BARRIER_LABELS, STRENGTH_LABELS, READINESS_LABELS } from "@/data/types";
+import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { getServiceImageInfo } from "@/lib/serviceImages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // Strength colors for radar
@@ -25,8 +33,16 @@ export default function CoordinatorPatientDetail() {
   const nudges = NUDGES.filter((n) => n.citizenId === citizen.id);
   const recommendations = AI_RECOMMENDATIONS.filter((r) => r.citizenId === citizen.id);
 
-  const walletTotal = 120;
-  const walletBalance = Math.round(citizen.engagementScore * 1.2);
+  // Level-2 wallet model — 32 יחידות / 775₪ (consistent with CitizenProfile + CitizenHome)
+  const walletTotal = 32;
+  const walletUsed = Math.round(walletTotal * Math.min(0.92, citizen.engagementScore / 100 + 0.1));
+  const walletBalance = Math.max(0, walletTotal - walletUsed);
+
+  // Matched services from the real engine (no legacy SERVICES array)
+  const matchedServices = useMemo(
+    () => matchServicesForCitizen(citizen, { topN: 5 }),
+    [citizen]
+  );
 
   return (
     <div className="space-y-6">
@@ -235,56 +251,75 @@ export default function CoordinatorPatientDetail() {
                 )}
               </div>
 
-              {/* Matched Services */}
+              {/* Matched Services — from real matching engine */}
               <div className="libi-card p-5">
-                <h3 className="text-base font-semibold text-foreground mb-3">שירותים מותאמים</h3>
+                <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" /> שירותים מותאמים לפרופיל
+                </h3>
                 <div className="space-y-2">
-                  {SERVICES.filter((s) => s.motivationsServed.some((m) => citizen.motivations.includes(m))).slice(0, 4).map((service) => (
-                    <div key={service.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
-                      <span className="text-2xl">{service.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-foreground">{service.name}</div>
-                        <div className="text-xs text-muted-foreground">{service.description}</div>
-                        <div className="flex gap-1 mt-1">
-                          {service.motivationsServed.filter((m) => citizen.motivations.includes(m)).map((m) => (
-                            <span key={m} className="text-[10px] px-1.5 py-0.5 rounded bg-pink-50 text-pink-600">{MOTIVATION_LABELS[m]}</span>
-                          ))}
+                  {matchedServices.slice(0, 4).map((result) => {
+                    const { image, gradient } = getServiceImageInfo(result.service);
+                    return (
+                      <div key={result.service.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
+                        {/* Thumbnail */}
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                          {image
+                            ? <img src={image} alt={result.service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+                            : <div className={cn("w-full h-full", gradient)} />
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-foreground line-clamp-1">{result.service.name}</div>
+                            <SubsidyBadge cost={result.service.cost} />
+                          </div>
+                          {result.explanations[0] && (
+                            <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{result.explanations[0]}</div>
+                          )}
+                        </div>
+                        <div className="text-left shrink-0">
+                          <div className="text-sm font-bold text-primary">{result.totalScore}</div>
+                          <div className="text-[10px] text-muted-foreground">התאמה</div>
+                          <button className="mt-1 text-xs text-primary font-medium hover:underline block">הצע →</button>
                         </div>
                       </div>
-                      <div className="text-left shrink-0">
-                        <div className="text-xs font-medium text-success">{service.engagementRate}% התמדה</div>
-                        <button className="mt-1 text-xs text-primary font-medium hover:underline">הצע →</button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
             {/* Sidebar */}
             <div className="space-y-4">
+              {/* Wallet — level 2 model */}
               <div className="libi-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3">ארנק</h4>
-                <div className="text-3xl font-bold text-primary">{walletBalance}</div>
-                <p className="text-xs text-muted-foreground mt-1">מתוך {walletTotal} יחידות</p>
-                <ProgressBar value={walletBalance} max={walletTotal} tone="primary" className="mt-3" />
+                <h4 className="text-sm font-semibold text-foreground mb-3">ארנק יחידות</h4>
+                <div className="flex items-end gap-2 mb-2">
+                  <div className="text-2xl font-bold text-primary">{walletBalance}</div>
+                  <div className="text-xs text-muted-foreground pb-0.5">מתוך {walletTotal}</div>
+                  <div className="mr-auto text-xs font-semibold text-emerald-700">775₪</div>
+                </div>
+                <ProgressBar value={walletUsed} max={walletTotal} tone="primary" />
+                <p className="text-[10px] text-muted-foreground mt-1.5">רמה 2 · {walletUsed} יחידות נוצלו</p>
               </div>
 
               {/* Nudges */}
               <div className="libi-card p-5">
                 <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <MessageCircle className="w-3.5 h-3.5 text-info" /> Nudges שנשלחו
+                  <MessageCircle className="w-3.5 h-3.5 text-info" /> חיזוקים שנשלחו
                 </h4>
                 {nudges.length > 0 ? nudges.map((n) => (
-                  <div key={n.id} className="flex items-start gap-2 p-2 rounded-lg bg-muted/30 mb-2 last:mb-0">
-                    <span className="text-lg">{n.emoji}</span>
+                  <div key={n.id} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/30 mb-2 last:mb-0">
+                    <MessageCircle className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-foreground">{n.message}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{n.sentAt} {n.opened ? "• נפתח ✓" : "• לא נפתח"}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {n.sentAt} · {n.opened ? "נפתח" : "לא נפתח"}
+                      </p>
                     </div>
                   </div>
                 )) : (
-                  <p className="text-xs text-muted-foreground">לא נשלחו nudges עדיין</p>
+                  <p className="text-xs text-muted-foreground">לא נשלחו חיזוקים עדיין</p>
                 )}
               </div>
             </div>
@@ -356,40 +391,53 @@ export default function CoordinatorPatientDetail() {
               </h3>
               <p className="text-xs text-muted-foreground mb-4">חוזקות דומיננטיות שזוהו — משמשות להתאמת שירותים ולחיזוק</p>
 
-              {/* Visual strengths */}
+              {/* VIA strengths with lucide icons */}
               <div className="grid grid-cols-2 gap-3">
                 {(["wisdom", "courage", "justice", "transcendence", "temperance", "humanity"] as const).map((s) => {
                   const isActive = citizen.strengths.includes(s);
+                  const STRENGTH_ICON = {
+                    wisdom: Brain, courage: Shield, justice: Scale,
+                    transcendence: Sparkles, temperance: Leaf, humanity: Heart,
+                  }[s];
                   return (
-                    <div key={s} className={cn("p-4 rounded-xl border text-center transition-all", isActive ? "border-primary/30 bg-primary-soft/30 shadow-sm" : "border-border/50 bg-muted/20 opacity-50")}>
-                      <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center mb-2" style={{ backgroundColor: isActive ? `${STRENGTH_COLORS[s]}15` : undefined }}>
-                        <span className="text-lg">{s === "wisdom" ? "W" : s === "courage" ? "C" : s === "justice" ? "J" : s === "transcendence" ? "T" : s === "temperance" ? "M" : "H"}</span>
+                    <div key={s} className={cn("p-4 rounded-xl border text-center transition-all", isActive ? "border-primary/30 bg-primary-soft/30 shadow-sm" : "border-border/50 bg-muted/20 opacity-40")}>
+                      <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center mb-2"
+                           style={{ backgroundColor: `${STRENGTH_COLORS[s]}15` }}>
+                        <STRENGTH_ICON className="w-5 h-5" style={{ color: STRENGTH_COLORS[s] }} />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{STRENGTH_LABELS[s]}</div>
-                      {isActive && <div className="text-[10px] text-primary mt-1 font-medium">דומיננטית ✓</div>}
+                      {isActive && <div className="text-[10px] text-primary mt-1 font-medium">דומיננטית</div>}
                     </div>
                   );
                 })}
               </div>
             </div>
 
+            {/* Services aligned with top matches (engine-sourced, no legacy SERVICES) */}
             <div className="libi-card p-5">
-              <h3 className="text-base font-semibold text-foreground mb-4">שירותים מחזקים</h3>
-              <p className="text-xs text-muted-foreground mb-3">שירותים שמפעילים את החוזקות הדומיננטיות</p>
+              <h3 className="text-base font-semibold text-foreground mb-4">שירותים מובילים</h3>
+              <p className="text-xs text-muted-foreground mb-3">שירותים מותאמים לפרופיל — מחוזקות, מוטיבציות ומצב תפקודי</p>
               <div className="space-y-2">
-                {SERVICES.filter((s) => s.strengthsActivated.some((str) => citizen.strengths.includes(str))).slice(0, 5).map((service) => (
-                  <div key={service.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50">
-                    <span className="text-xl">{service.emoji}</span>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-foreground">{service.name}</div>
-                      <div className="flex gap-1 mt-0.5">
-                        {service.strengthsActivated.filter((s) => citizen.strengths.includes(s)).map((s) => (
-                          <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">{STRENGTH_LABELS[s]}</span>
-                        ))}
+                {matchedServices.map((result) => {
+                  const { image, gradient } = getServiceImageInfo(result.service);
+                  return (
+                    <div key={result.service.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50">
+                      <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
+                        {image
+                          ? <img src={image} alt={result.service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+                          : <div className={cn("w-full h-full", gradient)} />
+                        }
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground line-clamp-1">{result.service.name}</div>
+                        {result.explanations[0] && (
+                          <div className="text-[11px] text-muted-foreground line-clamp-1">{result.explanations[0]}</div>
+                        )}
+                      </div>
+                      <div className="text-sm font-bold text-primary shrink-0">{result.totalScore}</div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

@@ -171,7 +171,7 @@ export default function CitizenHome() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-1">{result.service.name}</h3>
-                          <span className={cn("shrink-0 text-[10px] px-2 py-0.5 rounded font-semibold",
+                          <span className={cn("shrink-0 text-xs px-2 py-0.5 rounded font-semibold",
                             result.service.cost === "free" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
                           )}>
                             {result.service.cost === "free" ? "חינם" : "מסובסד"}
