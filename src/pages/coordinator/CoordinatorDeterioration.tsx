@@ -80,7 +80,7 @@ export default function CoordinatorDeterioration() {
                       </Chip>
                     </div>
                     <p className="text-xs text-muted-foreground">{alert.description}</p>
-                    <p className="text-xs text-info mt-2 font-medium">💡 {alert.suggestedAction}</p>
+                    <p className="text-xs text-info mt-2 font-medium">{alert.suggestedAction}</p>
                     <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {alert.detectedAt}
                     </p>

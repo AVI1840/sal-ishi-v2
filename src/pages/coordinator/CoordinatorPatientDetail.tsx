@@ -111,11 +111,11 @@ export default function CoordinatorPatientDetail() {
                 ))}
               </div>
               <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                <p className="text-xs text-amber-600 font-medium mb-0.5">💫 החלום</p>
+                <p className="text-xs text-amber-600 font-medium mb-0.5">החלום</p>
                 <p className="text-sm text-amber-900 italic">"{citizen.dream}"</p>
               </div>
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium mb-0.5">💬 משמעות</p>
+                <p className="text-xs text-blue-600 font-medium mb-0.5">משמעות</p>
                 <p className="text-sm text-blue-900 italic">"{citizen.meaningStatement}"</p>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function CoordinatorPatientDetail() {
                 <div className="space-y-2">
                   {citizen.barriers.map((b) => (
                     <div key={b} className="flex items-center gap-2 p-2.5 bg-orange-50 rounded-lg border border-orange-100">
-                      <span className="text-orange-500">⚠️</span>
+                      <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />
                       <span className="text-sm text-orange-800">{BARRIER_LABELS[b]}</span>
                     </div>
                   ))}
@@ -221,7 +221,7 @@ export default function CoordinatorPatientDetail() {
                     <h4 className="text-sm font-bold text-foreground">{rec.title}</h4>
                     <p className="text-xs text-muted-foreground mt-1">{rec.whyRecommended}</p>
                     <div className="mt-3 p-2.5 bg-info-soft rounded-lg">
-                      <p className="text-xs text-info font-medium">💡 ערך: {rec.valueForCitizen}</p>
+                      <p className="text-xs text-info font-medium">ערך: {rec.valueForCitizen}</p>
                     </div>
                     {rec.expectedBarriers.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
@@ -363,7 +363,7 @@ export default function CoordinatorPatientDetail() {
                   return (
                     <div key={s} className={cn("p-4 rounded-xl border text-center transition-all", isActive ? "border-primary/30 bg-primary-soft/30 shadow-sm" : "border-border/50 bg-muted/20 opacity-50")}>
                       <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center mb-2" style={{ backgroundColor: isActive ? `${STRENGTH_COLORS[s]}15` : undefined }}>
-                        <span className="text-lg">{s === "wisdom" ? "🧠" : s === "courage" ? "🦁" : s === "justice" ? "⚖️" : s === "transcendence" ? "✨" : s === "temperance" ? "🧘" : "❤️"}</span>
+                        <span className="text-lg">{s === "wisdom" ? "W" : s === "courage" ? "C" : s === "justice" ? "J" : s === "transcendence" ? "T" : s === "temperance" ? "M" : "H"}</span>
                       </div>
                       <div className="text-sm font-semibold text-foreground">{STRENGTH_LABELS[s]}</div>
                       {isActive && <div className="text-[10px] text-primary mt-1 font-medium">דומיננטית ✓</div>}
