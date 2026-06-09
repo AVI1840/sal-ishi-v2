@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
+import { PersonalReasonCard } from "@/components/shared/PersonalReasonCard";
 import { CITIZENS } from "@/data/mockData";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { useMemo } from "react";
@@ -135,11 +136,14 @@ export default function CitizenHome() {
                           </span>
                         </div>
                       </div>
-                      {result.explanations[0] && (
-                        <div className="px-4 py-2.5">
-                          <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
-                        </div>
-                      )}
+                      {/* Personal explanation — always show hook, expand for details */}
+                      <div className="px-4 pb-3 pt-1">
+                        <PersonalReasonCard
+                          result={result}
+                          firstName={citizen.name.split(" ")[0]}
+                          showLayers={false}
+                        />
+                      </div>
                     </>
                   ) : (
                     /* ── Clean mode OR thumbnail (idx>0 in image mode) ── */
@@ -188,12 +192,14 @@ export default function CitizenHome() {
                             </span>
                           )}
                         </div>
-                        {/* Why recommended — clean mode: show here */}
-                        {!showImages && result.explanations[0] && (
-                          <div className="mt-2.5 p-2 bg-[#1B3A5C]/5 rounded-lg border border-[#1B3A5C]/10">
-                            <p className="text-xs text-[#1B3A5C] font-medium">{result.explanations[0]}</p>
-                          </div>
-                        )}
+                        {/* Personal explanation — hook + expandable details */}
+                        <div className="mt-2.5">
+                          <PersonalReasonCard
+                            result={result}
+                            firstName={citizen.name.split(" ")[0]}
+                            showLayers={false}
+                          />
+                        </div>
                       </div>
                     </div>
                   )}

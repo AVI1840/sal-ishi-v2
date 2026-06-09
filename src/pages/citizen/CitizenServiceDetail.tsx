@@ -14,6 +14,7 @@ import { serviceCatalog } from "@/data/serviceCatalog";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { CITIZENS } from "@/data/mockData";
 import { MatchExplainability } from "@/components/shared/MatchExplainability";
+import { PersonalReasonCard } from "@/components/shared/PersonalReasonCard";
 import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import ServiceRating from "@/components/shared/ServiceRating";
 import { toast } from "sonner";
@@ -155,25 +156,21 @@ export default function CitizenServiceDetail() {
           )}
         </div>
 
-        {/* Personalized match breakdown */}
-        <div className="bg-white rounded-xl p-5 border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-gray-900">התאמה אישית — 5 שכבות</p>
+        {/* Personal match — hook + expandable "למה?" with 5 layers */}
+        <div className="bg-white rounded-xl p-5 border border-gray-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-gray-900">למה זה מומלץ עבורך</p>
             <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", certaintyInfo.cls)}>{certaintyInfo.label}</span>
           </div>
           {matchResult ? (
-            <MatchExplainability result={matchResult} />
+            <PersonalReasonCard
+              result={matchResult}
+              firstName={citizen.name.split(" ")[0]}
+              showLayers={true}
+            />
           ) : (
-            <div className="flex items-center gap-4">
-              <div className="relative w-14 h-14 shrink-0">
-                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={service.match_score >= 80 ? "#22c55e" : "#f59e0b"} strokeWidth="4" strokeDasharray={`${service.match_score}, 100`} />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-900">{service.match_score}%</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#1B3A5C]/5 border border-[#1B3A5C]/10">
+              <div className="text-2xl font-bold text-[#1B3A5C]">{service.match_score}</div>
               <div>
                 <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
                 <p className="text-xs text-gray-400 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
