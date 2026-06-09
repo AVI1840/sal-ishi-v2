@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  /* Global focus-visible for accessibility */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid hsl(212 55% 23%);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
   :root {
     --background: 210 20% 98%;
     --foreground: 215 25% 15%;

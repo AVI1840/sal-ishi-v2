@@ -85,7 +85,7 @@ export default function CitizenChat() {
           <div className="flex-1">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               לימור
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
                 <Sparkles className="w-2.5 h-2.5" /> AI Agent
               </span>
             </h2>
@@ -93,7 +93,7 @@ export default function CitizenChat() {
           </div>
           <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] text-emerald-700 font-medium">פעילה</span>
+            <span className="text-xs text-emerald-700 font-medium">פעילה</span>
           </div>
         </div>
       </header>
@@ -105,7 +105,7 @@ export default function CitizenChat() {
             <div className="max-w-[85%]">
               {msg.badge && (
                 <div className="flex justify-end mb-1">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1B3A5C]/10 text-[#1B3A5C] font-medium">{msg.badge}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#1B3A5C]/10 text-[#1B3A5C] font-medium">{msg.badge}</span>
                 </div>
               )}
               <div className={`rounded-2xl px-4 py-3 ${
@@ -114,7 +114,7 @@ export default function CitizenChat() {
                   : "bg-white text-foreground rounded-bl-sm shadow-sm border border-border/50"
               }`}>
                 <p className="text-sm whitespace-pre-line leading-relaxed">{msg.text}</p>
-                <p className={`text-[10px] mt-1.5 ${msg.sender === "citizen" ? "text-white/50" : "text-muted-foreground"}`}>{msg.time}</p>
+                <p className={`text-xs mt-1.5 ${msg.sender === "citizen" ? "text-white/50" : "text-muted-foreground"}`}>{msg.time}</p>
               </div>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function CitizenChat() {
                 <div className="w-2 h-2 rounded-full bg-[#1B3A5C]/40 animate-bounce" style={{ animationDelay: "0ms" }} />
                 <div className="w-2 h-2 rounded-full bg-[#1B3A5C]/40 animate-bounce" style={{ animationDelay: "150ms" }} />
                 <div className="w-2 h-2 rounded-full bg-[#1B3A5C]/40 animate-bounce" style={{ animationDelay: "300ms" }} />
-                <span className="text-[10px] text-muted-foreground mr-2">לימור חושבת...</span>
+                <span className="text-xs text-muted-foreground mr-2">לימור חושבת...</span>
               </div>
             </div>
           </div>

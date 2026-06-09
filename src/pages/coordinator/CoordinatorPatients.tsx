@@ -53,7 +53,7 @@ export default function CoordinatorPatients() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-primary" /> אזרחים
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">{CITIZENS.length} אזרחים בליווי</p>
+          <p className="text-sm text-muted-foreground mt-1">התיק שלי: {CITIZENS.length} אזרחים · פיילוט פסגת זאב: 286</p>
         </div>
         <button
           onClick={handleAddCitizen}

@@ -213,7 +213,7 @@ export default function ServicesCatalog() {
         <div className="flex items-center gap-4 text-[10px] text-gray-500 px-1">
           {Object.entries(LEVEL).map(([key, val]) => (
             <div key={key} className="flex items-center gap-1.5">
-              <span className={cn("px-1.5 py-0.5 rounded border text-[9px] font-medium", val.cls)}>{val.label}</span>
+              <span className={cn("px-1.5 py-0.5 rounded border text-xs font-medium", val.cls)}>{val.label}</span>
               <span>{val.desc}</span>
             </div>
           ))}
@@ -234,7 +234,7 @@ export default function ServicesCatalog() {
                   <Icon className="w-4 h-4" style={{ color: d.color }} />
                 </div>
                 <span className="text-[10px] font-semibold text-gray-700 leading-tight">{d.title}</span>
-                <span className="text-[9px] text-gray-400">{count} שירותים</span>
+                <span className="text-xs text-gray-400">{count} שירותים</span>
               </button>
             );
           })}
@@ -287,7 +287,7 @@ export default function ServicesCatalog() {
                                       <CheckCircle className="w-3 h-3" /> זמין
                                     </Link>
                                   )}
-                                  <span className={cn("text-[9px] px-1.5 py-0.5 rounded border font-medium shrink-0", lvl.cls)}>
+                                  <span className={cn("text-xs px-1.5 py-0.5 rounded border font-medium shrink-0", lvl.cls)}>
                                     {lvl.label}
                                   </span>
                                 </div>
