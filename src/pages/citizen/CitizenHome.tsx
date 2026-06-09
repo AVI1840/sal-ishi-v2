@@ -132,7 +132,7 @@ export default function CitizenHome() {
                           <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
                             result.service.cost === "free" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"
                           )}>
-                            {result.service.cost === "free" ? "חינם" : "מסובסד"}
+                            {result.service.cost === "free" ? "חינם 100%" : "מסובסד 50%"}
                           </span>
                         </div>
                       </div>
@@ -178,7 +178,7 @@ export default function CitizenHome() {
                           <span className={cn("shrink-0 text-xs px-2 py-0.5 rounded font-semibold",
                             result.service.cost === "free" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
                           )}>
-                            {result.service.cost === "free" ? "חינם" : "מסובסד"}
+                            {result.service.cost === "free" ? "חינם 100%" : "מסובסד 50%"}
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{result.service.provider}</p>
