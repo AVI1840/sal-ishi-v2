@@ -365,7 +365,7 @@ export default function CoordinatorIntake() {
                 <ProgressBar value={plan.walletTotal} max={160} tone="primary" className="mt-3" />
               </div>
               <div className="flex justify-center pt-2">
-                <button onClick={() => toast.success("התוכנית האישית אושרה בהצלחה! ✨")} className="px-8 py-3 bg-primary text-primary-foreground rounded-xl text-base font-semibold shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <button onClick={() => toast.success("התוכנית האישית אושרה בהצלחה")} className="px-8 py-3 bg-primary text-primary-foreground rounded-xl text-base font-semibold shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]">
                   <Check className="w-5 h-5 inline ml-2" /> אשר תוכנית
                 </button>
               </div>

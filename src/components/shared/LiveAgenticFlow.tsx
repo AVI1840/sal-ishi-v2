@@ -68,7 +68,7 @@ const STEPS: FlowStep[] = [
     title: "Nudge אישי",
     service: "WhatsApp · Amazon SNS",
     input: "מוטיבציה: שייכות · שירות מובייל",
-    output: "\"רבקה שלום! ✨ מחר ב-10:00 יש חוג שירה. מרים חברתך תהיה שם. אפשר להסיע?\"",
+    output: "\"רבקה שלום! מחר ב-10:00 יש חוג שירה. מרים חברתך תהיה שם. אפשר להסיע?\"",
     color: "text-pink-600",
     border: "border-pink-200",
     bg: "bg-pink-50",

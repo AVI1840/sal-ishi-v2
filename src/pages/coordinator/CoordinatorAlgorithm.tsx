@@ -51,7 +51,7 @@ export default function CoordinatorAlgorithm() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-foreground">5 שכבות התאמה</h3>
             <div className={cn("px-3 py-1 rounded-full text-xs font-semibold", isValid ? "bg-success-soft text-success" : "bg-destructive-soft text-destructive")}>
-              {isValid ? <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> סך הכל 100%</span> : `⚠️ סך הכל ${total}%`}
+              {isValid ? <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> סך הכל 100%</span> : `סך הכל ${total}%`}
             </div>
           </div>
 
