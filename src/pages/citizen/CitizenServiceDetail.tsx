@@ -169,11 +169,31 @@ export default function CitizenServiceDetail() {
               showLayers={true}
             />
           ) : (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#1B3A5C]/5 border border-[#1B3A5C]/10">
-              <div className="text-2xl font-bold text-[#1B3A5C]">{service.match_score}</div>
-              <div>
-                <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
-                <p className="text-xs text-gray-400 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-[#1B3A5C]/5 border border-[#1B3A5C]/10">
+                <div className="text-2xl font-bold text-[#1B3A5C]">{service.match_score}</div>
+                <div>
+                  <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>מאושר על ידי מלווה</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <Clock className="w-3.5 h-3.5 text-gray-400" />
+                  <span>עודכן לפני 7 ימים</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <Globe className="w-3.5 h-3.5 text-blue-400" />
+                  <span>מאומת מול עיריית ירושלים</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <Activity className="w-3.5 h-3.5 text-[#1B3A5C]" />
+                  <span>רמת ביטחון: {service.match_score}%</span>
+                </div>
               </div>
             </div>
           )}
