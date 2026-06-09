@@ -47,7 +47,7 @@ export default function CoordinatorDashboard() {
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">בוקר טוב, רונית</h1>
-          <p className="text-sm text-muted-foreground mt-1">התיק שלי: 75 · פיילוט: 286 · היום: 12 סלים עודכנו · {unresolvedAlerts.length} התראות · {criticalCitizens.length} בסיכון</p>
+          <p className="text-sm text-muted-foreground mt-1">התיק שלי: 75 · פיילוט: 286 · סלים עודכנו היום · {unresolvedAlerts.length} בסיכון</p>
         </div>
       </div>
 
