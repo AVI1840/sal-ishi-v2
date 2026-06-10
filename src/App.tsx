@@ -12,6 +12,7 @@ import DemoNav from "@/components/layout/DemoNav";
 import AppShell from "@/components/layout/AppShell";
 import MobileShell from "@/components/layout/MobileShell";
 import { GuidedDemo } from "@/components/GuidedDemo";
+import { AutoDemoOverlay } from "@/components/AutoDemoOverlay";
 
 // Pages
 import DemoHome from "@/pages/DemoHome";
@@ -122,6 +123,7 @@ export default function App() {
 
             {/* GuidedDemo MUST be inside HashRouter — uses Link */}
             <GuidedDemo />
+            <AutoDemoOverlay />
           </HashRouter>
 
           {/* AWS Badge - discreet footer */}
