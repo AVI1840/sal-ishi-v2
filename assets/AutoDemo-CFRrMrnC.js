@@ -1,0 +1,1 @@
+import{h as o,a as r}from"./vendor-react-DDVb73Xy.js";import{v as e}from"./index-C5kUeD-h.js";import"./vendor-ui-CfFjnKDg.js";import"./vendor-charts-B15UVN0S.js";import"./data-mock-D8dY8Zpc.js";function p(){const t=o();return r.useEffect(()=>{e(),t("/",{replace:!0})},[t]),null}export{p as default};
