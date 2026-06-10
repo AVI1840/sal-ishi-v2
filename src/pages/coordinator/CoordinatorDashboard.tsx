@@ -168,7 +168,7 @@ export default function CoordinatorDashboard() {
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{rec.whyRecommended}</p>
                 <div className="flex items-center gap-1 mt-2">
                   {rec.motivationMatch.slice(0, 2).map((m) => (
-                    <span key={m} className="text-[10px] px-1.5 py-0.5 rounded bg-pink-50 text-pink-600">{MOTIVATION_LABELS[m]}</span>
+                    <span key={m} className="text-xs px-1.5 py-0.5 rounded bg-pink-50 text-pink-600">{MOTIVATION_LABELS[m]}</span>
                   ))}
                 </div>
                 <Link to={`/coordinator/patients/${rec.citizenId}`} className="mt-2 text-xs text-primary font-medium hover:underline block">{rec.nextAction} →</Link>
@@ -194,7 +194,7 @@ export default function CoordinatorDashboard() {
                 <Avatar name={citizen.name} size={36} tone={citizen.riskLevel === "critical" ? "warm" : "default"} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-foreground truncate">{citizen.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{citizen.age} • {citizen.neighborhood}</div>
+                  <div className="text-xs text-muted-foreground">{citizen.age} • {citizen.neighborhood}</div>
                 </div>
                 <div className="text-left shrink-0">
                   <div className={cn("text-sm font-bold tabular-nums", citizen.engagementScore < 20 ? "text-destructive" : citizen.engagementScore < 50 ? "text-warning-foreground" : "text-success")}>
@@ -215,8 +215,8 @@ export default function CoordinatorDashboard() {
               <div key={n.id} className="flex items-start gap-2 py-1.5">
                 <span className="text-sm">{n.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] text-foreground line-clamp-1">{n.message}</p>
-                  <p className="text-[10px] text-muted-foreground">{n.sentAt}</p>
+                  <p className="text-xs text-foreground line-clamp-1">{n.message}</p>
+                  <p className="text-xs text-muted-foreground">{n.sentAt}</p>
                 </div>
               </div>
             ))}

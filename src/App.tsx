@@ -47,6 +47,7 @@ const Assistant = lazy(() => import("@/pages/prototype/Assistant"));
 const Partners = lazy(() => import("@/pages/prototype/Partners"));
 const Proposal = lazy(() => import("@/pages/prototype/Proposal"));
 const Hackathon = lazy(() => import("@/pages/prototype/Hackathon"));
+const AutoDemo = lazy(() => import("@/pages/prototype/AutoDemo"));
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,7 @@ export default function App() {
               <Route path="/national/partners" element={<Suspense fallback={<RouteFallback />}><Partners /></Suspense>} />
               <Route path="/national/proposal" element={<Suspense fallback={<RouteFallback />}><Proposal /></Suspense>} />
               <Route path="/hackathon" element={<Suspense fallback={<RouteFallback />}><Hackathon /></Suspense>} />
+              <Route path="/demo" element={<Suspense fallback={<RouteFallback />}><AutoDemo /></Suspense>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

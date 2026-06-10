@@ -109,10 +109,16 @@ export default function DemoHome() {
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
-                to="/coordinator"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[#1B3A5C] font-bold text-sm hover:bg-white/90 transition-colors shadow-lg"
+                to="/demo"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[#1B3A5C] font-bold text-sm hover:bg-white/90 transition-colors shadow-lg animate-pulse hover:animate-none"
               >
-                <Play className="w-4 h-4 fill-current" /> צפה בדמו
+                <Play className="w-4 h-4 fill-current" /> ▶ דמו 30 שניות
+              </Link>
+              <Link
+                to="/coordinator"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium text-sm hover:bg-white/20 transition-colors"
+              >
+                ממשק מלווה <ChevronLeft className="w-3.5 h-3.5" />
               </Link>
               <a
                 href="https://libi-sal-ishi.vercel.app/"

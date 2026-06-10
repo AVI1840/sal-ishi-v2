@@ -148,10 +148,10 @@ export default function CoordinatorAgents() {
           כל אייג'נט מתמחה בתפקיד ספציפי וה-Super Agent מתזמן ביניהם.
         </p>
         <div className="grid grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/10 text-center">
-          <div><div className="text-lg font-bold">5</div><div className="text-[10px] text-white/40">אייג'נטים</div></div>
-          <div><div className="text-lg font-bold">24/7</div><div className="text-[10px] text-white/40">פעילות</div></div>
-          <div><div className="text-lg font-bold">29K</div><div className="text-[10px] text-white/40">ציונים/שבוע</div></div>
-          <div><div className="text-lg font-bold">0</div><div className="text-[10px] text-white/40">תקלות</div></div>
+          <div><div className="text-lg font-bold">5</div><div className="text-xs text-white/40">אייג'נטים</div></div>
+          <div><div className="text-lg font-bold">24/7</div><div className="text-xs text-white/40">פעילות</div></div>
+          <div><div className="text-lg font-bold">29K</div><div className="text-xs text-white/40">ציונים/שבוע</div></div>
+          <div><div className="text-lg font-bold">רץ יציב</div><div className="text-xs text-white/40">לאורך הפיילוט</div></div>
         </div>
       </div>
 
@@ -180,12 +180,12 @@ export default function CoordinatorAgents() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900 line-clamp-1">{agent.name}</h3>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{agent.schedule}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{agent.schedule}</p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <div className={cn("w-1.5 h-1.5 rounded-full",
                       agent.status === "active" ? "bg-emerald-500" : agent.status === "error" ? "bg-red-500" : "bg-gray-300"
                     )} />
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-xs text-gray-500">
                       {agent.status === "active" ? "פעיל" : agent.status === "error" ? "שגיאה" : "לא פעיל"}
                     </span>
                   </div>
@@ -232,7 +232,7 @@ export default function CoordinatorAgents() {
             {selected.stats.map((stat) => (
               <div key={stat.label} className="text-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <div className="text-lg font-bold text-[#1B3A5C]">{stat.value}</div>
-                <div className="text-[10px] text-gray-500 mt-0.5">{stat.label}</div>
+                <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -248,7 +248,7 @@ export default function CoordinatorAgents() {
 
           {/* Zones */}
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">אזורי כיסוי</p>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">אזורי כיסוי</p>
             <div className="flex gap-2 flex-wrap">
               {selected.zones.map((zone) => (
                 <span key={zone} className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-[#1B3A5C]/5 text-[#1B3A5C] border border-[#1B3A5C]/10">
