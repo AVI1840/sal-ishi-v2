@@ -112,7 +112,7 @@ export function AutoDemoOverlay() {
     return () => clearInterval(iv);
   }, [active]);
 
-  // Intro → running after 3s
+  // Intro → running after 4s
   useEffect(() => {
     if (!active || phase !== "intro") return;
     const t = setTimeout(() => {
@@ -120,7 +120,7 @@ export function AutoDemoOverlay() {
       setCurrentStop(0);
       setElapsed(0);
       navigate(STOPS[0].route);
-    }, 3000);
+    }, 4000);
     return () => clearTimeout(t);
   }, [active, phase, navigate]);
 
@@ -197,40 +197,57 @@ export function AutoDemoOverlay() {
   // ─── INTRO SCREEN ───
   if (phase === "intro") {
     return (
-      <div className="fixed inset-0 z-[300] bg-[#0a1628] flex items-center justify-center" dir="rtl">
+      <div className="fixed inset-0 z-[9999] bg-[#0a1628] flex items-center justify-center" dir="rtl">
         <div className="text-center max-w-lg px-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-[#1B3A5C] flex items-center justify-center mx-auto mb-6">
             <Wallet className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">סל אישי</h1>
-          <p className="text-lg text-white/70 mb-3">
-            פלטפורמת AI ממשלתית להתאמת שירותי מניעה לאזרחים ותיקים
+          <h1 className="text-4xl font-bold text-white mb-3">סל אישי</h1>
+          <p className="text-xl text-white/70 mb-2">
+            מערכת AI להתאמת שירותי מניעה לאזרחים ותיקים
           </p>
-          <div className="grid grid-cols-3 gap-4 mb-8 mt-6">
+          <p className="text-sm text-white/40 mb-6">
+            פיילוט חי · ירושלים · ביטוח לאומי + משרד האוצר
+          </p>
+
+          <div className="grid grid-cols-3 gap-6 mb-8">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">286</div>
-              <div className="text-xs text-white/40">אזרחים בפיילוט</div>
+              <div className="text-3xl font-bold text-blue-400">286</div>
+              <div className="text-xs text-white/40 mt-1">אזרחים בפיילוט</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-400">102</div>
-              <div className="text-xs text-white/40">שירותי מניעה</div>
+              <div className="text-3xl font-bold text-emerald-400">102</div>
+              <div className="text-xs text-white/40 mt-1">שירותי מניעה</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-amber-400">5</div>
-              <div className="text-xs text-white/40">אייג'נטים AI</div>
+              <div className="text-3xl font-bold text-amber-400">5</div>
+              <div className="text-xs text-white/40 mt-1">אייג'נטים AI</div>
             </div>
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span className="text-sm text-white/50">מתחיל בעוד רגע...</span>
           </div>
 
-          {/* Skip intro */}
+          <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10 text-right">
+            <p className="text-sm text-white/60 leading-relaxed">
+              ⚡ <span className="text-white/80 font-medium">מה תראו בסיור:</span> ממשק האזרח הוותיק, 
+              ציוני התאמה AI מוסברים, דשבורד המלווה עם ניטור סיכונים, 5 אייג'נטים אוטונומיים, 
+              ודשבורד ניהולי עם ROI.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-sm text-white/50">הסיור מתחיל אוטומטית...</span>
+          </div>
+
+          {/* Progress bar for intro countdown */}
+          <div className="w-48 h-1 bg-white/10 rounded-full mx-auto overflow-hidden">
+            <div className="h-full bg-white/30 rounded-full animate-[grow_4s_linear]" style={{ animation: "grow 4s linear forwards" }} />
+          </div>
+
           <button
             onClick={() => { setPhase("running"); setCurrentStop(0); setElapsed(0); navigate(STOPS[0].route); }}
-            className="mt-6 text-xs text-white/30 hover:text-white/60 transition-colors"
+            className="mt-5 text-xs text-white/30 hover:text-white/60 transition-colors"
           >
-            דלג על הסקירה →
+            דלג ← התחל עכשיו
           </button>
         </div>
       </div>
@@ -240,7 +257,7 @@ export function AutoDemoOverlay() {
   // ─── END SCREEN ───
   if (phase === "ended") {
     return (
-      <div className="fixed inset-0 z-[300] bg-[#0a1628] flex items-center justify-center" dir="rtl">
+      <div className="fixed inset-0 z-[9999] bg-[#0a1628] flex items-center justify-center" dir="rtl">
         <div className="text-center max-w-md px-6">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
             <span className="text-3xl">✅</span>
@@ -268,7 +285,7 @@ export function AutoDemoOverlay() {
     );
   }
 
-  // ─── RUNNING — BOTTOM BANNER ───
+  // ─── RUNNING — TOP BANNER (avoids conflict with mobile nav) ───
   const current = STOPS[currentStop];
   const completedMs = STOPS.slice(0, currentStop).reduce((s, stop) => s + stop.duration, 0) + elapsed;
   const totalProgress = Math.min((completedMs / TOTAL_DURATION) * 100, 100);
@@ -276,87 +293,87 @@ export function AutoDemoOverlay() {
   const secondsLeft = Math.max(0, Math.ceil((TOTAL_DURATION - completedMs) / 1000));
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[300] pointer-events-none" dir="rtl">
-      {/* Total progress bar */}
-      <div className="h-1 bg-black/30">
-        <div
-          className="h-full bg-gradient-to-l from-blue-400 to-emerald-400 transition-all duration-100 ease-linear"
-          style={{ width: `${totalProgress}%` }}
-        />
-      </div>
+    <>
+      {/* TOP BANNER — always visible, above everything */}
+      <div className="fixed top-0 left-0 right-0 z-[9999]" dir="rtl">
+        {/* Banner */}
+        <div className="bg-[#0a1628] border-b border-white/10 shadow-2xl">
+          <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-3">
 
-      {/* Banner */}
-      <div className="pointer-events-auto bg-[#0a1628]/95 backdrop-blur-md border-t border-white/10 shadow-2xl">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-
-          {/* Stop # + countdown */}
-          <div className="shrink-0 flex flex-col items-center">
-            <div className="w-9 h-9 rounded-lg bg-[#1B3A5C] flex items-center justify-center">
-              <span className="text-white font-bold text-xs">{currentStop + 1}/{STOPS.length}</span>
+            {/* Stop # + countdown */}
+            <div className="shrink-0 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#1B3A5C] flex items-center justify-center">
+                <span className="text-white font-bold text-xs">{currentStop + 1}/{STOPS.length}</span>
+              </div>
+              <span className="text-xs text-white/40 font-mono tabular-nums">{secondsLeft}s</span>
             </div>
-            <span className="text-[9px] text-white/25 font-mono mt-0.5">{secondsLeft}s</span>
-          </div>
 
-          {/* Title + subtitle + stop bar */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-white font-bold text-sm truncate">{current.title}</p>
-              {paused && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">⏸</span>}
+            {/* Title + subtitle */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-white font-bold text-sm truncate">{current.title}</p>
+                {paused && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-medium">⏸ עצור</span>}
+              </div>
+              <p className="text-white/40 text-[11px] mt-0.5 truncate">{current.subtitle}</p>
             </div>
-            <p className="text-white/40 text-[11px] mt-0.5 truncate">{current.subtitle}</p>
-            <div className="mt-1.5 h-[3px] bg-white/10 rounded-full overflow-hidden max-w-[200px]">
-              <div className="h-full bg-white/40 rounded-full transition-all duration-100 ease-linear" style={{ width: `${stopProgress}%` }} />
+
+            {/* Live */}
+            <div className="shrink-0 hidden sm:block text-[10px] text-white/30 font-mono">
+              🔴 LIVE {time}
+            </div>
+
+            {/* Controls */}
+            <div className="shrink-0 flex items-center gap-1">
+              <button
+                onClick={() => { if (currentStop > 0) { setCurrentStop(p => p - 1); setElapsed(0); } }}
+                disabled={currentStop === 0}
+                className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setPaused(p => !p)}
+                className="w-7 h-7 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center text-white"
+              >
+                {paused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+              </button>
+              <button
+                onClick={() => { if (currentStop < STOPS.length - 1) { setCurrentStop(p => p + 1); setElapsed(0); } }}
+                disabled={currentStop === STOPS.length - 1}
+                className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={endDemo}
+                className="w-7 h-7 rounded bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-400 mr-1"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Dots */}
+            <div className="shrink-0 flex gap-1 items-center">
+              {STOPS.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === currentStop ? "bg-white w-4" : i < currentStop ? "bg-white/50 w-1.5" : "bg-white/15 w-1.5"
+                  }`}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Live */}
-          <div className="shrink-0 hidden md:block text-[10px] text-white/25 font-mono">
-            LIVE {time}
-          </div>
-
-          {/* Controls */}
-          <div className="shrink-0 flex items-center gap-1">
-            <button
-              onClick={() => { if (currentStop > 0) { setCurrentStop(p => p - 1); setElapsed(0); } }}
-              disabled={currentStop === 0}
-              className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setPaused(p => !p)}
-              className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
-            >
-              {paused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-            </button>
-            <button
-              onClick={() => { if (currentStop < STOPS.length - 1) { setCurrentStop(p => p + 1); setElapsed(0); } }}
-              disabled={currentStop === STOPS.length - 1}
-              className="w-7 h-7 rounded bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={endDemo}
-              className="w-7 h-7 rounded bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-400 mr-1"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Dots */}
-          <div className="shrink-0 flex gap-1">
-            {STOPS.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === currentStop ? "bg-white w-4" : i < currentStop ? "bg-white/50 w-1.5" : "bg-white/15 w-1.5"
-                }`}
-              />
-            ))}
+          {/* Progress bar at the bottom of the banner */}
+          <div className="h-1 bg-white/5">
+            <div
+              className="h-full bg-gradient-to-l from-blue-400 to-emerald-400 transition-all duration-100 ease-linear"
+              style={{ width: `${totalProgress}%` }}
+            />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
