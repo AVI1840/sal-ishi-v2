@@ -213,7 +213,7 @@ export default function CoordinatorDashboard() {
             <h4 className="text-xs font-semibold text-muted-foreground mb-2">Nudges אחרונים</h4>
             {NUDGES.slice(0, 3).map((n) => (
               <div key={n.id} className="flex items-start gap-2 py-1.5">
-                <span className="text-sm">{n.emoji}</span>
+                <Sparkles className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-foreground line-clamp-1">{n.message}</p>
                   <p className="text-xs text-muted-foreground">{n.sentAt}</p>
