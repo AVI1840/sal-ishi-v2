@@ -117,14 +117,52 @@ const AGENTS: AgentDef[] = [
 export default function CoordinatorAgents() {
   const [runningAgent, setRunningAgent] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(AGENTS[0].id);
+  const [runStage, setRunStage] = useState(0);
+  const [runResult, setRunResult] = useState<{ agentId: string; text: string } | null>(null);
 
-  const handleRun = (agentId: string) => {
+  const AGENT_RUN_CONFIG: Record<string, { stages: string[]; result: string }> = {
+    "service-discovery": {
+      stages: ["מתחבר ל-25 מקורות...", "סורק עיריית ירושלים, מנהל קהילתי, ג'וינט...", "מנתח שירותים חדשים...", "מעדכן קטלוג"],
+      result: "נמצאו 2 שירותים חדשים · עודכנו 5 פרטי שירות · 0 שירותים הוסרו"
+    },
+    "matching-engine": {
+      stages: ["טוען 286 פרופילים...", "מחשב 286 × 102 = 29,172 ציונים...", "מדרג לפי 5 שכבות...", "מעדכן המלצות אישיות"],
+      result: "עודכנו 29,172 ציוני התאמה · 14 המלצות חדשות · 3 אזרחים עם שינוי Top-3"
+    },
+    "deterioration-monitor": {
+      stages: ["בודק דפוסי פעילות 286 אזרחים...", "מזהה חריגות (שתיקה, ביטולים, ירידת SDI)...", "מחשב RDI מעודכן...", "מייצר התראות CRM"],
+      result: "4 אזרחים עם עליית RDI > 1.3 · נוצרו 4 פעולות CRM דחופות"
+    },
+    "nudge-engine": {
+      stages: ["בודק לוח שירותים מחר...", "מתאים הודעות לפי פרסונה ומוטיבציות...", "מייצר חיזוקים מותאמים...", "שולח ב-SMS / WhatsApp"],
+      result: "נשלחו 12 חיזוקים מותאמים · 3 milestones · 2 reactivation · 7 תזכורות"
+    },
+    "super-agent": {
+      stages: ["בודק סטטוס 4 אייג'נטים...", "מתזמן משימות יומיות...", "מזהה תלויות בין-אייג'נטים...", "מייצר דוח מצב"],
+      result: "כל 4 האייג'נטים פעילים · 0 תקלות · זמן ריצה ממוצע: 2.1s"
+    },
+  };
+
+  const handleRun = async (agentId: string) => {
+    if (runningAgent) return;
+    const config = AGENT_RUN_CONFIG[agentId];
+    if (!config) return;
+
     setRunningAgent(agentId);
-    toast.info("מריץ אייג'נט...");
-    setTimeout(() => {
-      setRunningAgent(null);
-      toast.success("הריצה הושלמה בהצלחה");
-    }, 3000);
+    setRunResult(null);
+    setRunStage(0);
+
+    for (let i = 0; i < config.stages.length; i++) {
+      setRunStage(i);
+      await new Promise(r => setTimeout(r, 1200 + Math.random() * 600));
+    }
+
+    setRunningAgent(null);
+    setRunResult({ agentId, text: config.result });
+    toast.success(config.result, { duration: 6000 });
+
+    // Clear result after 15 seconds
+    setTimeout(() => setRunResult(null), 15000);
   };
 
   const selected = AGENTS.find(a => a.id === selectedAgent);
@@ -211,10 +249,10 @@ export default function CoordinatorAgents() {
             </div>
             <button
               onClick={() => handleRun(selected.id)}
-              disabled={runningAgent === selected.id}
+              disabled={!!runningAgent}
               className={cn(
                 "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                runningAgent === selected.id
+                runningAgent
                   ? "bg-gray-100 text-gray-400 cursor-wait"
                   : "bg-[#1B3A5C] text-white hover:bg-[#15304d]"
               )}
@@ -226,6 +264,34 @@ export default function CoordinatorAgents() {
               )}
             </button>
           </div>
+
+          {/* Run progress */}
+          {runningAgent === selected.id && (
+            <div className="p-4 rounded-xl border border-[#1B3A5C]/20 bg-[#1B3A5C]/[0.02] space-y-3 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#1B3A5C]">שלב {runStage + 1} מתוך {AGENT_RUN_CONFIG[selected.id].stages.length}</span>
+                <Loader2 className="w-4 h-4 animate-spin text-[#1B3A5C]" />
+              </div>
+              <p className="text-sm text-gray-700 font-medium">{AGENT_RUN_CONFIG[selected.id].stages[runStage]}</p>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#1B3A5C] rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${((runStage + 1) / AGENT_RUN_CONFIG[selected.id].stages.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Run result */}
+          {runResult && runResult.agentId === selected.id && !runningAgent && (
+            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50 flex items-start gap-3 animate-fade-in">
+              <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800">הריצה הושלמה בהצלחה</p>
+                <p className="text-xs text-emerald-700 mt-1">{runResult.text}</p>
+              </div>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-4 gap-3">
