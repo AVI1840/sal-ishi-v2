@@ -108,7 +108,7 @@ export default function Outcomes() {
           <CardHeader title="לולאת המשוב" subtitle="כל פעולה משפרת את המערכת" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
             {[
-              { label: "פעולה", desc: "מתאמת ממליצה שירות" },
+              { label: "פעולה", desc: "מלווה ממליצה שירות" },
               { label: "תוצאה", desc: "נמדדת אוטומטית" },
               { label: "למידה", desc: "המודל מעדכן משקלים" },
               { label: "Policy", desc: "מוצג לוועדת היגוי" },

@@ -1,5 +1,5 @@
 /**
- * AI Assistant — צ'אט + תובנות למתאמת
+ * AI Assistant — צ'אט + תובנות למלווה חברתית
  */
 import { useState } from "react";
 import { Sparkles, Send, TrendingUp, AlertTriangle, Heart, Users, Target } from "lucide-react";

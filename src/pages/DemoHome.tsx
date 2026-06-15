@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Wallet, ExternalLink, Phone, Heart, Building2, Users,
+  Wallet, Phone, Heart, Building2, Users,
   ChevronLeft, CheckCircle, AlertCircle, TrendingUp, Brain,
   Play, MapPin,
 } from "lucide-react";
@@ -15,19 +15,19 @@ const MODULES = [
   {
     num: "01", title: "ממשק האזרח הוותיק",
     description: "סל שירותים אישי, המלצות AI מוסברות, ארנק דיגיטלי",
-    href: "https://libi-sal-ishi.vercel.app/", external: true, icon: Phone,
+    href: "/citizen", external: false, icon: Phone,
     badge: "65+", badgeCls: "bg-blue-50 border-blue-200 text-blue-700",
   },
   {
     num: "02", title: "מערכת המלווה החברתית",
     description: "75 אזרחים, SDI/RDI, משימות יומיות, ניטור הידרדרות",
-    href: "https://avi1840.github.io/SAL-ISHI-SIUD/", external: true, icon: Heart,
+    href: "/coordinator", external: false, icon: Heart,
     badge: "יומי", badgeCls: "bg-emerald-50 border-emerald-200 text-emerald-700",
   },
   {
     num: "03", title: "מלווה מורחב — AI ואייג'נטים",
     description: "102 שירותים, 5 אייג'נטים, אינטייק AI, אלגוריתם 5 שכבות",
-    href: "/coordinator", external: false, icon: Brain,
+    href: "/coordinator/agents", external: false, icon: Brain,
     badge: "AI", badgeCls: "bg-purple-50 border-purple-200 text-purple-700",
   },
   {
@@ -120,14 +120,12 @@ export default function DemoHome() {
               >
                 ממשק מלווה <ChevronLeft className="w-3.5 h-3.5" />
               </Link>
-              <a
-                href="https://libi-sal-ishi.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/citizen"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium text-sm hover:bg-white/20 transition-colors"
               >
-                ממשק האזרח <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+                ממשק האזרח <ChevronLeft className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
             <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/12">
@@ -250,34 +248,29 @@ export default function DemoHome() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {MODULES.map((mod) => {
               const Icon = mod.icon;
-              const inner = (
-                <div className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#1B3A5C]/40 hover:shadow-md transition-all h-full">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-[#1B3A5C]/5 flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-[#1B3A5C]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] text-gray-400 font-bold">{mod.num}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${mod.badgeCls}`}>{mod.badge}</span>
+              return (
+                <Link key={mod.title} to={mod.href}>
+                  <div className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#1B3A5C]/40 hover:shadow-md transition-all h-full">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-[#1B3A5C]/5 flex items-center justify-center shrink-0">
+                        <Icon className="w-5 h-5 text-[#1B3A5C]" />
                       </div>
-                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1B3A5C] transition-colors">
-                        {mod.title}
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">{mod.description}</p>
-                      <span className="mt-3 inline-flex items-center gap-0.5 text-xs text-[#1B3A5C] font-medium">
-                        כניסה {mod.external && <ExternalLink className="w-3 h-3" />}
-                        <ChevronLeft className="w-3 h-3" />
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] text-gray-400 font-bold">{mod.num}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${mod.badgeCls}`}>{mod.badge}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1B3A5C] transition-colors">
+                          {mod.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">{mod.description}</p>
+                        <span className="mt-3 inline-flex items-center gap-0.5 text-xs text-[#1B3A5C] font-medium">
+                          כניסה <ChevronLeft className="w-3 h-3" />
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-
-              return mod.external ? (
-                <a key={mod.title} href={mod.href} target="_blank" rel="noopener noreferrer">{inner}</a>
-              ) : (
-                <Link key={mod.title} to={mod.href}>{inner}</Link>
+                </Link>
               );
             })}
           </div>

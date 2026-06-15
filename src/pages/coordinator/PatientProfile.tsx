@@ -164,7 +164,7 @@ export default function PatientProfile() {
 
         <TabsContent value="organizational">
           <div className="sal-card">
-            <p className="text-sm text-muted-foreground">מידע ארגוני — מתאמת אחראית, היסטוריית טיפול, גורמים מעורבים</p>
+            <p className="text-sm text-muted-foreground">מידע ארגוני — מלווה אחראית, היסטוריית טיפול, גורמים מעורבים</p>
           </div>
         </TabsContent>
 

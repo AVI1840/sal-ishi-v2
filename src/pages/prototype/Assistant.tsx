@@ -151,7 +151,7 @@ export default function Assistant() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   {m.role === "user" ? (
-                    <span className="text-[10px] uppercase tracking-wider opacity-80">מתאמת</span>
+                    <span className="text-[10px] uppercase tracking-wider opacity-80">מלווה</span>
                   ) : (
                     <>
                       <MessageSquare className="w-3.5 h-3.5 text-primary" aria-hidden="true" />

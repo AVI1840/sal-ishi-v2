@@ -14,7 +14,6 @@ import { serviceCatalog } from "@/data/serviceCatalog";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { CITIZENS } from "@/data/mockData";
 import { MatchExplainability } from "@/components/shared/MatchExplainability";
-import { PersonalReasonCard } from "@/components/shared/PersonalReasonCard";
 import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import ServiceRating from "@/components/shared/ServiceRating";
 import { toast } from "sonner";
@@ -163,11 +162,7 @@ export default function CitizenServiceDetail() {
             <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", certaintyInfo.cls)}>{certaintyInfo.label}</span>
           </div>
           {matchResult ? (
-            <PersonalReasonCard
-              result={matchResult}
-              firstName={citizen.name.split(" ")[0]}
-              showLayers={true}
-            />
+            <MatchExplainability result={matchResult} />
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-[#1B3A5C]/5 border border-[#1B3A5C]/10">

@@ -1,5 +1,5 @@
 /**
- * דשבורד מתאמת — מנוע חיזוק חיים
+ * דשבורד מלווה חברתית — מנוע חיזוק חיים
  * KPIs + גרפים + AI Recommendations + Risk + Timeline
  */
 import { Users, AlertTriangle, Target, Heart, Sparkles, ChevronLeft, Phone, Home, Activity, Clock, TrendingUp, ArrowUpRight, ArrowDownRight, MessageCircle } from "lucide-react";

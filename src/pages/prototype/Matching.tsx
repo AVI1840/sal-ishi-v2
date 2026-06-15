@@ -245,7 +245,7 @@ export default function Matching() {
               <UserCheck className="w-6 h-6 text-success" aria-hidden="true" />
               <div>
                 <div className="font-bold text-foreground">אישור מלווה נדרש</div>
-                <div className="text-xs text-muted-foreground">המערכת לא תבצע הזמנות ללא חתימת המתאמת</div>
+                <div className="text-xs text-muted-foreground">המערכת לא תבצע הזמנות ללא אישור המלווה</div>
               </div>
             </div>
             <button
