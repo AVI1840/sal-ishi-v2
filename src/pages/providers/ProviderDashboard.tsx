@@ -139,7 +139,7 @@ export default function ProviderDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">שלום, מתנ״ס פסגת זאב 👋</h1>
+        <h1 className="text-2xl font-bold text-foreground">שלום, מתנ״ס פסגת זאב</h1>
         <p className="text-sm text-muted-foreground mt-1">סיכום פעילות — מאי 2026</p>
       </div>
 
@@ -336,7 +336,7 @@ export default function ProviderDashboard() {
                     </button>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{service.bookings} הזמנות • ⭐ {service.rating}</span>
+                    <span className="text-muted-foreground">{service.bookings} הזמנות • {service.rating}</span>
                     <button
                       onClick={() => handleToggleService(service.id)}
                       className={cn(

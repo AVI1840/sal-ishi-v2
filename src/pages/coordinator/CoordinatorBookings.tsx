@@ -23,12 +23,12 @@ interface Booking {
 }
 
 const BOOKINGS: Booking[] = [
-  { id: "b1", citizenName: "שרה רוזנברג", serviceName: "מקהלה קהילתית", serviceEmoji: "🎵", date: "15.05.26", time: "10:00", status: "scheduled", units: 0, provider: "מתנ״ס פסגת זאב" },
+  { id: "b1", citizenName: "שרה רוזנברג", serviceName: "מקהלה קהילתית", serviceEmoji: "", date: "15.05.26", time: "10:00", status: "scheduled", units: 0, provider: "מתנ״ס פסגת זאב" },
   { id: "b2", citizenName: "יוסף כהן", serviceName: "קבוצת הליכה", serviceEmoji: "", date: "15.05.26", time: "08:00", status: "scheduled", units: 0, provider: "פארק שכונתי" },
   { id: "b3", citizenName: "אהוה פרידמן", serviceName: "חוג ציור", serviceEmoji: "", date: "16.05.26", time: "14:00", status: "scheduled", units: 0, provider: "מתנ״ס פסגת זאב" },
   { id: "b4", citizenName: "משה דהן", serviceName: "התעמלות מותאמת", serviceEmoji: "", date: "14.05.26", time: "09:00", status: "in_progress", units: 0, provider: "מרכז ספורט" },
-  { id: "b5", citizenName: "שרה רוזנברג", serviceName: "מקהלה קהילתית", serviceEmoji: "🎵", date: "08.05.26", time: "10:00", status: "completed", units: 0, provider: "מתנ״ס פסגת זאב" },
-  { id: "b6", citizenName: "שרה רוזנברג", serviceName: "מקהלה קהילתית", serviceEmoji: "🎵", date: "01.05.26", time: "10:00", status: "completed", units: 0, provider: "מתנ״ס פסגת זאב" },
+  { id: "b5", citizenName: "שרה רוזנברג", serviceName: "מקהלה קהילתית", serviceEmoji: "", date: "08.05.26", time: "10:00", status: "completed", units: 0, provider: "מתנ״ס פסגת זאב" },
+  { id: "b6", citizenName: "שרה רוזנברג", serviceName: "מקהלה קהילתית", serviceEmoji: "", date: "01.05.26", time: "10:00", status: "completed", units: 0, provider: "מתנ״ס פסגת זאב" },
   { id: "b7", citizenName: "יוסף כהן", serviceName: "סדנת בישול", serviceEmoji: "", date: "10.05.26", time: "11:00", status: "completed", units: 0, provider: "מטבח קהילתי" },
   { id: "b8", citizenName: "אהרון מזרחי", serviceName: "אימון מוח", serviceEmoji: "", date: "12.05.26", time: "10:00", status: "cancelled", units: 0, provider: "מרכז יום" },
   { id: "b9", citizenName: "רבקה לוי", serviceName: "ביקור בית", serviceEmoji: "", date: "10.05.26", time: "14:00", status: "cancelled", units: 0, provider: "מתנדבים" },

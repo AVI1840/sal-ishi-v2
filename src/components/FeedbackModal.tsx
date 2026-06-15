@@ -126,7 +126,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
               {sending ? "שולח..." : "שלח משוב"}
             </Button>
             {lastStatus === "ok" && <p className="text-xs text-green-600 text-center mt-1">✅ נשלח בהצלחה</p>}
-            {lastStatus === "offline" && <p className="text-xs text-orange-500 text-center mt-1">📱 נשמר מקומית — יישלח כשיהיה חיבור</p>}
+            {lastStatus === "offline" && <p className="text-xs text-orange-500 text-center mt-1">נשמר מקומית — יישלח כשיהיה חיבור</p>}
           </div>
           {items.length > 0 && (
             <div className="border-t pt-3 space-y-2">

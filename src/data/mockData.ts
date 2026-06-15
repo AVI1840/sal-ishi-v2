@@ -281,9 +281,9 @@ export const RISK_ALERTS: RiskAlert[] = [
 export const TIMELINE_EVENTS: TimelineEvent[] = [
   { id: "t1", citizenId: "c1", type: "intake", title: "קליטה למערכת", description: "שרה נקלטה. זוהו מוטיבציות: שייכות, משמעות. חסמים: פחד, קושי חברתי.", timestamp: "01.04.26", by: "רונית לוי" },
   { id: "t2", citizenId: "c1", type: "call", title: "שיחת היכרות", description: "שרה סיפרה על אהבתה לשירה. מרגישה בודדה מאז פטירת הבעל.", timestamp: "03.04.26", by: "רונית לוי", mood: 2 },
-  { id: "t3", citizenId: "c1", type: "nudge_sent", title: "נשלח חיזוק", description: "הודעה: 'שרה, המקהלה מתחילה ביום ג׳. נשמח לראות אותך 🎵'", timestamp: "07.04.26" },
+  { id: "t3", citizenId: "c1", type: "nudge_sent", title: "נשלח חיזוק", description: "הודעה: 'שרה, המקהלה מתחילה ביום ג׳. נשמח לראות אותך'", timestamp: "07.04.26" },
   { id: "t4", citizenId: "c1", type: "service_start", title: "התחילה מקהלה", description: "שרה הגיעה לשיעור ניסיון! חייכה, שרה, נשארה עד הסוף.", timestamp: "08.04.26", mood: 4 },
-  { id: "t5", citizenId: "c1", type: "milestone", title: "ציון דרך 🏆", description: "3 מפגשי מקהלה ברצף! התמדה עולה.", timestamp: "22.04.26", mood: 4 },
+  { id: "t5", citizenId: "c1", type: "milestone", title: "ציון דרך", description: "3 מפגשי מקהלה ברצף! התמדה עולה.", timestamp: "22.04.26", mood: 4 },
   { id: "t6", citizenId: "c1", type: "mood_change", title: "ירידה במצב רוח", description: "שרה לא הגיעה למקהלה. בשיחה אמרה שמרגישה עייפה ולא רלוונטית.", timestamp: "06.05.26", mood: 2 },
   { id: "t7", citizenId: "c1", type: "risk_alert", title: "התראת סיכון", description: "7 ימים ללא פעילות. ציון בדידות עלה.", timestamp: "13.05.26" },
 ];
