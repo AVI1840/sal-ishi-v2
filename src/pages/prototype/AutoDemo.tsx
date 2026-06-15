@@ -4,7 +4,7 @@
  */
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { startAutoDemo } from "@/components/AutoDemoOverlay";
+import { startAutoDemo } from "@/lib/demoController";
 
 export default function AutoDemo() {
   const navigate = useNavigate();

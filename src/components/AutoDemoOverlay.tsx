@@ -65,10 +65,7 @@ const TOTAL_DURATION = STOPS.reduce((sum, s) => sum + s.duration, 0);
 const STORAGE_KEY = "sal_auto_demo_active";
 
 // ─── Public API ───
-export function startAutoDemo() {
-  localStorage.setItem(STORAGE_KEY, "1");
-  window.dispatchEvent(new Event("auto_demo_change"));
-}
+export { startAutoDemo } from "@/lib/demoController";
 
 export function stopAutoDemo() {
   localStorage.removeItem(STORAGE_KEY);

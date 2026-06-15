@@ -78,11 +78,7 @@ export const DEMO_STEPS: DemoStep[] = [
 const STORAGE_KEY = "sal_demo_active";
 const STORAGE_STEP = "sal_demo_step";
 
-export function startGuidedDemo() {
-  localStorage.setItem(STORAGE_KEY, "1");
-  localStorage.setItem(STORAGE_STEP, "0");
-  window.dispatchEvent(new Event("demo_state_change"));
-}
+export { startGuidedDemo } from "@/lib/demoController";
 
 export function GuidedDemo() {
   const [active, setActive] = useState(() => !!localStorage.getItem(STORAGE_KEY));

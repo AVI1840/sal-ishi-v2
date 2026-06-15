@@ -8,6 +8,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 import { RouteFallback } from "@/components/system/RouteFallback";
 import { ScrollToTop } from "@/components/system/ScrollToTop";
+import { resolveConflicts } from "@/lib/demoController";
 import DemoNav from "@/components/layout/DemoNav";
 import AppShell from "@/components/layout/AppShell";
 import MobileShell from "@/components/layout/MobileShell";
@@ -51,6 +52,9 @@ const Hackathon = lazy(() => import("@/pages/prototype/Hackathon"));
 const AutoDemo = lazy(() => import("@/pages/prototype/AutoDemo"));
 
 const queryClient = new QueryClient();
+
+// Resolve any conflicting demo state on app boot
+resolveConflicts();
 
 export default function App() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
