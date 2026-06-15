@@ -25,39 +25,57 @@ interface DemoStop {
 const STOPS: DemoStop[] = [
   {
     route: "/",
-    title: "דף הבית — סל אישי",
-    subtitle: "פלטפורמת AI להתאמת שירותי מניעה לאזרחים ותיקים",
-    duration: 5000,
+    title: "סל אישי — דף הבית",
+    subtitle: "5 ממשקים · מארקטפלייס שירותים · ארנק דיגיטלי · AI מוסבר",
+    duration: 7000,
   },
   {
     route: "/citizen",
-    title: "ממשק האזרח — שרה כהן, בת 78",
-    subtitle: "סל מותאם אישית · ארנק דיגיטלי · לוח פעילויות",
-    duration: 5000,
+    title: "שרה כהן, בת 78 — ממשק אזרח",
+    subtitle: "ארנק 32 יחידות · המלצות מותאמות · סל מניעה חינם 100%",
+    duration: 7000,
   },
   {
     route: "/citizen/services",
     title: "102 שירותי מניעה — ציוני התאמה",
     subtitle: "כל שירות מדורג 0-100 לפי 5 שכבות · AI שקוף ומוסבר",
-    duration: 5000,
+    duration: 7000,
   },
   {
     route: "/coordinator",
     title: "דשבורד המלווה — רונית",
-    subtitle: "75 אזרחים · ניטור סיכונים · משימות · AI אייג'נטים 24/7",
-    duration: 5000,
+    subtitle: "75 אזרחים · CRM פרואקטיבי · פעולות ממוינות · KPIs",
+    duration: 8000,
   },
   {
     route: "/coordinator/agents",
-    title: "5 אייג'נטים AI פעילים",
-    subtitle: "Discovery → Matching → Monitor → Nudge → Supervisor",
-    duration: 5000,
+    title: "5 אייג'נטים AI אוטונומיים",
+    subtitle: "Discovery · Matching · Monitor · Nudge · Supervisor — 24/7",
+    duration: 8000,
+  },
+  {
+    route: "/coordinator/intake",
+    title: "אינטייק AI קולי",
+    subtitle: "Amazon Transcribe → Claude → פרופיל ICF + פרסונה + דגלי סיכון",
+    duration: 7000,
+  },
+  {
+    route: "/coordinator/algorithm",
+    title: "אלגוריתם 5 שכבות",
+    subtitle: "משקלות מתכווננים · explainability מלא · 10 כללי החלטה",
+    duration: 7000,
+  },
+  {
+    route: "/coordinator/deterioration",
+    title: "ניטור הידרדרות — RDI / SDI",
+    subtitle: "זיהוי מוקדם · RDI > 1.3 = התערבות · מניעה לפני משבר",
+    duration: 7000,
   },
   {
     route: "/executive",
     title: "דשבורד ניהולי — ROI",
     subtitle: "286 אזרחים · 5 שכונות · 67% מימוש · חיסכון ₪2B בהרחבה",
-    duration: 5000,
+    duration: 7000,
   },
 ];
 
@@ -224,9 +242,9 @@ export function AutoDemoOverlay() {
 
           <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10 text-right">
             <p className="text-sm text-white/60 leading-relaxed">
-              ⚡ <span className="text-white/80 font-medium">מה תראו בסיור:</span> ממשק האזרח הוותיק, 
-              ציוני התאמה AI מוסברים, דשבורד המלווה עם ניטור סיכונים, 5 אייג'נטים אוטונומיים, 
-              ודשבורד ניהולי עם ROI.
+              <span className="text-white/80 font-medium">מה תראו בסיור (65 שניות):</span> ממשק האזרח הוותיק, 
+              ציוני התאמה AI מוסברים, דשבורד המלווה עם CRM חכם, 5 אייג'נטים אוטונומיים,
+              אינטייק קולי, אלגוריתם 5 שכבות, ניטור הידרדרות, ודשבורד ניהולי עם ROI.
             </p>
           </div>
 
@@ -260,7 +278,7 @@ export function AutoDemoOverlay() {
             <span className="text-3xl">✅</span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">הסיור הסתיים</h1>
-          <p className="text-white/50 text-sm mb-2">30 שניות · 6 תחנות · מערכת חיה</p>
+          <p className="text-white/50 text-sm mb-2">65 שניות · 9 תחנות · מערכת חיה</p>
           <p className="text-white/35 text-xs mb-8">פיילוט ירושלים · ביטוח לאומי + משרד האוצר</p>
           <div className="flex flex-col gap-3 items-center">
             <button
