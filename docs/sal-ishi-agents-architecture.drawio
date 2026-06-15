@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net" modified="2026-06-15T22:00:00.000Z" agent="sal-ishi-v2" version="24.0.0">
+  <diagram id="agents-arch" name="Multi-Agent Architecture">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="סל אישי — Multi-Agent Architecture on AWS (Bedrock AgentCore + Strands)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=1;fontColor=#1B3A5C;" vertex="1" parent="1">
+          <mxGeometry x="460" y="15" width="1000" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend -->
+        <mxCell id="fe" value="Frontend (GitHub Pages)&#xa;React 18 + TypeScript&#xa;src/lib/ai.ts → streamChat()&#xa;&#xa;https://avi1840.github.io/sal-ishi-v2/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1B3A5C;fontSize=11;verticalAlign=middle;align=center;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- API Gateway -->
+        <mxCell id="apigw" value="API Gateway&#xa;(HTTP API)&#xa;&#xa;POST /chat&#xa;POST /agent/{id}/invoke&#xa;CORS enabled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#FF9900;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="360" y="200" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow FE → APIGW -->
+        <mxCell id="e-fe-gw" value="HTTPS&#xa;SSE Stream" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#FF9900;fontSize=9;fontStyle=1;" edge="1" parent="1" source="fe" target="apigw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- AgentCore Runtime Box -->
+        <mxCell id="runtime-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#232F3E;dashed=0;verticalAlign=top;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="70" width="1300" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="runtime-label" value="Amazon Bedrock AgentCore Runtime (Serverless)" style="text;html=1;align=left;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="600" y="80" width="400" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Super Agent -->
+        <mxCell id="super" value="SUPER AGENT&#xa;(Supervisor)&#xa;&#xa;Claude 3.5 Sonnet&#xa;Routes to specialists&#xa;Coordinates chains&#xa;Event-driven 24/7" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#232F3E;strokeColor=#FF9900;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="120" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow APIGW → Super -->
+        <mxCell id="e-gw-super" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#FF9900;" edge="1" parent="1" source="apigw" target="super">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 5 Specialist Agents -->
+        <mxCell id="limor" value="LIMOR Agent&#xa;(לימור)&#xa;&#xa;AI Companion&#xa;Hebrew Chat&#xa;Emotion Detection&#xa;Booking via tools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="110" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="matching" value="MATCHING Agent&#xa;&#xa;5-Layer Algorithm&#xa;286×102 scores&#xa;Persona Boost&#xa;Explainability" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="110" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="monitor" value="MONITOR Agent&#xa;&#xa;Deterioration&#xa;RDI / SDI&#xa;Inactivity alerts&#xa;CRM generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="110" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nudge" value="NUDGE Agent&#xa;&#xa;Engagement&#xa;Personalized msgs&#xa;Milestones&#xa;Reactivation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="110" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="discovery" value="DISCOVERY Agent&#xa;&#xa;Service scanning&#xa;25 sources weekly&#xa;Catalog enrichment&#xa;Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="110" width="150" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows from Super to Agents -->
+        <mxCell id="e-s-limor" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;" edge="1" parent="1" source="super" target="limor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-s-match" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;" edge="1" parent="1" source="super" target="matching"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-s-mon" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;" edge="1" parent="1" source="super" target="monitor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-s-nudge" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;" edge="1" parent="1" source="super" target="nudge"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-s-disc" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;" edge="1" parent="1" source="super" target="discovery"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- AgentCore Memory -->
+        <mxCell id="memory" value="AgentCore Memory&#xa;&#xa;Short-term: session context&#xa;Long-term: citizen profiles, preferences&#xa;Semantic: vector embeddings (service similarity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#232F3E;fontSize=10;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="620" y="270" width="400" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- AgentCore Gateway (Tools) -->
+        <mxCell id="gateway" value="AgentCore Gateway — Tools (Lambda)&#xa;&#xa;Wallet Service | Booking Service | CRM Actions | Catalog CRUD | Notify (SNS/SES)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#232F3E;fontSize=10;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="270" width="620" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows to Memory/Gateway -->
+        <mxCell id="e-agents-mem" value="read/write" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#666;dashed=1;fontSize=8;" edge="1" parent="1" source="limor" target="memory"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-agents-gw" value="tool calls" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#666;dashed=1;fontSize=8;" edge="1" parent="1" source="matching" target="gateway"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Bedrock Models -->
+        <mxCell id="bedrock" value="Amazon Bedrock&#xa;Foundation Models&#xa;&#xa;Claude 3.5 Sonnet (reasoning)&#xa;Claude 3.5 Haiku (batch/speed)&#xa;Titan Embeddings (vectors)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#232F3E;strokeColor=#FF9900;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="380" width="250" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Data Layer -->
+        <mxCell id="data-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666;dashed=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="920" y="380" width="760" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="data-label" value="Data Layer" style="text;html=1;align=left;fontSize=10;fontStyle=1;fontColor=#666;" vertex="1" parent="1">
+          <mxGeometry x="930" y="385" width="100" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dynamo" value="DynamoDB&#xa;Citizens, Wallets&#xa;Bookings, CRM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#3b48cc;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="940" y="405" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="S3&#xa;Audio, Docs&#xa;Service images" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#3b48cc;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="405" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="opensearch" value="OpenSearch&#xa;Serverless&#xa;Vector RAG" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#3b48cc;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="405" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="transcribe" value="Transcribe&#xa;Hebrew&#xa;Voice → Text" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#3b48cc;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1390" y="405" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="eventbridge" value="EventBridge&#xa;Scheduler&#xa;Daily/Weekly" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#3b48cc;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="405" width="120" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Observability -->
+        <mxCell id="obs" value="Observability: AgentCore Tracing + CloudWatch | Safety: Bedrock Guardrails (PII, Hebrew, Toxicity) | Auth: Cognito" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999;fontSize=9;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="580" y="500" width="1300" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-box" value="Legend:&#xa;━━ Real-time stream (SSE)&#xa;── Agent routing&#xa;- - Tool calls / data access&#xa;&#xa;Models: Sonnet=reasoning, Haiku=batch&#xa;Framework: Strands Agents SDK (open source)" style="text;html=1;align=left;verticalAlign=top;fontSize=9;fontColor=#333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="250" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Key numbers -->
+        <mxCell id="stats" value="Pilot Numbers:&#xa;286 citizens | 102 services | 5 neighborhoods&#xa;5 agents | 29,172 match scores/week&#xa;Target: delay deterioration 20% = ₪2B/year savings" style="text;html=1;align=left;verticalAlign=top;fontSize=9;fontColor=#1B3A5C;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="320" height="60" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
