@@ -86,21 +86,20 @@ export default function App() {
                 <Route index element={<CoordinatorDashboard />} />
                 <Route path="patients" element={<CoordinatorPatients />} />
                 <Route path="patients/:id" element={<CoordinatorPatientDetail />} />
-                <Route path="algorithm" element={<CoordinatorAlgorithm />} />
                 <Route path="intake" element={<CoordinatorIntake />} />
                 <Route path="deterioration" element={<CoordinatorDeterioration />} />
                 <Route path="ai" element={<CoordinatorAI />} />
                 <Route path="actions" element={<CoordinatorActions />} />
                 <Route path="bookings" element={<CoordinatorBookings />} />
                 <Route path="services-map" element={<CoordinatorServices />} />
-                <Route path="catalog" element={<ServicesCatalog />} />
-                <Route path="agents" element={<CoordinatorAgents />} />
               </Route>
 
               {/* Executive Dashboard */}
               <Route path="/executive" element={<AppShell variant="executive" />}>
                 <Route index element={<ExecutiveOverview />} />
                 <Route path="catalog" element={<ServicesCatalog />} />
+                <Route path="algorithm" element={<CoordinatorAlgorithm />} />
+                <Route path="agents" element={<CoordinatorAgents />} />
               </Route>
 
               {/* Provider Portal */}
