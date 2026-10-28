@@ -1,0 +1,128 @@
+/* סגנונות ייחודיים למשטח השטח. הכל מבוסס על הטוקנים של מערכת העיצוב. */
+
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entry-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-bg-info);
+  border-radius: var(--radius-base);
+}
+
+.type-card h3 {
+  font-size: var(--font-size-base);
+}
+.type-card > button {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.facts {
+  display: flex;
+  gap: var(--spacing-6);
+  margin: 0;
+}
+.facts div {
+  display: flex;
+  flex-direction: column;
+}
+.facts dt {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.facts dd {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.kpi--link {
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: box-shadow 150ms ease;
+}
+.kpi--link:hover {
+  box-shadow: var(--shadow-lg);
+}
+.kpi--active {
+  border: 2px solid var(--color-primary);
+}
+
+.coverage td {
+  vertical-align: middle;
+}
+.cell-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-1);
+  min-height: 44px;
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-base);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.cell-btn:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-primary);
+}
+.cell-alert {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.suggestion {
+  justify-content: space-between;
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.input--narrow {
+  width: 110px;
+  min-height: 40px;
+}
+
+.action-bar {
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.table-check {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-primary);
+  margin: 11px;
+}
+
+.chart {
+  width: 100%;
+  direction: ltr;
+}
+
+details summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-link);
+  font-weight: var(--font-weight-medium);
+}
+
+.num-inline {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

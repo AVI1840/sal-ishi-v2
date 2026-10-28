@@ -3,7 +3,7 @@
  * Visual architecture: צורך → פתרון → ערך → כניסה
  * Images: trust-building, not decorative
  */
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   Wallet, Phone, Heart, Building2, Users,
@@ -41,6 +41,19 @@ const MODULES = [
     description: "הזמנות, שירותים, תשלומים, דירוגים",
     href: "/providers", external: false, icon: Users,
     badge: "ספקים", badgeCls: "bg-gray-50 border-gray-200 text-gray-600",
+  },
+  // האטלס והקטלוג הם אתרים נפרדים באותו פרסום (dist/field, dist/hq), ולכן קישור רגיל ולא Link.
+  {
+    num: "06", title: "אטלס וקטלוג - שטח",
+    description: "רכזת ומנהלת שכונה: אטלס ספקים, קטלוג לשכונה, מבחן כיסוי, חבילת פיילוט",
+    href: "./field/", external: true, icon: MapPin,
+    badge: "רשויות", badgeCls: "bg-sky-50 border-sky-200 text-sky-700",
+  },
+  {
+    num: "07", title: "אטלס וקטלוג - מטה",
+    description: "איחוד פיילוטים, תמונה ארצית, מחירי ייחוס, כללים וייצוא לאינטגרטור",
+    href: "./hq/", external: true, icon: Building2,
+    badge: "ביטוח לאומי", badgeCls: "bg-sky-50 border-sky-200 text-sky-700",
   },
 ];
 
@@ -242,14 +255,16 @@ export default function DemoHome() {
         <div className="max-w-5xl mx-auto px-6 py-12">
           <div className="mb-6">
             <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/50 mb-2 block">הממשקים</span>
-            <h2 className="text-xl font-bold text-gray-900">5 ממשקים — לכל שחקן במערכת</h2>
+            <h2 className="text-xl font-bold text-gray-900">{MODULES.length} ממשקים — לכל שחקן במערכת</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {MODULES.map((mod) => {
               const Icon = mod.icon;
+              const Wrapper = ({ children }: { children: ReactNode }) =>
+                mod.external ? <a href={mod.href}>{children}</a> : <Link to={mod.href}>{children}</Link>;
               return (
-                <Link key={mod.title} to={mod.href}>
+                <Wrapper key={mod.title}>
                   <div className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#1B3A5C]/40 hover:shadow-md transition-all h-full">
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-lg bg-[#1B3A5C]/5 flex items-center justify-center shrink-0">
@@ -270,7 +285,7 @@ export default function DemoHome() {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </Wrapper>
               );
             })}
           </div>

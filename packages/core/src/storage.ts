@@ -62,10 +62,22 @@ function request<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
+const OPEN_TIMEOUT_MS = 3000;
+
+/**
+ * פתיחה עם מגבלת זמן: אם לשונית אחרת חוסמת את המאגר (מחיקה או שדרוג בהמתנה),
+ * הבקשה עלולה לא להסתיים לעולם. אחרי 3 שניות עוברים לאחסון החלופי במקום להיתקע.
+ */
 async function openIndexedDb(name: string): Promise<IDBDatabase> {
   const req = indexedDB.open(name, 1);
   req.onupgradeneeded = () => req.result.createObjectStore("kv");
-  return request(req);
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("IndexedDB open timed out")), OPEN_TIMEOUT_MS),
+  );
+  const db = await Promise.race([request(req), timeout]);
+  // לא חוסמים לשונית אחרת שרוצה למחוק או לשדרג את המאגר.
+  db.onversionchange = () => db.close();
+  return db;
 }
 
 function createIndexedDbStore(db: IDBDatabase, fallback: KeyValueStore): KeyValueStore {

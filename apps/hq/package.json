@@ -1,0 +1,22 @@
+{
+  "name": "@sal-ishi/hq",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "build:offline": "vite build --mode offline && node ../../scripts/finish-offline.mjs hq"
+  },
+  "dependencies": {
+    "@sal-ishi/core": "*",
+    "@sal-ishi/ui": "*",
+    "lucide-react": "^0.462.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.1",
+    "recharts": "^2.15.4",
+    "zustand": "5.0.3"
+  }
+}

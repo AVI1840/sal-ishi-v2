@@ -16,8 +16,11 @@
     "test:core": "npm run test -w @sal-ishi/core",
     "typecheck:core": "npm run typecheck -w @sal-ishi/core",
     "build:field": "npm run build -w @sal-ishi/field",
-    "build:all": "npm run build && npm run build:field",
-    "dev:field": "npm run dev -w @sal-ishi/field"
+    "build:all": "npm run build && npm run build:field && npm run build:hq && npm run build:offline",
+    "dev:field": "npm run dev -w @sal-ishi/field",
+    "build:hq": "npm run build -w @sal-ishi/hq",
+    "dev:hq": "npm run dev -w @sal-ishi/hq",
+    "build:offline": "npm run build:offline -w @sal-ishi/field && npm run build:offline -w @sal-ishi/hq"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",
@@ -46,6 +49,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^3.2.4"
   }
 }

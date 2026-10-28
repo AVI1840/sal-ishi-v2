@@ -1,33 +1,12 @@
-// נתוני הדגמה סינתטיים בלבד: רשות, שכונות, ספקים ושמות דמיוניים. כל מספר כאן
+// נתוני הדגמה סינתטיים בלבד: רשויות, שכונות, ספקים ושמות דמיוניים. כל מספר כאן
 // מומצא, ונבחר כך שכל מצב בכלי יופיע (ירוק, כתום, אדום, אירוע, חריגת מחיר,
-// התראה קהילתית ודגל מיצוי).
+// התראה קהילתית ודגל מיצוי). שתי וריאציות, כדי שהמטה יוכל להשוות בין פיילוטים.
 
-import type { AuthorityData, Community, MonthlyActivity, Neighborhood, Service, Supplier } from "@sal-ishi/core";
-import { defaultSeed, seedIndex, defaultCopayTier } from "@sal-ishi/core";
+import type { AuthorityData, Community, MonthlyActivity, Neighborhood, Service, Supplier } from "./model";
+import { defaultSeed, seedIndex } from "./seed";
+import { defaultCopayTier } from "./settings";
 
-const AUTHORITY = "רשות הדגמה";
 const MONTHS = ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"];
-
-const N: Neighborhood[] = [
-  { id: "demo-n1", authority: AUTHORITY, name: "שכונה א (הדגמה)", community: "general" },
-  { id: "demo-n2", authority: AUTHORITY, name: "שכונה ב (הדגמה)", community: "haredi" },
-  { id: "demo-n3", authority: AUTHORITY, name: "שכונה ג (הדגמה)", community: "haredi" },
-  { id: "demo-n4", authority: AUTHORITY, name: "שכונה ד (הדגמה)", community: "haredi" },
-  { id: "demo-n5", authority: AUTHORITY, name: "שכונה ה (הדגמה)", community: "arab" },
-];
-
-const all = N.map((n) => n.id);
-
-const SUPPLIERS: Supplier[] = [
-  { code: "S-001", authority: AUTHORITY, type: "authority", displayName: "מתנ\"ס הדגמה", neighborhoods: all, languages: ["עברית", "ערבית"], communityFit: ["general", "arab"], accessible: true, deliveryModes: ["community"] },
-  { code: "S-002", authority: AUTHORITY, type: "npo", displayName: "עמותת הדגמה לקהילה", neighborhoods: ["demo-n2", "demo-n3", "demo-n4"], languages: ["עברית", "יידיש"], communityFit: ["haredi"], accessible: true, deliveryModes: ["community", "home"], contact: { phone: "000-0000100" } },
-  { code: "S-003", authority: AUTHORITY, type: "company", displayName: "חברת הדגמה לכושר", neighborhoods: ["demo-n1", "demo-n5"], languages: ["עברית", "ערבית", "רוסית"], communityFit: ["general", "arab"], accessible: true, deliveryModes: ["community"] },
-  { code: "S-004", authority: AUTHORITY, type: "exempt", displayName: "מדריכה לדוגמה 1", neighborhoods: ["demo-n1", "demo-n3"], languages: ["עברית"], communityFit: ["general"], accessible: false, deliveryModes: ["community", "home"], contact: { phone: "000-0000001", email: "demo1@example.test" } },
-  { code: "S-005", authority: AUTHORITY, type: "exempt", displayName: "מדריך לדוגמה 2", neighborhoods: ["demo-n5"], languages: ["ערבית", "עברית"], communityFit: ["arab"], accessible: true, deliveryModes: ["community", "remote"], contact: { phone: "000-0000002" } },
-  { code: "S-006", authority: AUTHORITY, type: "licensed", displayName: "יועצת לדוגמה 3", neighborhoods: all, languages: ["עברית", "אנגלית"], communityFit: ["general", "haredi"], accessible: true, deliveryModes: ["home", "remote"], contact: { email: "demo3@example.test" } },
-  { code: "S-007", authority: AUTHORITY, type: "npo", displayName: "עמותת הדגמה לדיגיטל", neighborhoods: all, languages: ["עברית", "ערבית", "יידיש"], communityFit: ["general", "haredi", "arab"], accessible: true, deliveryModes: ["community", "home", "remote"] },
-  { code: "S-008", authority: AUTHORITY, type: "company", displayName: "בית קפה הדגמה", neighborhoods: ["demo-n1"], languages: ["עברית"], communityFit: ["general"], accessible: true, deliveryModes: ["community"] },
-];
 
 type Pattern = "cont" | "low" | "event" | "none" | "short";
 
@@ -61,8 +40,8 @@ const SPECS: Spec[] = [
   { n: 0, type: "T17", sup: "S-003", fit: G, price: 90, pattern: "cont", base: 18, status: "אושר" },
   { n: 0, type: "T16", sup: "S-003", fit: G, price: 110, pattern: "cont", base: 15, status: "אושר" },
   { n: 0, type: "T21", sup: "S-004", fit: G, price: 80, pattern: "cont", base: 11, status: "הוגש" },
-  { n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: "cont", base: 12, status: "אושר", program: "demo-p-support", start: 0 },
-  { n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: "cont", base: 12, status: "אושר", program: "demo-p-support", start: 5, name: "קבוצת תמיכה ומשמעות, סבב ב" },
+  { n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: "cont", base: 12, status: "אושר", program: "p-support", start: 0 },
+  { n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: "cont", base: 12, status: "אושר", program: "p-support", start: 5, name: "קבוצת תמיכה ומשמעות, סבב ב" },
   { n: 0, type: "T35", sup: "S-006", fit: G, price: 200, pattern: "cont", base: 10, status: "הוגש" },
   { n: 0, type: "T40", sup: "S-007", fit: G, price: 280, pattern: "cont", base: 13, status: "אושר" },
   { n: 0, type: "T42", sup: "S-007", fit: G, price: 300, pattern: "cont", base: 12, status: "אושר" },
@@ -105,8 +84,22 @@ const SPECS: Spec[] = [
   { n: 4, type: "T40", sup: "S-007", fit: A, price: 290, pattern: "cont", base: 12, status: "נדחה" },
 ];
 
-// מספר מחזיקי סל לכל שכונה, נבחר כך שרמות המיצוי יהיו שונות.
-const ENROLLED = [180, 140, 120, 90, 200];
+interface Variant {
+  authority: string;
+  prefix: string;
+  label: string;
+  communities: Community[];
+  enrolled: number[];
+  priceFactor: number;
+  rngSeed: number;
+}
+
+// וריאציה 0 משמשת את משטח השטח. וריאציה 1 היא פיילוט שני להדגמת המטה:
+// מחירים גבוהים ב-15%, שכונה רביעית כללית במקום חרדית.
+const VARIANTS: Variant[] = [
+  { authority: "רשות הדגמה", prefix: "demo", label: "הדגמה", communities: ["general", "haredi", "haredi", "haredi", "arab"], enrolled: [60, 58, 47, 13, 56], priceFactor: 1, rngSeed: 2026 },
+  { authority: "רשות הדגמה ב", prefix: "demob", label: "הדגמה ב", communities: ["general", "haredi", "general", "general", "arab"], enrolled: [75, 98, 27, 20, 77], priceFactor: 1.15, rngSeed: 7 },
+];
 
 /** מחולל פסאודו-אקראי קבוע, כדי שההדגמה תיראה אותו דבר בכל טעינה. */
 function rng(seed: number) {
@@ -119,41 +112,68 @@ function rng(seed: number) {
   };
 }
 
-export function buildDemoAuthority(): AuthorityData {
+export const DEMO_VARIANT_COUNT = VARIANTS.length;
+
+export function buildDemoAuthority(variant = 0): AuthorityData {
+  const v = VARIANTS[variant] ?? VARIANTS[0]!;
   const { serviceTypes } = seedIndex(defaultSeed);
-  const rand = rng(2026);
+  const rand = rng(v.rngSeed);
+  const letters = ["א", "ב", "ג", "ד", "ה"];
+  const N: Neighborhood[] = v.communities.map((community, i) => ({
+    id: `${v.prefix}-n${i + 1}`,
+    authority: v.authority,
+    name: `שכונה ${letters[i]} (${v.label})`,
+    community,
+  }));
+  const nid = (i: number) => `${v.prefix}-n${i + 1}`;
+  const all = N.map((n) => n.id);
+
+  const suppliers: Supplier[] = [
+    { code: "S-001", type: "authority", displayName: `מתנ"ס ${v.label}`, neighborhoods: all, languages: ["עברית", "ערבית"], communityFit: ["general", "arab"], accessible: true, deliveryModes: ["community"] },
+    { code: "S-002", type: "npo", displayName: `עמותת ${v.label} לקהילה`, neighborhoods: [nid(1), nid(2), nid(3)], languages: ["עברית", "יידיש"], communityFit: ["haredi"], accessible: true, deliveryModes: ["community", "home"], contact: { phone: "000-0000100" } },
+    { code: "S-003", type: "company", displayName: `חברת ${v.label} לכושר`, neighborhoods: [nid(0), nid(4)], languages: ["עברית", "ערבית", "רוסית"], communityFit: ["general", "arab"], accessible: true, deliveryModes: ["community"] },
+    { code: "S-004", type: "exempt", displayName: `מדריכה לדוגמה 1 (${v.label})`, neighborhoods: [nid(0), nid(2)], languages: ["עברית"], communityFit: ["general"], accessible: false, deliveryModes: ["community", "home"], contact: { phone: "000-0000001", email: "demo1@example.test" } },
+    { code: "S-005", type: "exempt", displayName: `מדריך לדוגמה 2 (${v.label})`, neighborhoods: [nid(4)], languages: ["ערבית", "עברית"], communityFit: ["arab"], accessible: true, deliveryModes: ["community", "remote"], contact: { phone: "000-0000002" } },
+    { code: "S-006", type: "licensed", displayName: `יועצת לדוגמה 3 (${v.label})`, neighborhoods: all, languages: ["עברית", "אנגלית"], communityFit: ["general", "haredi"], accessible: true, deliveryModes: ["home", "remote"], contact: { email: "demo3@example.test" } },
+    { code: "S-007", type: "npo", displayName: `עמותת ${v.label} לדיגיטל`, neighborhoods: all, languages: ["עברית", "ערבית", "יידיש"], communityFit: ["general", "haredi", "arab"], accessible: true, deliveryModes: ["community", "home", "remote"] },
+    { code: "S-008", type: "company", displayName: `בית קפה ${v.label}`, neighborhoods: [nid(0)], languages: ["עברית"], communityFit: ["general"], accessible: true, deliveryModes: ["community"] },
+  ].map((s) => ({ ...s, authority: v.authority }) as Supplier);
+
   const services: Service[] = [];
   const activity: MonthlyActivity[] = [];
 
   SPECS.forEach((spec, i) => {
     const type = serviceTypes.get(spec.type)!;
     const neighborhood = N[spec.n]!;
-    const id = `demo-s${String(i + 1).padStart(2, "0")}`;
+    // בשכונה שהפרופיל שלה כללי בוריאציה הזו, ההתאמה הקהילתית היא כללית.
+    const fit: Community[] = neighborhood.community === "general" ? ["general"] : spec.fit;
+    const id = `${v.prefix}-s${String(i + 1).padStart(2, "0")}`;
     const start = spec.start ?? (spec.pattern === "short" ? 7 : Math.floor(rand() * 3));
-    const market = spec.market === null ? undefined : (spec.market ?? Math.round(spec.price * (0.95 + rand() * 0.1)));
+    const price = Math.round(spec.price * v.priceFactor);
+    const market = spec.market === null ? undefined : (spec.market ?? Math.round(price * (0.95 + rand() * 0.1)));
     const copayTier = spec.copay ?? defaultCopayTier(defaultSeed, type.category);
 
     services.push({
       id,
-      authority: AUTHORITY,
+      authority: v.authority,
       neighborhoodId: neighborhood.id,
       name: spec.name ?? type.name,
       categoryCode: type.category,
       serviceTypeId: type.id,
       supplierCode: spec.sup,
-      languages: SUPPLIERS.find((s) => s.code === spec.sup)!.languages.slice(0, 2),
+      languages: suppliers.find((s) => s.code === spec.sup)!.languages.slice(0, 2),
       format: type.format,
       unit: type.unit,
-      unitPrice: spec.price,
-      pricePoints: spec.price,
+      unitPrice: price,
+      pricePoints: price,
       ...(market !== undefined ? { marketPrice: market } : {}),
       copayTier,
-      communityFit: spec.fit,
+      communityFit: fit,
       deliveryMode: "community",
       attendanceMethod: ["operator"],
       otherFunder: spec.otherFunder ?? false,
       enforceable: spec.enforceable ?? true,
-      ...(spec.program ? { programId: spec.program } : {}),
+      ...(spec.program ? { programId: `${v.prefix}-${spec.program}` } : {}),
       startMonth: MONTHS[start]!,
       status: spec.status ?? "טיוטה",
       ...(spec.status === "נדחה" ? { committeeNote: "מחיר גבוה ממחיר הייחוס, לבקש הצעה מחודשת (הדגמה)" } : {}),
@@ -177,17 +197,17 @@ export function buildDemoAuthority(): AuthorityData {
         month,
         uniqueParticipants: participants,
         sessions: spec.pattern === "event" ? 1 : 4,
-        walletSpent: Math.round(participants * spec.price * (1 - copayRate)),
+        walletSpent: Math.round(participants * price * (1 - copayRate)),
       });
     }
   });
 
   return {
-    authority: AUTHORITY,
+    authority: v.authority,
     neighborhoods: N,
-    suppliers: SUPPLIERS,
+    suppliers,
     services,
     activity,
-    enrollment: N.flatMap((n, i) => MONTHS.map((month) => ({ neighborhoodId: n.id, month, enrolled: ENROLLED[i]! }))),
+    enrollment: N.flatMap((n, i) => MONTHS.map((month) => ({ neighborhoodId: n.id, month, enrolled: v.enrolled[i]! }))),
   };
 }

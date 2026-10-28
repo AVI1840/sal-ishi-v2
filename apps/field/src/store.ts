@@ -16,7 +16,8 @@ import {
   type Supplier,
   type WorkflowStatus,
 } from "@sal-ishi/core";
-import { buildDemoAuthority } from "./demoData";
+import { buildDemoAuthority } from "@sal-ishi/core";
+import { EDITION } from "@sal-ishi/ui";
 
 interface Persisted {
   data: AuthorityData;
@@ -88,6 +89,9 @@ export const useField = create<FieldState>()((set, get) => {
           }
         }
         set({ data: saved.data, isDemo: saved.isDemo, lastPackage: saved.lastPackage, seed, seedFromHq });
+      } else if (EDITION === "preview") {
+        // בגרסת התצוגה לשותפים, ביקור ראשון נפתח עם נתוני הדגמה ולא במסך ריק.
+        set({ data: buildDemoAuthority(), isDemo: true });
       }
       set({ hydrated: true });
     },

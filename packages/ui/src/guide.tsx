@@ -1,0 +1,111 @@
+// מדריך לשותפים: מה הכלי, על אילו הכרעות הוא מבוסס, מה עוד פתוח, מה לנסות
+// ועל מה אנחנו מבקשים משוב. הסעיפים הפתוחים נקראים מה-seed ולא נכתבים כאן.
+
+import { Link } from "react-router-dom";
+import { proposalKeys, type Seed } from "@sal-ishi/core";
+import { Alert, ProposalBadge } from "./controls";
+import { PageHeader } from "./shell";
+
+export const EDITION: "preview" | "pilot" = import.meta.env.VITE_EDITION === "pilot" ? "pilot" : "preview";
+export const FEEDBACK_EMAIL: string | undefined = import.meta.env.VITE_FEEDBACK_EMAIL || undefined;
+
+const PROPOSAL_LABELS: Record<string, string> = {
+  points_rollover_months: "צבירת נקודות עד שלושה חודשים",
+  cancellation_notice_hours: "מדיניות ביטול",
+  no_show_free_per_quarter: "היעדרויות בלי חיוב ברבעון",
+  hot_meal_entry_criteria: "קריטריון כניסה לארוחה חמה",
+};
+
+export interface GuideStep {
+  to: string;
+  title: string;
+  text: string;
+}
+
+export function PartnerGuide(props: {
+  surface: "field" | "hq";
+  seed: Seed;
+  steps: GuideStep[];
+  otherSurface?: { href: string; label: string };
+}) {
+  const openItems = (props.seed.meta.open_items as string[] | undefined) ?? [];
+  const proposals = proposalKeys(props.seed.settings);
+
+  return (
+    <>
+      <PageHeader
+        title="מדריך לשותפים"
+        description="גרסת תצוגה של אטלס וקטלוג הסל האישי להזדקנות מיטבית, לפני שימוש בפיילוטים. נשמח להתרשמות ולמשוב שלכם."
+      />
+
+      <Alert tone="warning" title="גרסת תצוגה עם נתונים סינתטיים">
+        כל השמות, השכונות, הספקים והמספרים מומצאים. אין בכלי ואין לכתוב בו שום פרט מזהה של תושב. כל מה שתזינו נשמר רק בדפדפן שלכם.
+      </Alert>
+
+      <section className="card" aria-labelledby="g-what">
+        <h2 id="g-what">מה זה</h2>
+        <p>
+          כלי אחד עם ליבה משותפת ושלושה משטחים. <strong>שטח</strong>: רכזת הפיילוט ומנהלת השכונה ממפות ספקים ושירותים, בונות קטלוג לכל שכונה,
+          מעלות פעילות חודשית מצטברת ושולחות חבילת פיילוט. <strong>מטה</strong>: ביטוח לאומי מאחד את החבילות, רואה תמונה ארצית ומחירי ייחוס,
+          מנהל את הכללים ומייצא את הקטלוג המאושר לאינטגרטור. <strong>אזרח</strong>: הכלי הקיים "סל אישי" יקרא את הקטלוג המאושר לשכונה (בגרסה הבאה).
+        </p>
+        <p>הכלי מגדיר את הקטלוג בלבד. אין בו נקודות, תשלומים או הזדהות של אזרחים: את אלה מפעיל האינטגרטור.</p>
+        {props.otherSurface ? (
+          <p>
+            אתם במשטח ה{props.surface === "field" ? "שטח" : "מטה"}. <a href={props.otherSurface.href}>{props.otherSurface.label}</a>
+          </p>
+        ) : null}
+      </section>
+
+      <section className="card" aria-labelledby="g-basis">
+        <h2 id="g-basis">על מה זה מבוסס</h2>
+        <ul>
+          <li>סיכום מפגש 2 של צוות היישום (26.10.2026): שישה שדות חובה, השתתפות עצמית (0% ליבה ומניעה, 20% חוגים, עד 50% איכות חיים), פרופיל קהילתי לכל שכונה ובדיקת כיסוי לפי התאמה.</li>
+          <li>פגישת החשכ"ל (28.10.2026): בלי מחיר גג, מחיר ליחידה ומחיר שוק לייחוס, ספק כישות עם סוג עוסק, אופן מסירה (בבית ומרחוק), שיטת אימות נוכחות ומדיניות ביטול, ומיצוי בחלון מתגלגל.</li>
+          <li>אטלס השירותים של פיילוט ירושלים (ינואר 2025 עד אוגוסט 2026), נתונים מצטברים בלבד: {props.seed.service_types.length} סוגי שירות ב-{props.seed.categories.length} קטגוריות.</li>
+          <li>כל סף וכלל נקרא מקובץ הבסיס (גרסה {props.seed.meta.version}) ולא מקודד, כך ששינוי הכרעה משנה הגדרה ולא קוד.</li>
+        </ul>
+      </section>
+
+      <section className="card" aria-labelledby="g-open">
+        <h2 id="g-open">מה עוד פתוח</h2>
+        <p>ערכים שמסומנים <ProposalBadge /> בכלי ממתינים להכרעה במפגש 3 (26.11.2026):</p>
+        <ul>
+          {proposals.map((k) => <li key={k}>{PROPOSAL_LABELS[k] ?? k}</li>)}
+        </ul>
+        {openItems.length ? (
+          <>
+            <h3>סעיפים פתוחים בקובץ הבסיס</h3>
+            <ul>{openItems.map((item) => <li key={item}>{item}</li>)}</ul>
+          </>
+        ) : null}
+      </section>
+
+      <section className="card" aria-labelledby="g-try">
+        <h2 id="g-try">מה כדאי לנסות</h2>
+        <ol className="stack">
+          {props.steps.map((s) => (
+            <li key={s.to + s.title}>
+              <Link to={s.to}><strong>{s.title}</strong></Link>: {s.text}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="card" aria-labelledby="g-ask">
+        <h2 id="g-ask">על מה נשמח למשוב</h2>
+        <ul>
+          <li>האם הכללים והמספרים תואמים את ההכרעות כפי שאתם מבינים אותן?</li>
+          <li>האם המונחים ברורים לרכזת ולמנהלת שכונה, בלי הדרכה?</li>
+          <li>חסר שדה, סטטוס או דוח שאתם צריכים? יש משהו מיותר?</li>
+          <li>האם תהליך האישור והשליחה מתאים לאופן שבו הוועדה ברשות עובדת?</li>
+          <li>מה ייקח לרכזת חדשה לבנות קטלוג של 20 שירותים לשכונה? (היעד: פחות משעתיים)</li>
+        </ul>
+        <p>
+          בכל מסך יש כפתור <strong>"הוספת משוב"</strong>. ההערות נאספות במסך <Link to="/feedback">המשוב שלי</Link>, ומשם מורידים קובץ Excel
+          {FEEDBACK_EMAIL ? <> ושולחים אל <a href={`mailto:${FEEDBACK_EMAIL}`}>{FEEDBACK_EMAIL}</a></> : " ושולחים לצוות היישום"}.
+        </p>
+      </section>
+    </>
+  );
+}

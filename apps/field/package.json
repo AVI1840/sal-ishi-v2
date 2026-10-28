@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:offline": "vite build --mode offline && node ../../scripts/finish-offline.mjs field"
   },
   "dependencies": {
     "@sal-ishi/core": "*",

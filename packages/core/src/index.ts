@@ -18,3 +18,5 @@ export * from "./sync/FileSyncAdapter";
 export * from "./sync/fileIO";
 export * from "./storage";
 export * from "./excel";
+export * from "./demo";
+export * from "./hq";
