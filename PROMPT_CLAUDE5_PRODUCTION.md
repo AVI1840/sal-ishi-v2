@@ -1,5 +1,10 @@
 # Production MVP — Sal Ishi Platform
 
+> ⚠️ **SUPERSEDED (02/07/2026):** use `PROMPT_SONNET5_PRODUCTION.md` instead.
+> Key changes there: region il-central-1, pseudonymization (no PII fields in schema),
+> BTL Design System (Rubik/#0368b0) replaces Heebo/#1B3A5C, Bedrock for companions only
+> (citizen chat off in pilot), no Service Discovery agent in pilot, demo/ops build split.
+
 ## Role
 You are a senior full-stack architect building a production-grade MVP for "Sal Ishi" (סל אישי) — a government AI platform that matches preventive care services to elderly citizens (65+) in Israel. This is real infrastructure for a national reform (Government Decisions 127 & 150), not a hackathon toy.
 
