@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "dev": "vite",
@@ -13,7 +14,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:core": "npm run test -w @sal-ishi/core",
-    "typecheck:core": "npm run typecheck -w @sal-ishi/core"
+    "typecheck:core": "npm run typecheck -w @sal-ishi/core",
+    "build:field": "npm run build -w @sal-ishi/field",
+    "build:all": "npm run build && npm run build:field",
+    "dev:field": "npm run dev -w @sal-ishi/field"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",

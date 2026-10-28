@@ -1,0 +1,104 @@
+import { useEffect, useState } from "react";
+import { COMMUNITIES, DELIVERY_MODES, SUPPLIER_TYPES, type Supplier } from "@sal-ishi/core";
+import { Alert, Button, CheckboxField, CheckboxGroup, Dialog, SelectField, TextField, useToast } from "@sal-ishi/ui";
+import { LANGUAGES, useAnalysis } from "../analysis";
+import { nextSupplierCode, useField } from "../store";
+
+export function SupplierForm(props: { open: boolean; onClose: () => void; supplier?: Supplier }) {
+  const data = useField((s) => s.data);
+  const seed = useField((s) => s.seed);
+  const upsertSupplier = useField((s) => s.upsertSupplier);
+  const { labels, idx } = useAnalysis();
+  const toast = useToast();
+  const [draft, setDraft] = useState<Supplier>(() => blank());
+  const [touched, setTouched] = useState(false);
+
+  function blank(): Supplier {
+    return {
+      code: nextSupplierCode(data.suppliers),
+      authority: data.authority,
+      type: "npo",
+      displayName: "",
+      neighborhoods: [],
+      languages: ["עברית"],
+      communityFit: ["general"],
+      accessible: true,
+      deliveryModes: ["community"],
+      contact: {},
+    };
+  }
+
+  useEffect(() => {
+    if (!props.open) return;
+    setTouched(false);
+    setDraft(props.supplier ? { ...props.supplier, contact: { ...(props.supplier.contact ?? {}) } } : blank());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.open]);
+
+  const set = <K extends keyof Supplier>(key: K, value: Supplier[K]) => setDraft((d) => ({ ...d, [key]: value }));
+  const personal = idx.supplierTypes.get(draft.type)?.personal_data ?? false;
+  const codeTaken = !props.supplier && data.suppliers.some((s) => s.code === draft.code);
+  const errors = {
+    code: !draft.code.trim() ? "צריך קוד ספק" : codeTaken ? "הקוד כבר קיים ברשות" : null,
+    neighborhoods: draft.neighborhoods.length ? null : "בחרו לפחות שכונה אחת",
+  };
+
+  const save = () => {
+    setTouched(true);
+    if (errors.code || errors.neighborhoods) return;
+    const contact = Object.fromEntries(Object.entries(draft.contact ?? {}).filter(([, v]) => v && String(v).trim()));
+    const s: Supplier = { ...draft, authority: data.authority };
+    if (Object.keys(contact).length) s.contact = contact;
+    else delete s.contact;
+    if (!s.displayName?.trim()) delete s.displayName;
+    upsertSupplier(s);
+    toast("success", `הספק ${s.code} נשמר`);
+    props.onClose();
+  };
+
+  return (
+    <Dialog
+      open={props.open}
+      onClose={props.onClose}
+      title={props.supplier ? `עריכת ספק ${props.supplier.code}` : "ספק חדש"}
+      footer={
+        <>
+          <Button onClick={save}>שמירה</Button>
+          <Button variant="secondary" onClick={props.onClose}>ביטול</Button>
+        </>
+      }
+    >
+      <div className="grid grid--form">
+        <TextField label="קוד ספק" required value={draft.code} disabled={Boolean(props.supplier)} onChange={(e) => set("code", e.target.value.trim())}
+          error={touched ? errors.code : null} hint="הקוד הוא מה שעובר לאינטגרטור ולכלי לאזרח" />
+        <SelectField label="סוג עוסק" required value={draft.type} onChange={(e) => set("type", e.target.value as Supplier["type"])}
+          options={SUPPLIER_TYPES.map((t) => ({ value: t, label: labels.supplierType[t]! }))} />
+        <TextField label={personal ? "שם הספק (אדם פרטי)" : "שם הארגון"} value={draft.displayName ?? ""} onChange={(e) => set("displayName", e.target.value)} />
+      </div>
+
+      <fieldset className="fieldset">
+        <legend className="fieldset__legend">פרטי קשר</legend>
+        <div className="grid grid--form">
+          <TextField label="טלפון" type="tel" dir="ltr" value={draft.contact?.phone ?? ""} onChange={(e) => set("contact", { ...draft.contact, phone: e.target.value })} />
+          <TextField label="דואר אלקטרוני" type="email" dir="ltr" value={draft.contact?.email ?? ""} onChange={(e) => set("contact", { ...draft.contact, email: e.target.value })} />
+        </div>
+      </fieldset>
+      {personal ? (
+        <Alert tone="info" title="ספק שהוא אדם פרטי">
+          {seed.settings.supplier_contact_to_hq
+            ? "השם ופרטי הקשר נשמרים ברשות ועוברים למטה בחבילת הפיילוט. הם לא עוברים לאינטגרטור ולא לכלי לאזרח."
+            : "השם ופרטי הקשר נשמרים ברשות בלבד. למטה, לאינטגרטור ולכלי לאזרח עוברים רק קוד וסוג."}
+        </Alert>
+      ) : null}
+
+      <CheckboxGroup legend="שכונות" required value={draft.neighborhoods} onChange={(v) => set("neighborhoods", v)}
+        options={data.neighborhoods.map((n) => ({ value: n.id, label: n.name }))} error={touched ? errors.neighborhoods : null} />
+      <CheckboxGroup legend="שפות" value={draft.languages} onChange={(v) => set("languages", v)} options={LANGUAGES.map((l) => ({ value: l, label: l }))} />
+      <CheckboxGroup legend="התאמה קהילתית" value={draft.communityFit} onChange={(v) => set("communityFit", v as Supplier["communityFit"])}
+        options={COMMUNITIES.map((c) => ({ value: c, label: labels.community[c]! }))} />
+      <CheckboxGroup legend="אופן מסירה" value={draft.deliveryModes ?? []} onChange={(v) => set("deliveryModes", v as Supplier["deliveryModes"])}
+        options={DELIVERY_MODES.map((m) => ({ value: m, label: labels.deliveryMode[m]! }))} />
+      <CheckboxField label="המקום נגיש לבעלי מוגבלויות" checked={draft.accessible} onChange={(v) => set("accessible", v)} />
+    </Dialog>
+  );
+}
