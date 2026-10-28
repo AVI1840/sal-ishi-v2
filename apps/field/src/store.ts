@@ -6,6 +6,7 @@ import {
   defaultSeed,
   openStore,
   parseSeed,
+  upgradeSeed,
   upsertActivity,
   type AuthorityData,
   type KeyValueStore,
@@ -14,6 +15,7 @@ import {
   type Seed,
   type Service,
   type Supplier,
+  type UnmetDemand,
   type WorkflowStatus,
 } from "@sal-ishi/core";
 import { buildDemoAuthority } from "@sal-ishi/core";
@@ -45,6 +47,7 @@ export interface FieldState {
   removeService(id: string): void;
   setStatus(ids: string[], status: WorkflowStatus, note?: string): void;
   mergeActivity(list: MonthlyActivity[]): void;
+  mergeUnmetDemand(rows: UnmetDemand[]): void;
   setEnrollment(neighborhoodId: string, month: string, enrolled: number): void;
   setSeed(seed: Seed): void;
   markPackageSent(hash: string): void;
@@ -82,7 +85,7 @@ export const useField = create<FieldState>()((set, get) => {
         let seedFromHq = false;
         if (saved.seed) {
           try {
-            seed = parseSeed(saved.seed);
+            seed = upgradeSeed(parseSeed(saved.seed));
             seedFromHq = true;
           } catch {
             /* seed שמור לא תקין: חוזרים לברירת המחדל */
@@ -165,6 +168,15 @@ export const useField = create<FieldState>()((set, get) => {
 
     mergeActivity(list) {
       update((d) => ({ ...d, activity: upsertActivity(d.activity, list) }));
+    },
+
+    mergeUnmetDemand(rows) {
+      const key = (u: UnmetDemand) => `${u.neighborhoodId}|${u.serviceTypeId}|${u.month}`;
+      update((d) => {
+        const map = new Map((d.unmetDemand ?? []).map((u) => [key(u), u]));
+        for (const r of rows) map.set(key(r), r);
+        return { ...d, unmetDemand: [...map.values()] };
+      });
     },
 
     setEnrollment(neighborhoodId, month, enrolled) {

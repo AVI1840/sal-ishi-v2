@@ -12,6 +12,9 @@ export const DELIVERY_MODES = ["community", "home", "remote"] as const;
 export const ATTENDANCE_METHODS = ["operator", "companion", "bot"] as const;
 export const COPAY_TIERS = ["core_and_prevention", "classes", "qol"] as const;
 export const WORKFLOW_STATUSES = ["טיוטה", "הוגש", "אושר", "נדחה"] as const;
+/** היקף שירות: שכונה, כל הרשות, אזורי (כמה רשויות) או ארצי (בעיקר מוצרים). */
+export const REACHES = ["neighborhood", "authority", "regional", "national"] as const;
+export const DEMAND_BANDS = ["high", "medium", "low"] as const;
 
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "חודש בפורמט YYYY-MM");
 const nonNegative = z.number().finite().nonnegative();
@@ -23,6 +26,21 @@ export const deliveryModeSchema = z.enum(DELIVERY_MODES);
 export const attendanceMethodSchema = z.enum(ATTENDANCE_METHODS);
 export const copayTierSchema = z.enum(COPAY_TIERS);
 export const workflowStatusSchema = z.enum(WORKFLOW_STATUSES);
+export const reachSchema = z.enum(REACHES);
+
+const score = z.number().int().min(1).max(5);
+
+// הערכת ספק רבעונית: ארבעה מדדים מ-1 עד 5. המשקלות בהגדרות (supplier_rating_weights).
+export const supplierEvaluationSchema = z
+  .object({
+    quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "רבעון בפורמט 2026-Q3"),
+    quality: score,
+    outcomes: score,
+    satisfaction: score,
+    value: score,
+    note: z.string().optional(),
+  })
+  .strict();
 
 export const neighborhoodSchema = z
   .object({
@@ -54,6 +72,7 @@ export const supplierSchema = z
     accessible: z.boolean(),
     deliveryModes: z.array(deliveryModeSchema).optional(),
     contact: supplierContactSchema.optional(),
+    evaluations: z.array(supplierEvaluationSchema).optional(),
   })
   .strict();
 
@@ -80,6 +99,10 @@ export const serviceSchema = z
     otherFunder: z.boolean(),
     enforceable: z.boolean(),
     programId: z.string().optional(),
+    /** ברירת מחדל: שכונה. שירות ברמת רשות נספר בכיסוי של כל שכונות הרשות. */
+    reach: reachSchema.optional(),
+    /** שכונות נוספות ברשות שהשירות משרת, ונספר בכיסוי שלהן. */
+    servesNeighborhoods: z.array(z.string()).optional(),
     startMonth: z.string(),
     status: workflowStatusSchema,
     committeeNote: z.string().optional(),
@@ -106,6 +129,17 @@ export const neighborhoodMonthSchema = z
   })
   .strict();
 
+// ביקוש שלא נענה: המלווה מסמנת "ביקשו ואין" לסוג שירות. נספר מצטבר לשכונה
+// ולחודש, בלי שום פרט על מי ביקש.
+export const unmetDemandSchema = z
+  .object({
+    neighborhoodId: z.string().min(1),
+    serviceTypeId: z.string().min(1),
+    month,
+    requests: count,
+  })
+  .strict();
+
 export const pilotPackageSchema = z
   .object({
     schema: z.literal("pilot_package_v1"),
@@ -118,6 +152,7 @@ export const pilotPackageSchema = z
     services: z.array(serviceSchema),
     activity: z.array(monthlyActivitySchema),
     enrollment: z.array(neighborhoodMonthSchema),
+    unmetDemand: z.array(unmetDemandSchema).optional(),
   })
   .strict();
 
@@ -146,7 +181,17 @@ export const catalogItemSchema = z
     communityFit: z.array(communitySchema),
     attendanceMethod: z.array(attendanceMethodSchema),
     cancellationPolicy: z.string().nullable(),
+    reach: reachSchema,
     startMonth: z.string(),
+  })
+  .strict();
+
+// פריט בקטלוג לאזרח: פריט הקטלוג, ועוד שני אותות מצטברים לשכבת "המלצות וניסיון"
+// במנוע ההתאמה: רמת ביקוש בשכונה (בלי מספרים מתחת לסף תא קטן), וציון ספק.
+export const citizenCatalogItemSchema = catalogItemSchema
+  .extend({
+    demand: z.enum(DEMAND_BANDS).nullable(),
+    supplierScore: z.number().min(1).max(5).nullable(),
   })
   .strict();
 
@@ -169,7 +214,30 @@ export const citizenCatalogSchema = z
     neighborhood: neighborhoodSchema,
     seedVersion: z.string(),
     generatedAt: z.string(),
-    services: z.array(catalogItemSchema),
+    services: z.array(citizenCatalogItemSchema),
+  })
+  .strict();
+
+// אינדקס הקטלוגים שפורסמו לאזרח: איזה קובץ לכל שכונה.
+export const citizenCatalogIndexSchema = z
+  .object({
+    schema: z.literal("citizen_catalog_index_v1"),
+    generatedAt: z.string(),
+    seedVersion: z.string(),
+    entries: z.array(
+      z.object({ authority: z.string(), neighborhoodId: z.string(), neighborhoodName: z.string(), community: communitySchema }).strict(),
+    ),
+  })
+  .strict();
+
+// קובץ ביקוש שלא נענה, מהכלי של המלווה לשטח. השכונה לפי שם, כי לכל כלי מזהים משלו.
+export const unmetDemandFileSchema = z
+  .object({
+    schema: z.literal("unmet_demand_v1"),
+    exportedAt: z.string(),
+    rows: z.array(
+      z.object({ neighborhoodName: z.string().min(1), serviceTypeId: z.string().min(1), month, requests: count }).strict(),
+    ),
   })
   .strict();
 
@@ -187,6 +255,13 @@ export type MonthlyActivity = z.infer<typeof monthlyActivitySchema>;
 export type NeighborhoodMonth = z.infer<typeof neighborhoodMonthSchema>;
 export type PilotPackage = z.infer<typeof pilotPackageSchema>;
 export type CatalogItem = z.infer<typeof catalogItemSchema>;
+export type CitizenCatalogItem = z.infer<typeof citizenCatalogItemSchema>;
+export type CitizenCatalogIndex = z.infer<typeof citizenCatalogIndexSchema>;
+export type UnmetDemand = z.infer<typeof unmetDemandSchema>;
+export type UnmetDemandFile = z.infer<typeof unmetDemandFileSchema>;
+export type SupplierEvaluation = z.infer<typeof supplierEvaluationSchema>;
+export type Reach = z.infer<typeof reachSchema>;
+export type DemandBand = (typeof DEMAND_BANDS)[number];
 export type CatalogExport = z.infer<typeof catalogExportSchema>;
 export type CitizenCatalog = z.infer<typeof citizenCatalogSchema>;
 
@@ -198,4 +273,5 @@ export interface AuthorityData {
   services: Service[];
   activity: MonthlyActivity[];
   enrollment: NeighborhoodMonth[];
+  unmetDemand?: UnmetDemand[];
 }

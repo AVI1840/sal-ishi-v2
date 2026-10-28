@@ -279,11 +279,23 @@ const MOTIVATION_LABELS_LOCAL: Record<string, string> = {
   recognition: "הכרה", curiosity: "סקרנות", comfort: "נוחות", growth: "התפתחות",
 };
 
+// המשקלות הפעילים. ברירת המחדל זהה לקוד, והאפליקציה מחליפה אותם במשקלות
+// מקובץ הבסיס (matching_weights), שוועדת הסל קובעת ומנוהלים במטה.
+let activeWeights: typeof DEFAULT_WEIGHTS = { ...DEFAULT_WEIGHTS };
+
+export function configureMatching(config: { weights?: MatchConfig["weights"] }): void {
+  activeWeights = { ...DEFAULT_WEIGHTS, ...config.weights };
+}
+
+export function getActiveWeights(): typeof DEFAULT_WEIGHTS {
+  return { ...activeWeights };
+}
+
 export function matchServicesForCitizen(
   citizen: PersonalProfile,
   config: MatchConfig = {}
 ): MatchResult[] {
-  const weights = { ...DEFAULT_WEIGHTS, ...config.weights };
+  const weights = { ...activeWeights, ...config.weights };
   const topN = config.topN ?? 10;
   const minScore = config.minScore ?? 20;
 

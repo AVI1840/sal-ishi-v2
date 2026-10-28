@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
-import { SUPPLIER_TYPES, type Supplier } from "@sal-ishi/core";
+import { SUPPLIER_TYPES, competitionFlags, supplierScore, type Supplier } from "@sal-ishi/core";
 import { Alert, Badge, Button, EmptyState, PageHeader, SelectField, TableWrap, useToast } from "@sal-ishi/ui";
 import { SupplierForm } from "../components/SupplierForm";
 import { useAnalysis } from "../analysis";
@@ -44,6 +44,15 @@ export default function SuppliersScreen() {
         </Alert>
       ) : null}
 
+      {(() => {
+        const flags = competitionFlags(data.services, seed.settings);
+        return flags.length ? (
+          <Alert tone="info" title="מדד תחרות (הצעה)">
+            {flags.map((f) => `${nName.get(f.neighborhoodId) ?? f.neighborhoodId}: ${f.suppliers} ספקים לסוג שירות ${f.serviceTypeId} (עד ${f.max})`).join(". ")}
+          </Alert>
+        ) : null;
+      })()}
+
       <section className="card" aria-labelledby="sup-filter-h">
         <h2 id="sup-filter-h" className="visually-hidden">סינון</h2>
         <div className="grid grid--form">
@@ -70,6 +79,7 @@ export default function SuppliersScreen() {
                 <th scope="col">נגיש</th>
                 <th scope="col">פרטי קשר</th>
                 <th scope="col">שירותים</th>
+                <th scope="col">דירוג</th>
                 <th scope="col"><span className="visually-hidden">פעולות</span></th>
               </tr>
             </thead>
@@ -90,6 +100,12 @@ export default function SuppliersScreen() {
                     {[s.contact?.phone, s.contact?.email].filter(Boolean).join(" | ") || "-"}
                   </td>
                   <td className="num">{data.services.filter((x) => x.supplierCode === s.code).length}</td>
+                  <td>
+                    {(() => {
+                      const sc = supplierScore(s, seed.settings);
+                      return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} מתוך 5</Badge> : <span className="muted">אין</span>;
+                    })()}
+                  </td>
                   <td>
                     <div className="row" style={{ flexWrap: "nowrap" }}>
                       <Button small variant="ghost" icon={<Pencil size={16} />} aria-label={`עריכת ספק ${s.code}`} onClick={() => setEditing(s)} />

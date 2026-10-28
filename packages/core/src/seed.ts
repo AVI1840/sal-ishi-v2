@@ -30,6 +30,23 @@ export const settingsSchema = z
     hot_meal_entry_criteria: z.array(z.string()),
     publish_to_citizen_statuses: z.array(z.string()),
     supplier_contact_to_hq: z.boolean().default(false),
+    // תוספות מתוך מסמך הקטלוג (מפגש 2) ומהכרעות הבעלים. כולן בסטטוס הצעה ב-seed.
+    matching_weights: z
+      .object({ prevention: ratio, motivation: ratio, profileFit: ratio, socialProof: ratio, proximity: ratio })
+      .refine((w) => Math.abs(Object.values(w).reduce((a, b) => a + b, 0) - 1) < 0.011, "סכום המשקלות חייב להיות 100%")
+      .optional(),
+    selection_min_per_domain: z.number().int().nonnegative().optional(),
+    selection_max_active: z.number().int().positive().optional(),
+    selection_change_months: z.number().int().positive().optional(),
+    suggestions_per_domain: z.number().int().positive().optional(),
+    supplier_rating_weights: z
+      .object({ quality: ratio, outcomes: ratio, satisfaction: ratio, value: ratio })
+      .refine((w) => Math.abs(Object.values(w).reduce((a, b) => a + b, 0) - 1) < 0.011, "סכום המשקלות חייב להיות 100%")
+      .optional(),
+    competition_max_suppliers_local: z.number().int().positive().optional(),
+    competition_max_suppliers_national: z.number().int().positive().optional(),
+    subcategory_breadth_min: z.number().int().nonnegative().optional(),
+    subarea_alert_min: z.number().int().nonnegative().optional(),
   })
   .passthrough();
 
@@ -118,6 +135,18 @@ export function parseSeed(raw: unknown): Seed {
 
 /** ה-seed שמגיע עם הקוד (גרסה 0.3). */
 export const defaultSeed: Seed = parseSeed(rawSeed);
+
+/**
+ * seed שנשמר בדפדפן לפני שנוספו הגדרות חדשות: משלימים רק את המפתחות החסרים
+ * מה-seed המובנה, בלי לדרוס ערכים שהמטה קבע.
+ */
+export function upgradeSeed(saved: Seed, bundled: Seed = defaultSeed): Seed {
+  const missing = Object.fromEntries(
+    Object.entries(bundled.settings).filter(([k]) => !(k in (saved.settings as Record<string, unknown>))),
+  );
+  if (!Object.keys(missing).length) return saved;
+  return parseSeed({ ...saved, settings: { ...missing, ...saved.settings } });
+}
 
 /** עותק של ה-seed עם הגדרות מעודכנות. משמש את מסך ההגדרות במטה ואת הבדיקות. */
 export function withSettings(seed: Seed, patch: Partial<Settings>): Seed {

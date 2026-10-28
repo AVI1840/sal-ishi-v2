@@ -24,10 +24,10 @@ export default function DemoNav() {
         <NavLink to="/" className="flex items-center gap-1.5 text-xs font-medium hover:opacity-80 transition-opacity">
           <Wallet className="w-3.5 h-3.5 text-blue-400" />
           <span className="text-blue-400 font-bold">סל אישי</span>
-          <span className="text-white/30 mx-1">|</span>
-          <span className="text-white/50 text-[10px]">להזדקנות מיטבית</span>
+          <span className="text-white/30 mx-1" aria-hidden="true">|</span>
+          <span className="text-white/80 text-[10px]">להזדקנות מיטבית</span>
         </NavLink>
-        <div className="flex items-center gap-0.5" dir="rtl">
+        <div className="flex items-center gap-0.5 min-w-0 overflow-x-auto" dir="rtl">
           {MODULES.map((mod) => {
             const Icon = mod.icon;
             const isActive = mod.end ? activeModule === "/" : pathname.startsWith(mod.to);
@@ -38,7 +38,7 @@ export default function DemoNav() {
                 end={mod.end}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors",
-                  isActive ? "bg-white/15 text-white" : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                  isActive ? "bg-white/15 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
                 )}
               >
                 <Icon className="w-3 h-3" />

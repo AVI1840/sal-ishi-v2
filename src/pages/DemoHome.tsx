@@ -5,6 +5,7 @@
  */
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { SHOW_DEMO_LAYERS } from "@/lib/edition";
 import {
   Wallet, Phone, Heart, Building2, Users,
   ChevronLeft, CheckCircle, AlertCircle, TrendingUp, Brain,
@@ -80,7 +81,7 @@ export default function DemoHome() {
   const handleLogoClick = () => {
     const n = clicks + 1;
     setClicks(n);
-    if (n >= 3) { setShowHackathon(true); setClicks(0); }
+    if (n >= 3 && SHOW_DEMO_LAYERS) { setShowHackathon(true); setClicks(0); }
     setTimeout(() => { if (n < 3) setClicks(0); }, 2000);
   };
 
@@ -235,7 +236,9 @@ export default function DemoHome() {
           {[
             { icon: Brain,      title: "AI מוסבר",        desc: "כל המלצה מפורקת ל-5 שכבות — ניתן לסמוך ולתקן" },
             { icon: TrendingUp, title: "מניעה, לא תגובה",  desc: "5 אייג'נטים מנטרים 24/7 ומתריעים לפני הידרדרות" },
-            { icon: CheckCircle,title: "פיילוט חי",        desc: "286 אזרחים ממשיים, פסגת זאב — לא PoC" },
+            SHOW_DEMO_LAYERS
+              ? { icon: CheckCircle, title: "פיילוט חי", desc: "286 אזרחים ממשיים, פסגת זאב — לא PoC" }
+              : { icon: CheckCircle, title: "גרסת תצוגה", desc: "כל הנתונים במערכת הזו סינתטיים, לצורך התרשמות ומשוב" },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex items-start gap-3 p-4 rounded-xl bg-[#1B3A5C]/[0.03] border border-[#1B3A5C]/10">
               <div className="w-9 h-9 rounded-lg bg-[#1B3A5C]/10 flex items-center justify-center shrink-0">

@@ -6,6 +6,7 @@ import {
   COMMUNITIES,
   COPAY_TIERS,
   DELIVERY_MODES,
+  REACHES,
   copayRate,
   defaultCopayTier,
   entryTest,
@@ -83,9 +84,18 @@ function fromDraft(d: Draft): Service {
   if (mp !== undefined) s.marketPrice = mp;
   if (pp !== undefined) s.pricePoints = pp;
   if (!s.programId) delete s.programId;
+  if (!s.reach || s.reach === "neighborhood") delete s.reach;
+  if (!s.servesNeighborhoods?.length || s.reach) delete s.servesNeighborhoods;
   if (!s.cancellationPolicy) delete s.cancellationPolicy;
   return s;
 }
+
+export const REACH_LABELS: Record<string, string> = {
+  neighborhood: "שכונה",
+  authority: "כל הרשות",
+  regional: "אזורי (כמה רשויות)",
+  national: "ארצי",
+};
 
 export function ServiceForm(props: { open: boolean; onClose: () => void; service?: Service; prefill?: Partial<Service> }) {
   const data = useField((s) => s.data);
@@ -253,6 +263,22 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
         options={DELIVERY_MODES.map((m) => ({ value: m, label: labels.deliveryMode[m]! }))}
         hint="שירות בבית או מרחוק מזהה מענה למרותקי בית"
       />
+      <RadioGroup
+        legend="היקף השירות"
+        value={draft.reach ?? "neighborhood"}
+        onChange={(v) => set("reach", v as Service["reach"])}
+        options={REACHES.filter((r) => r !== "national").map((r) => ({ value: r, label: REACH_LABELS[r]! }))}
+        hint="שירות ברמת רשות או אזורי נספר בכיסוי של כל שכונות הרשות. מוצרים ארציים מנוהלים במטה."
+      />
+      {(draft.reach ?? "neighborhood") === "neighborhood" && data.neighborhoods.length > 1 ? (
+        <CheckboxGroup
+          legend="שכונות נוספות שהשירות משרת"
+          value={draft.servesNeighborhoods ?? []}
+          onChange={(v) => set("servesNeighborhoods", v)}
+          options={data.neighborhoods.filter((n) => n.id !== draft.neighborhoodId).map((n) => ({ value: n.id, label: n.name }))}
+          hint="השירות ייספר גם בכיסוי של השכונות שתסמנו"
+        />
+      ) : null}
       <CheckboxGroup
         legend="אימות נוכחות"
         value={draft.attendanceMethod}

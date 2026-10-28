@@ -5,11 +5,13 @@
  */
 import { Bell, ChevronLeft, MapPin, Phone, Wallet, CheckCircle, Clock, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
 import { cn } from "@/lib/utils";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
 import { PersonalReasonCard } from "@/components/shared/PersonalReasonCard";
 import { CITIZENS } from "@/data/mockData";
+import { realServices } from "@/data/realServices";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { useMemo } from "react";
 
@@ -24,7 +26,7 @@ const getGreeting = () => {
 
 const SCHEDULE = [
   { day: "ג׳", date: "10.06", time: "10:00", name: "התעמלות קבוצתית", place: "מרכז ספורט מינהל קהילתי" },
-  { day: "ה׳", date: "12.06", time: "11:30", name: "מועדון חברתי", place: "משה דיין 135" },
+  { day: "ה׳", date: "12.06", time: "11:30", name: "מועדון חברתי", place: "המועדון השכונתי" },
   { day: "א׳", date: "15.06", time: "09:00", name: "ביקור רונית (מלווה)", place: "ביתך" },
 ];
 
@@ -84,13 +86,13 @@ export default function CitizenHome() {
           <Link to="/citizen/services" className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center">
             <Heart className="w-6 h-6 text-[#1B3A5C] mx-auto mb-2" />
             <p className="text-sm font-bold text-gray-900">שירותים זמינים</p>
-            <p className="text-xs text-gray-500 mt-0.5">102 שירותים</p>
+            <p className="text-xs text-gray-500 mt-0.5">{realServices.length} שירותים</p>
           </Link>
-          <Link to="/citizen/chat" className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center">
+          {CITIZEN_CHAT_ENABLED && <Link to="/citizen/chat" className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center">
             <Phone className="w-6 h-6 text-[#1B3A5C] mx-auto mb-2" />
             <p className="text-sm font-bold text-gray-900">שיחה עם רונית</p>
             <p className="text-xs text-gray-500 mt-0.5">מלווה אישית</p>
-          </Link>
+          </Link>}
         </div>
 
         {/* Recommended services — card with image */}
@@ -232,7 +234,7 @@ export default function CitizenHome() {
         </div>
 
         {/* Contact */}
-        <Link
+        {CITIZEN_CHAT_ENABLED && <Link
           to="/citizen/chat"
           className="block bg-[#1B3A5C] rounded-xl p-5 text-white"
         >
@@ -245,7 +247,7 @@ export default function CitizenHome() {
               <p className="text-sm text-white/60 mt-0.5">רונית, המלווה שלך, זמינה עכשיו</p>
             </div>
           </div>
-        </Link>
+        </Link>}
 
         {/* Emergency */}
         <div className="flex items-center justify-center gap-4 pt-2">

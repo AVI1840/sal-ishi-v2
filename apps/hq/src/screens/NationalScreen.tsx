@@ -2,7 +2,7 @@
 // ודגלים אדומים, ומגוון ספקים.
 
 import { Map as MapIcon } from "lucide-react";
-import type { CoverageCell, UtilizationFlag } from "@sal-ishi/core";
+import { formatCount, type CoverageCell, type UtilizationFlag } from "@sal-ishi/core";
 import { Badge, EmptyState, PageHeader, TableWrap, type Tone } from "@sal-ishi/ui";
 import { monthLabel, percent, useHqAnalysis } from "../analysis";
 
@@ -21,7 +21,7 @@ const FLAG: Record<UtilizationFlag, { tone: Tone; label: string }> = {
 };
 
 export default function NationalScreen() {
-  const { state, seed, summaries, coverage, diversity, labels } = useHqAnalysis();
+  const { state, seed, summaries, coverage, diversity, labels, idx } = useHqAnalysis();
 
   if (!summaries.length) {
     return (
@@ -143,6 +143,47 @@ export default function NationalScreen() {
             </tbody>
           </table>
         </TableWrap>
+      </section>
+
+      <section className="stack" aria-labelledby="unmet-h">
+        <h2 id="unmet-h">ביקשו ואין: ביקוש שלא נענה</h2>
+        <p className="muted">מה שהמלוות סימנו כבקשה של אזרח בלי מענה בשכונה. ספירה מצטברת בלבד, מספר קטן מ-{seed.settings.small_cell_threshold} מוצג כ-"&lt;{seed.settings.small_cell_threshold}".</p>
+        {(() => {
+          const rows = new Map<string, { type: string; pilots: Map<string, number>; total: number }>();
+          const nAuth = new Map(state.neighborhoods.map((n) => [n.id, n.authority]));
+          for (const u of state.unmetDemand ?? []) {
+            const r = rows.get(u.serviceTypeId) ?? { type: u.serviceTypeId, pilots: new Map<string, number>(), total: 0 };
+            const a = nAuth.get(u.neighborhoodId) ?? "";
+            r.pilots.set(a, (r.pilots.get(a) ?? 0) + u.requests);
+            r.total += u.requests;
+            rows.set(u.serviceTypeId, r);
+          }
+          const sorted = [...rows.values()].sort((a, b) => b.total - a.total);
+          return sorted.length ? (
+            <TableWrap label="ביקוש שלא נענה לפי סוג שירות">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th scope="col">סוג שירות</th>
+                    {summaries.map((s) => <th key={s.authority} scope="col">{s.authority}</th>)}
+                    <th scope="col">סה"כ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((r) => (
+                    <tr key={r.type}>
+                      <th scope="row">{idx.serviceTypes.get(r.type)?.name ?? r.type}</th>
+                      {summaries.map((s) => <td key={s.authority} className="num">{r.pilots.get(s.authority) ? formatCount(r.pilots.get(s.authority)!, seed.settings) : "-"}</td>)}
+                      <td className="num">{formatCount(r.total, seed.settings)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrap>
+          ) : (
+            <p>עוד לא דווח ביקוש שלא נענה.</p>
+          );
+        })()}
       </section>
 
       <section className="stack" aria-labelledby="div-h">

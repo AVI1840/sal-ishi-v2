@@ -18,6 +18,7 @@ import {
   useToast,
 } from "@sal-ishi/ui";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { WeightsCard } from "../components/WeightsCard";
 import { useHqAnalysis } from "../analysis";
 import { useHq } from "../store";
 
@@ -38,6 +39,29 @@ const EDITABLE: { key: string; label: string; kind: Kind; status?: string }[] = 
   { key: "small_cell_threshold", label: "סף תא קטן", kind: "int" },
   { key: "qol_counts_in_target", label: "איכות חיים נספרת ביעד המיצוי", kind: "bool" },
   { key: "supplier_contact_to_hq", label: "פרטי ספק יחיד עוברים למטה", kind: "bool" },
+  { key: "subcategory_breadth_min", label: "רוחב: תתי-קטגוריות שונות לפחות בכל קטגוריית ליבה", kind: "int", status: "subcategory_status" },
+  { key: "subarea_alert_min", label: "התראה קוגניטיבית מתחת ל (שירותים רציפים)", kind: "int", status: "subarea_status" },
+  { key: "selection_min_per_domain", label: "בחירת האזרח: מינימום שירותים מכל תחום", kind: "int", status: "selection_status" },
+  { key: "selection_max_active", label: "בחירת האזרח: מקסימום שירותים פעילים במקביל", kind: "int", status: "selection_status" },
+  { key: "selection_change_months", label: "בחירת האזרח: אפשרות החלפה כל (חודשים)", kind: "int", status: "selection_status" },
+  { key: "suggestions_per_domain", label: "הצעות לאזרח בכל תחום", kind: "int", status: "selection_status" },
+  { key: "competition_max_suppliers_local", label: "תחרות: מקסימום ספקים לסוג שירות בשכונה", kind: "int", status: "competition_status" },
+  { key: "competition_max_suppliers_national", label: "תחרות: מקסימום ספקים לסוג מוצר בערוץ הארצי", kind: "int", status: "competition_status" },
+];
+
+const MATCHING_LAYERS = [
+  { key: "prevention", label: "מניעת הידרדרות", source: "קטגוריה וסוג השירות בספרייה (שיווי משקל, גירוי קוגניטיבי, תזונה)" },
+  { key: "motivation", label: "רצון ומוטיבציה", source: "תחום הליבה של השירות מול המוטיבציות שהאדם ביטא בשיחה עם המלווה" },
+  { key: "profileFit", label: "התאמה לפרופיל", source: "שפות, התאמה קהילתית ואופן מסירה (בבית, מרחוק) מהקטלוג" },
+  { key: "socialProof", label: "המלצות וניסיון", source: "ביקוש בפועל בשכונה (מצטבר) ודירוג הספק" },
+  { key: "proximity", label: "זמינות מעשית", source: "שכונה, היקף (רשותי, אזורי, ארצי) והשתתפות עצמית" },
+];
+
+const RATING_CRITERIA = [
+  { key: "quality", label: "איכות השירות", source: "הערכה רבעונית של הרכזת" },
+  { key: "outcomes", label: "תוצאות מניעה", source: "הערכה רבעונית, ובהמשך מדדי תוצאה" },
+  { key: "satisfaction", label: "שביעות רצון", source: "סקרי שביעות רצון של המשתתפים" },
+  { key: "value", label: "עלות-תועלת", source: "מחיר מול מחיר הייחוס" },
 ];
 
 const toDisplay = (kind: Kind, v: unknown) =>
@@ -150,6 +174,28 @@ export default function RulesScreen() {
           </table>
         </TableWrap>
       </section>
+
+      <WeightsCard
+        id="layers-h"
+        title="שכבות ההתאמה לאזרח"
+        description="המשקלות שמנוע ההתאמה בכלי לאזרח ולמלווה משתמש בהם. ועדת הסל קובעת אותם אחת לחציון (מסמך הקטלוג). הכלי המרכזי קורא אותם מגרסת הבסיס שמתפרסמת."
+        settingKey="matching_weights"
+        statusKey="matching_weights_status"
+        items={MATCHING_LAYERS}
+        defaults={{ prevention: 0.3, motivation: 0.25, profileFit: 0.2, socialProof: 0.15, proximity: 0.1 }}
+        settings={seed.settings}
+      />
+
+      <WeightsCard
+        id="rating-h"
+        title="דירוג ספקים"
+        description="הציון של ספק הוא ממוצע משוקלל של ההערכה הרבעונית האחרונה. מוצג במטה ובשטח, ומזין את שכבת המלצות וניסיון. לא חוסם שירות ולא נכנס לחוזה האינטגרטור."
+        settingKey="supplier_rating_weights"
+        statusKey="supplier_rating_status"
+        items={RATING_CRITERIA}
+        defaults={{ quality: 0.4, outcomes: 0.3, satisfaction: 0.2, value: 0.1 }}
+        settings={seed.settings}
+      />
 
       <section className="card" aria-labelledby="types-h">
         <div className="card__header">

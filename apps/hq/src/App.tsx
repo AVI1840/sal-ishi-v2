@@ -11,7 +11,7 @@ import {
   PartnerGuide,
   ToastProvider,
 } from "@sal-ishi/ui";
-import { Building2, Compass, FileOutput, Inbox, Map as MapIcon, MessageSquare, Scale, SlidersHorizontal } from "lucide-react";
+import { Building2, Compass, FileOutput, Globe2, Inbox, Map as MapIcon, MessageSquare, Scale, SlidersHorizontal } from "lucide-react";
 import { useHq } from "./store";
 import IntakeScreen from "./screens/IntakeScreen";
 import NationalScreen from "./screens/NationalScreen";
@@ -19,6 +19,7 @@ import SuppliersScreen from "./screens/SuppliersScreen";
 import PricesScreen from "./screens/PricesScreen";
 import RulesScreen from "./screens/RulesScreen";
 import ExportScreen from "./screens/ExportScreen";
+import NationalChannelScreen from "./screens/NationalChannelScreen";
 
 const preview = EDITION === "preview";
 
@@ -27,6 +28,7 @@ const NAV = [
   { to: "/", label: "קליטת חבילות", icon: <Inbox size={18} /> },
   { to: "/national", label: "תמונה ארצית", icon: <MapIcon size={18} /> },
   { to: "/suppliers", label: "ספקים", icon: <Building2 size={18} /> },
+  { to: "/national-channel", label: "ערוץ ארצי", icon: <Globe2 size={18} /> },
   { to: "/prices", label: "מחירי ייחוס", icon: <Scale size={18} /> },
   { to: "/rules", label: "ספרייה וכללים", icon: <SlidersHorizontal size={18} /> },
   { to: "/export", label: "ייצוא", icon: <FileOutput size={18} /> },
@@ -37,7 +39,8 @@ const GUIDE_STEPS = [
   { to: "/", title: "קליטת חבילות", text: "שתי חבילות פיילוט סינתטיות כבר נקלטו. נסו לקלוט חבילה שייצאתם ממשטח השטח, ולראות את ההבדלים לפני המיזוג." },
   { to: "/national", title: "תמונה ארצית", text: "השוואה בין פיילוטים לפי אותם כללים: כיסוי, מיצוי ודגלים אדומים, ומגוון ספקים לכל קטגוריה." },
   { to: "/prices", title: "מחירי ייחוס", text: "חציון לכל סוג שירות ויחידה על פני הפיילוטים, וחריגות מעל הסף. בלי מחיר גג." },
-  { to: "/rules", title: "ספרייה וכללים", text: "שנו רצפה או סף ובדקו שהתמונה הארצית מתעדכנת מיד. כל שינוי נרשם ביומן ומופץ לשטח כגרסה." },
+  { to: "/rules", title: "ספרייה וכללים", text: "שכבות ההתאמה לאזרח ומשקלותיהן, דירוג ספקים וכללי בחירה. שנו רצפה או סף ובדקו שהתמונה הארצית מתעדכנת מיד." },
+  { to: "/national-channel", title: "ערוץ ארצי", text: "מוצרי מניעה ובטיחות מספקים ארציים, שמופיעים בקטלוג של כל שכונה." },
   { to: "/export", title: "ייצוא", text: "catalog_export לאינטגרטור עם בדיקת סכמה, וקטלוג מאושר לכל שכונה עבור הכלי לאזרח." },
   { to: "/suppliers", title: "ספקים", text: "כל הספקים בפיילוטים. פרטי ספק יחיד נשמרים במטה ולא יוצאים ממנו." },
 ];
@@ -87,6 +90,7 @@ export default function App() {
                 <Route path="/prices" element={<PricesScreen />} />
                 <Route path="/rules" element={<RulesScreen />} />
                 <Route path="/export" element={<ExportScreen />} />
+                <Route path="/national-channel" element={<NationalChannelScreen />} />
                 <Route
                   path="/guide"
                   element={<PartnerGuide surface="hq" seed={seed} steps={GUIDE_STEPS} otherSurface={{ href: "../field/", label: "למשטח השטח" }} />}

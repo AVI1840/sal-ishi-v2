@@ -1,14 +1,14 @@
 /**
  * realServices.ts
- * ───────────────
- * ממיר את services-catalog.json (102 שירותים אמיתיים)
- * לפורמט שהאפליקציה משתמשת בו (Service מ-types.ts + ServiceB מ-services.ts).
+ * רשימת השירותים שהאפליקציה מציגה. מתמלאת בעלייה מהקטלוג המאושר של האטלס
+ * (src/data/catalogSource.ts), ולא מקובץ קבוע. בבדיקות היא מתמלאת מהקטלוג
+ * הישן כדי לשמור על בדיקות ה-golden של מנוע ההתאמה.
  *
  * שימוש:
  *   import { realServices, getByNeighborhood, searchServices } from "@/data/realServices";
  */
 
-import catalog from "./services-research/services-catalog.json";
+import { smartSearch } from "@sal-ishi/core/citizen";
 
 // ─── טיפוסים ───────────────────────────────────────────────────
 
@@ -45,6 +45,22 @@ export interface RealService {
   costLabel: string;
   emoji: string;
   image?: string;
+  // מהאטלס (קיים כשהמקור הוא הקטלוג המאושר)
+  reach?: "neighborhood" | "authority" | "regional" | "national";
+  /** שכונות נוספות שהשירות זמין בהן (שירות רשותי, אזורי או ארצי). */
+  servesNeighborhoods?: string[];
+  demand?: "high" | "medium" | "low" | null;
+  supplierScore?: number | null;
+  copayRate?: number;
+  pricePoints?: number;
+  unit?: string;
+  serviceTypeId?: string;
+  serviceTypeName?: string;
+  categoryCode?: string;
+  coreCategoryId?: string;
+  coreCategoryName?: string;
+  deliveryMode?: "community" | "home" | "remote";
+  communityFit?: ("general" | "haredi" | "arab")[];
 }
 
 // ─── maps ───────────────────────────────────────────────────────
@@ -74,7 +90,7 @@ const COST_LABELS: Record<CostType, string> = {
 // ─── עיבוד הקטלוג ──────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const realServices: RealService[] = (catalog as any[]).map((raw) => {
+function toRealService(raw: any): RealService {
   const ratings: number[] = Array.isArray(raw.ratings) ? raw.ratings : [];
   const avgRating =
     ratings.length > 0
@@ -87,26 +103,36 @@ export const realServices: RealService[] = (catalog as any[]).map((raw) => {
     avgRating,
     categoryLabel: CATEGORY_LABELS[raw.category as number] ?? "כללי",
     costLabel: COST_LABELS[raw.cost as CostType] ?? raw.cost,
-    emoji: CATEGORY_EMOJI[raw.category as number] ?? "📋",
+    emoji: CATEGORY_EMOJI[raw.category as number] ?? "",
   } as RealService;
-});
+}
+
+/** הרשימה החיה. setRawServices מחליף את התוכן שלה. */
+export const realServices: RealService[] = [];
 
 // ─── שכונות ────────────────────────────────────────────────────
 
-export const NEIGHBORHOODS_LIST = [
-  "הכל",
-  "פסגת זאב",
-  "תלפיות מזרח",
-  "בית חנינא",
-  "ואדי ג'וז",
-  "נווה יעקב",
-  "עין כרם",
-  "עירוני",
-  "רמות",
-  "גילה",
-  "קטמון",
-  "תלפיות",
-];
+export const NEIGHBORHOODS_LIST: string[] = ["הכל"];
+
+/** האם השירות זמין לתושבי השכונה: בה עצמה, משרת אותה, או ארצי. */
+export function servesNeighborhood(s: RealService, neighborhood: string): boolean {
+  return s.neighborhood === neighborhood || s.reach === "national" || (s.servesNeighborhoods ?? []).includes(neighborhood);
+}
+
+/** שדות החיפוש החכם, לפי משקל. */
+function searchFields(s: RealService) {
+  return [
+    { text: s.name, weight: 3 },
+    { text: (s.serviceTypeName ?? "") + " " + s.subcategory, weight: 2 },
+    { text: (s.coreCategoryName ?? "") + " " + s.categoryLabel, weight: 1.5 },
+    { text: s.notes + " " + s.provider + " " + s.neighborhood, weight: 1 },
+  ];
+}
+
+/** חיפוש חכם: נרמול עברית, מילים נרדפות ושגיאות הקלדה. מחזיר מהמתאים ביותר. */
+export function smartSearchServices(services: RealService[], query: string): RealService[] {
+  return smartSearch(services, query, searchFields).map((h) => h.item);
+}
 
 export const CATEGORY_FILTERS = [
   { value: 0, label: "הכל" },
@@ -129,7 +155,7 @@ export const COST_FILTERS: { value: CostType | "all"; label: string }[] = [
 /** סינון לפי שכונה */
 export function getByNeighborhood(neighborhood: string): RealService[] {
   if (neighborhood === "הכל") return realServices;
-  return realServices.filter((s) => s.neighborhood === neighborhood);
+  return realServices.filter((s) => servesNeighborhood(s, neighborhood));
 }
 
 /** סינון לפי קטגוריה */
@@ -140,16 +166,7 @@ export function getByCategory(category: number): RealService[] {
 
 /** חיפוש חופשי */
 export function searchServices(query: string): RealService[] {
-  const q = query.toLowerCase().trim();
-  if (!q) return realServices;
-  return realServices.filter(
-    (s) =>
-      s.name.includes(q) ||
-      s.provider.includes(q) ||
-      s.subcategory.includes(q) ||
-      s.neighborhood.includes(q) ||
-      s.notes.includes(q)
-  );
+  return smartSearchServices(realServices, query);
 }
 
 /** סינון משולב */
@@ -163,7 +180,7 @@ export function filterServices(params: {
   let result = realServices;
 
   if (params.neighborhood && params.neighborhood !== "הכל") {
-    result = result.filter((s) => s.neighborhood === params.neighborhood);
+    result = result.filter((s) => servesNeighborhood(s, params.neighborhood!));
   }
   if (params.category && params.category !== 0) {
     result = result.filter((s) => s.category === params.category);
@@ -176,15 +193,8 @@ export function filterServices(params: {
       (s) => s.target_mobility === params.mobility || s.target_mobility === "any"
     );
   }
-  if (params.query) {
-    const q = params.query.toLowerCase().trim();
-    result = result.filter(
-      (s) =>
-        s.name.includes(q) ||
-        s.provider.includes(q) ||
-        s.subcategory.includes(q) ||
-        s.neighborhood.includes(q)
-    );
+  if (params.query && params.query.trim()) {
+    result = smartSearchServices(result, params.query);
   }
 
   return result;
@@ -210,21 +220,32 @@ export function getRecommendedForProfile(params: {
 
 // ─── סטטיסטיקות ────────────────────────────────────────────────
 
-export const catalogStats = {
-  total: realServices.length,
-  byNeighborhood: Object.fromEntries(
-    NEIGHBORHOODS_LIST.filter((n) => n !== "הכל").map((n) => [
-      n,
-      realServices.filter((s) => s.neighborhood === n).length,
-    ])
-  ),
-  byCategory: Object.fromEntries(
-    [1, 2, 3, 4, 5].map((c) => [
-      CATEGORY_LABELS[c],
-      realServices.filter((s) => s.category === c).length,
-    ])
-  ),
-  free: realServices.filter((s) => s.cost === "free").length,
-  subsidized: realServices.filter((s) => s.cost === "subsidized").length,
-  paid: realServices.filter((s) => s.cost === "paid").length,
-};
+function computeStats() {
+  return {
+    total: realServices.length,
+    byNeighborhood: Object.fromEntries(
+      NEIGHBORHOODS_LIST.filter((n) => n !== "הכל").map((n) => [n, realServices.filter((s) => servesNeighborhood(s, n)).length])
+    ),
+    byCategory: Object.fromEntries(
+      [1, 2, 3, 4, 5].map((c) => [CATEGORY_LABELS[c], realServices.filter((s) => s.category === c).length])
+    ),
+    free: realServices.filter((s) => s.cost === "free").length,
+    subsidized: realServices.filter((s) => s.cost === "subsidized").length,
+    paid: realServices.filter((s) => s.cost === "paid").length,
+  };
+}
+
+export const catalogStats = computeStats();
+
+/** מחליף את רשימת השירותים (בעלייה מהקטלוג המאושר, או בבדיקות). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setRawServices(raw: any[]): void {
+  realServices.splice(0, realServices.length, ...raw.map(toRealService));
+  const names = new Set<string>();
+  for (const s of realServices) {
+    if (s.reach !== "national") names.add(s.neighborhood);
+    for (const n of s.servesNeighborhoods ?? []) names.add(n);
+  }
+  NEIGHBORHOODS_LIST.splice(1, NEIGHBORHOODS_LIST.length - 1, ...[...names].sort((a, b) => a.localeCompare(b, "he")));
+  Object.assign(catalogStats, computeStats());
+}

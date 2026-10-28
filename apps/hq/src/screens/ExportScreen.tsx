@@ -8,6 +8,7 @@ import {
   FileSyncAdapter,
   buildCatalogExport,
   buildCitizenCatalog,
+  buildCitizenCatalogIndex,
   createBrowserFileIO,
   findForbiddenKeys,
   validateCatalogExport,
@@ -103,8 +104,30 @@ export default function ExportScreen() {
       </section>
 
       <section className="card" aria-labelledby="cit-h">
-        <h2 id="cit-h">קטלוג לכלי לאזרח</h2>
-        <p className="muted">קובץ לכל שכונה עם השירותים המאושרים בלבד. בשלב א' מעלים אותו לאתר הכלי לאזרח, בתיקייה catalog.</p>
+        <div className="card__header">
+          <h2 id="cit-h">קטלוג לכלי המרכזי (אזרח ומלווה)</h2>
+          <div className="row">
+            <Button small variant="secondary" onClick={() => void sync.publishCitizenCatalogIndex(buildCitizenCatalogIndex(state.neighborhoods, seed)).then(() => toast("success", "index.json ירד"))}>
+              הורדת אינדקס
+            </Button>
+            <Button small variant="secondary" onClick={() => {
+              const blob = new Blob([JSON.stringify(seed, null, 1)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "seed.json";
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+              toast("success", "seed.json ירד (משקלות ההתאמה וכללי הבחירה)");
+            }}>
+              הורדת seed.json
+            </Button>
+          </div>
+        </div>
+        <p className="muted">
+          קובץ לכל שכונה עם השירותים המאושרים, כולל רשותיים, אזוריים והערוץ הארצי, רמת ביקוש ודירוג ספק. בשלב א' מעלים לאתר הכלי המרכזי:
+          catalog/index.json, catalog/seed.json, ו-catalog/&lt;רשות&gt;/&lt;שכונה&gt;.json. הכלי קורא אותם בעלייה, ובלעדיהם מציג קטלוג הדגמה.
+        </p>
         <TableWrap label="קטלוג לפי שכונה">
           <table className="table">
             <thead>
@@ -118,7 +141,7 @@ export default function ExportScreen() {
             </thead>
             <tbody>
               {state.neighborhoods.map((n) => {
-                const count = exp?.services.filter((s) => s.neighborhoodId === n.id).length ?? 0;
+                const count = exp?.services.filter((s) => s.neighborhoodId === n.id || s.reach === "national" || ((s.reach === "authority" || s.reach === "regional") && s.authority === n.authority)).length ?? 0;
                 return (
                   <tr key={n.id}>
                     <td>{n.authority}</td>

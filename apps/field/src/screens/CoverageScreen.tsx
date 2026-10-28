@@ -2,14 +2,19 @@
 // ובפער מציעה שלושה סוגי שירות מהספרייה.
 
 import { useState } from "react";
-import { Grid3x3, Plus } from "lucide-react";
+import { Grid3x3, MessageSquareWarning, Plus } from "lucide-react";
 import {
   CONTINUITY_STATUS,
+  FileSyncAdapter,
+  createBrowserFileIO,
+  formatCount,
   suggestServiceTypes,
+  unmetByCell,
   type CoverageCell,
   type Service,
+  type UnmetDemand,
 } from "@sal-ishi/core";
-import { Alert, Badge, Button, Dialog, EmptyState, PageHeader, TableWrap, type Tone } from "@sal-ishi/ui";
+import { Alert, Badge, Button, Dialog, EmptyState, PageHeader, TableWrap, useToast, type Tone } from "@sal-ishi/ui";
 import { ServiceForm } from "../components/ServiceForm";
 import { useAnalysis } from "../analysis";
 import { useField } from "../store";
@@ -25,7 +30,30 @@ export default function CoverageScreen() {
   const data = useField((s) => s.data);
   const seed = useField((s) => s.seed);
   const { coverage, labels, idx } = useAnalysis();
+  const mergeUnmetDemand = useField((s) => s.mergeUnmetDemand);
+  const toast = useToast();
+  const unmet = unmetByCell(data.unmetDemand ?? [], seed);
   const [open, setOpen] = useState<CoverageCell | null>(null);
+
+  // קליטת קובץ "ביקשו ואין" מהכלי של המלווה. השכונה מזוהה לפי שם.
+  const importUnmet = async () => {
+    try {
+      const file = await new FileSyncAdapter(createBrowserFileIO()).receiveUnmetDemand();
+      if (!file) return;
+      const byName = new Map(data.neighborhoods.map((n) => [n.name, n.id]));
+      const rows: UnmetDemand[] = [];
+      let skipped = 0;
+      for (const r of file.rows) {
+        const id = byName.get(r.neighborhoodName);
+        if (id) rows.push({ neighborhoodId: id, serviceTypeId: r.serviceTypeId, month: r.month, requests: r.requests });
+        else skipped++;
+      }
+      mergeUnmetDemand(rows);
+      toast(skipped ? "warning" : "success", `נקלטו ${rows.length} שורות ביקוש${skipped ? `, ${skipped} שורות עם שכונה שלא מוגדרת ברשות לא נקלטו` : ""}`);
+    } catch (e) {
+      toast("error", `הקובץ לא נקלט: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  };
   const [prefill, setPrefill] = useState<Partial<Service> | null>(null);
 
   const cellOf = (n: string, cc: string) => coverage.cells.find((c) => c.neighborhoodId === n && c.coreCategoryId === cc)!;
@@ -36,7 +64,10 @@ export default function CoverageScreen() {
   const openNeighborhood = open ? nById.get(open.neighborhoodId) : undefined;
   const openCategory = open ? ccById.get(open.coreCategoryId) : undefined;
   const openUnits = open ? coverage.units.filter((u) => u.neighborhoodId === open.neighborhoodId && openCategory?.codes.includes(u.categoryCode)) : [];
-  const suggestions = open ? suggestServiceTypes(seed, open.coreCategoryId) : [];
+  const suggestions = open
+    ? suggestServiceTypes(seed, open.coreCategoryId, 3, { presentCodes: openUnits.filter((u) => open.unitKeys.includes(u.key)).map((u) => u.categoryCode) })
+    : [];
+  const openUnmet = open ? unmet.get(`${open.neighborhoodId}|${open.coreCategoryId}`) : undefined;
 
   if (!data.neighborhoods.length) {
     return (
@@ -51,7 +82,8 @@ export default function CoverageScreen() {
     <>
       <PageHeader
         title="מבחן כיסוי"
-        description={`לכל שכונה ולכל קטגוריית ליבה: כמה שירותים רציפים שנכנסו או אושרו, מול רצפה של ${seed.settings.core_floor}. שירות רציף: לפחות ${seed.settings.min_participants} משתתפים בחודש השיא ולפחות ${seed.settings.min_active_months} חודשים פעילים. סבבים של אותה תוכנית נספרים פעם אחת.`}
+        description={`לכל שכונה ולכל קטגוריית ליבה: כמה שירותים רציפים שנכנסו או אושרו, מול רצפה של ${seed.settings.core_floor}. שירות רציף: לפחות ${seed.settings.min_participants} משתתפים בחודש השיא ולפחות ${seed.settings.min_active_months} חודשים פעילים. סבבים של אותה תוכנית נספרים פעם אחת, ושירות ברמת רשות נספר בכל שכונותיה.`}
+        actions={<Button variant="secondary" icon={<MessageSquareWarning size={18} />} onClick={importUnmet}>קליטת "ביקשו ואין" מהמלוות</Button>}
       />
 
       <div className="row" role="group" aria-label="מקרא">
@@ -59,6 +91,7 @@ export default function CoverageScreen() {
         <Badge tone="warning">חסר שירות אחד</Badge>
         <Badge tone="error">חסרים שניים ומעלה</Badge>
         <Badge tone="neutral">לא נבדק</Badge>
+        <span className="cell-alert">ביקשו ואין: בקשות שהמלוות סימנו ואין להן מענה</span>
       </div>
 
       <TableWrap label="מטריצת כיסוי">
@@ -81,14 +114,16 @@ export default function CoverageScreen() {
                   const cell = cellOf(n.id, cc.id);
                   const lv = LEVEL[cell.level];
                   const alerts = coverage.alerts.filter((a) => a.neighborhoodId === n.id && a.coreCategoryId === cc.id);
+                  const asked = unmet.get(`${n.id}|${cc.id}`)?.requests ?? 0;
                   return (
                     <td key={cc.id}>
                       {cell.level === "not_checked" ? (
                         <Badge tone={lv.tone}>{lv.text(cell)}</Badge>
                       ) : (
-                        <button className="cell-btn" type="button" onClick={() => setOpen(cell)} aria-label={`${n.name}, ${cc.name}: ${lv.text(cell)}${alerts.length ? `, ${alerts.length} התראות` : ""}. פירוט`}>
+                        <button className="cell-btn" type="button" onClick={() => setOpen(cell)} aria-label={`${n.name}, ${cc.name}: ${lv.text(cell)}${alerts.length ? `, ${alerts.length} התראות` : ""}${asked ? `, ביקשו ואין: ${formatCount(asked, seed.settings)}` : ""}. פירוט`}>
                           <Badge tone={lv.tone}>{lv.text(cell)}</Badge>
                           {alerts.length ? <span className="cell-alert">{alerts.length === 1 ? "התראה" : `${alerts.length} התראות`}</span> : null}
+                          {asked ? <span className="cell-alert">ביקשו ואין: {formatCount(asked, seed.settings)}</span> : null}
                         </button>
                       )}
                     </td>
@@ -108,7 +143,7 @@ export default function CoverageScreen() {
             {coverage.alerts.map((a, i) => (
               <li key={i}>
                 <Alert tone="warning" title={nById.get(a.neighborhoodId)?.name}>
-                  {a.kind === "community" ? "התאמה קהילתית: " : "תת-תחום: "}
+                  {a.kind === "community" ? "התאמה קהילתית: " : a.kind === "breadth" ? "רוחב: " : "תת-תחום: "}
                   {a.message}
                 </Alert>
               </li>
@@ -143,7 +178,16 @@ export default function CoverageScreen() {
             ) : (
               <p>אין עדיין שירותים בקטגוריה הזו בשכונה.</p>
             )}
-            {open.level !== "green" ? (
+            {openUnmet ? (
+              <Alert tone="warning" title={`ביקשו ואין: ${formatCount(openUnmet.requests, seed.settings)} בקשות`}>
+                <ul>
+                  {[...openUnmet.types.entries()].map(([t, n]) => (
+                    <li key={t}>{idx.serviceTypes.get(t)?.name ?? t}: {formatCount(n, seed.settings)}</li>
+                  ))}
+                </ul>
+              </Alert>
+            ) : null}
+            {open.level !== "green" || openUnmet ? (
               <>
                 <h3>הצעות להשלמה מהספרייה</h3>
                 <ul className="stack plain-list">

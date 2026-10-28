@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
 import { Home, Star, MessageCircle, User, ImageOff, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVisualMode } from "@/hooks/use-visual-mode";
@@ -6,7 +7,7 @@ import { useVisualMode } from "@/hooks/use-visual-mode";
 const TABS = [
   { to: "/citizen", label: "בית", icon: Home, end: true },
   { to: "/citizen/services", label: "שירותים", icon: Star },
-  { to: "/citizen/chat", label: "שיחה", icon: MessageCircle },
+  ...(CITIZEN_CHAT_ENABLED ? [{ to: "/citizen/chat", label: "שיחה", icon: MessageCircle }] : []),
   { to: "/citizen/profile", label: "פרופיל", icon: User },
 ];
 
@@ -54,7 +55,7 @@ export default function MobileShell() {
                   "flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all",
                   isActive
                     ? "bg-[#1B3A5C] text-white shadow-md"
-                    : "text-gray-400 hover:text-gray-600"
+                    : "text-gray-600 hover:text-gray-800"
                 )}
                 style={{ minHeight: 48, minWidth: 48 }}
               >

@@ -1,7 +1,7 @@
 // הממשק היחיד לתנועת נתונים בין המשטחים. בשלב א' המימוש הוא קבצים
 // (FileSyncAdapter). בשלב ב' יבוא מימוש API עם אותו ממשק, בלי לשנות את שאר הקוד.
 
-import type { CatalogExport, CitizenCatalog, PilotPackage } from "../model";
+import type { CatalogExport, CitizenCatalog, CitizenCatalogIndex, PilotPackage, UnmetDemandFile } from "../model";
 import type { Seed } from "../seed";
 
 export interface SyncAdapter {
@@ -14,6 +14,15 @@ export interface SyncAdapter {
   publishCitizenCatalog(catalog: CitizenCatalog): Promise<void>;
   /** אזרח: טעינת הקטלוג המאושר של שכונה, או null אם עוד לא פורסם. */
   loadCitizenCatalog(authority: string, neighborhoodId: string): Promise<CitizenCatalog | null>;
+  /** מטה לאזרח: אינדקס הקטלוגים שפורסמו. */
+  publishCitizenCatalogIndex(index: CitizenCatalogIndex): Promise<void>;
+  /** אזרח: אילו קטלוגים פורסמו, או null אם אין אינדקס. */
+  loadCitizenCatalogIndex(): Promise<CitizenCatalogIndex | null>;
+
+  /** מלווה לשטח: ביקוש שלא נענה, מצטבר לפי שכונה וסוג שירות. */
+  sendUnmetDemand(file: UnmetDemandFile): Promise<void>;
+  /** שטח: קבלת קובץ ביקוש שלא נענה. */
+  receiveUnmetDemand(): Promise<UnmetDemandFile | null>;
 
   /** מטה לשטח: הפצת גרסת seed. */
   publishSeed(seed: Seed): Promise<void>;

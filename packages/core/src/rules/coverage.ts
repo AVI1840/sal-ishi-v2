@@ -2,7 +2,7 @@
 // אושרו, מול core_floor. מוצרי מניעה הם ערוץ ארצי ולא נבדקים ברצפה.
 // ההתראות (תת-תחום והתאמה קהילתית) לא חוסמות.
 
-import type { Community, MonthlyActivity, Neighborhood, Service } from "../model";
+import type { Community, MonthlyActivity, Neighborhood, Service, UnmetDemand } from "../model";
 import type { Seed } from "../seed";
 import { CONTINUITY_STATUS, continuityUnits, type ContinuityUnit } from "./continuity";
 import { countsTowardCoverage } from "./entryTest";
@@ -22,7 +22,7 @@ export interface CoverageCell {
 export interface CoverageAlert {
   neighborhoodId: string;
   coreCategoryId: string;
-  kind: "subarea" | "community";
+  kind: "subarea" | "community" | "breadth";
   code?: string;
   community?: Community;
   message: string;
@@ -50,8 +50,14 @@ export function coverage(
 ): CoverageResult {
   const { settings } = seed;
   const floor = settings.core_floor;
-  const units = continuityUnits(input.services, input.activity, settings);
-  const serviceById = new Map(input.services.map((s) => [s.id, s]));
+  // ערוץ ארצי לא נבדק ברצפה של שכונה.
+  const local = input.services.filter((s) => s.reach !== "national");
+  const units = continuityUnits(local, input.activity, settings);
+  const serviceById = new Map(local.map((s) => [s.id, s]));
+  const authorityNeighborhoods = new Map<string, string[]>();
+  for (const n of input.neighborhoods) authorityNeighborhoods.set(n.authority, [...(authorityNeighborhoods.get(n.authority) ?? []), n.id]);
+  const breadthMin = settings.subcategory_breadth_min ?? 0;
+  const subareaMin = settings.subarea_alert_min ?? floor;
   const communityNames = new Map(seed.community_profiles.map((c) => [c.id, c.name]));
 
   // יחידה נספרת אם היא רציפה ולפחות אחד השירותים בה נכנס או אושר.
@@ -67,8 +73,22 @@ export function coverage(
   const cells: CoverageCell[] = [];
   const alerts: CoverageAlert[] = [];
 
+  // שירות ברמת רשות נספר בכל שכונות הרשות, ושירות עם servesNeighborhoods גם בשכונות שסומנו.
+  const served = new Map(
+    qualifying.map((u) => {
+      const set = new Set<string>([u.neighborhoodId]);
+      for (const id of u.serviceIds) {
+        const s = serviceById.get(id);
+        if (!s) continue;
+        if (s.reach === "authority" || s.reach === "regional") for (const nid of authorityNeighborhoods.get(s.authority) ?? []) set.add(nid);
+        for (const nid of s.servesNeighborhoods ?? []) set.add(nid);
+      }
+      return [u, set] as const;
+    }),
+  );
+
   for (const n of input.neighborhoods) {
-    const inNeighborhood = qualifying.filter((u) => u.neighborhoodId === n.id);
+    const inNeighborhood = qualifying.filter((u) => served.get(u)?.has(n.id));
 
     for (const cc of seed.core_categories) {
       if (cc.national_list_only) {
@@ -90,15 +110,27 @@ export function coverage(
       for (const sub of cc.subareas) {
         if (!sub.alert_if_below_floor || !settings.subarea_alerts.includes(sub.code)) continue;
         const subCount = inCategory.filter((u) => u.categoryCode === sub.code).length;
-        if (subCount < floor) {
+        if (subCount < subareaMin) {
           alerts.push({
             neighborhoodId: n.id,
             coreCategoryId: cc.id,
             kind: "subarea",
             code: sub.code,
-            message: `${sub.name}: ${subCount} שירותים רציפים, מתחת לרצפה של ${floor}`,
+            message: subareaMin === 1 ? `${sub.name}: אין שירות רציף בתת-התחום` : `${sub.name}: ${subCount} שירותים רציפים, פחות מ-${subareaMin}`,
           });
         }
+      }
+
+      // רוחב: השירותים שנספרו מפוזרים על פני כמה תתי-קטגוריות, ולא כולם באחת.
+      const needed = Math.min(breadthMin, cc.codes.length);
+      const distinct = new Set(inCategory.map((u) => u.categoryCode)).size;
+      if (needed > 1 && inCategory.length >= needed && distinct < needed) {
+        alerts.push({
+          neighborhoodId: n.id,
+          coreCategoryId: cc.id,
+          kind: "breadth",
+          message: `${cc.name}: כל השירותים הרציפים בתת-קטגוריה אחת. כדאי לפחות ${needed} תתי-קטגוריות שונות`,
+        });
       }
 
       if (n.community !== "general") {
@@ -121,12 +153,39 @@ export function coverage(
   return { cells, alerts, units };
 }
 
-/** סוגי שירות מהספרייה להשלמת פער, לפי קטגוריית ליבה. מעדיף סוגים שנוסו בירושלים. */
-export function suggestServiceTypes(seed: Seed, coreCategoryId: string, limit = 3) {
+/**
+ * סוגי שירות מהספרייה להשלמת פער בקטגוריית ליבה. קודם תתי-קטגוריות שחסרות בתא
+ * (כדי לעמוד גם במדד הרוחב), ובתוכן מה שנוסה בירושלים עם יותר משתתפים.
+ * שירותים אזוריים, ארציים ומרחוק מופיעים כחלופה כשאין מענה מקומי.
+ */
+export function suggestServiceTypes(seed: Seed, coreCategoryId: string, limit = 3, opts: { presentCodes?: readonly string[] } = {}) {
   const cc = seed.core_categories.find((c) => c.id === coreCategoryId);
   if (!cc) return [];
+  const present = new Set(opts.presentCodes ?? []);
+  const outside = new Set(seed.categories.filter((c) => c.layer === "בחוץ").map((c) => c.code));
   return seed.service_types
-    .filter((t) => cc.codes.includes(t.category) && !(t.note ?? "").startsWith("בחוץ"))
-    .sort((a, b) => b.jerusalem.participants - a.jerusalem.participants)
+    .filter((t) => cc.codes.includes(t.category) && !outside.has(t.category) && !(t.note ?? "").startsWith("בחוץ"))
+    .sort(
+      (a, b) =>
+        Number(present.has(a.category)) - Number(present.has(b.category)) ||
+        b.jerusalem.participants - a.jerusalem.participants,
+    )
     .slice(0, limit);
+}
+
+/** ביקוש שלא נענה לפי שכונה וקטגוריית ליבה, מצטבר על כל החודשים. */
+export function unmetByCell(unmet: readonly UnmetDemand[], seed: Seed) {
+  const typeCategory = new Map(seed.service_types.map((t) => [t.id, t.category]));
+  const out = new Map<string, { requests: number; types: Map<string, number> }>();
+  for (const u of unmet) {
+    const code = typeCategory.get(u.serviceTypeId);
+    const cc = seed.core_categories.find((c) => code && c.codes.includes(code));
+    if (!cc) continue;
+    const key = `${u.neighborhoodId}|${cc.id}`;
+    const cell = out.get(key) ?? { requests: 0, types: new Map<string, number>() };
+    cell.requests += u.requests;
+    cell.types.set(u.serviceTypeId, (cell.types.get(u.serviceTypeId) ?? 0) + u.requests);
+    out.set(key, cell);
+  }
+  return out;
 }

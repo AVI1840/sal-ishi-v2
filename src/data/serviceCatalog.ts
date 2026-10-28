@@ -12,7 +12,6 @@
  * ה-dimensions מיוצרים אוטומטית מנתוני ה-JSON + enrichment rules
  */
 
-import catalog from "./services-research/services-catalog.json";
 import type { RealService } from "./realServices";
 
 // ─── Dimension Types ────────────────────────────────────────────
@@ -114,6 +113,14 @@ function inferDimensions(raw: Record<string, unknown>): ServiceDimensions {
 }
 
 function inferSector(raw: Record<string, unknown>): "secular" | "arab" | "haredi" | "mixed" {
+  // מהאטלס: ההתאמה הקהילתית שהרשות סימנה גוברת על ניחוש לפי שם השכונה.
+  const fit = raw.communityFit as string[] | undefined;
+  if (fit && fit.length) {
+    if (fit.length > 1) return "mixed";
+    if (fit[0] === "haredi") return "haredi";
+    if (fit[0] === "arab") return "arab";
+    return "secular";
+  }
   const neighborhood = (raw.neighborhood as string) || "";
   const languages = (raw.languages as string[]) || [];
   const notes = (raw.notes as string) || "";
@@ -146,7 +153,10 @@ const CATEGORY_LABELS: Record<number, string> = {
 
 // ─── Build catalog ──────────────────────────────────────────────
 
-export const serviceCatalog: CatalogService[] = (catalog as Record<string, unknown>[]).map((raw) => {
+/** הרשימה החיה. setServiceCatalogRaw מחליף את התוכן שלה. */
+export const serviceCatalog: CatalogService[] = [];
+
+function toCatalogService(raw: Record<string, unknown>): CatalogService {
   const dimensions = inferDimensions(raw);
   const sector = inferSector(raw);
   const cat = raw.category as number;
@@ -159,11 +169,12 @@ export const serviceCatalog: CatalogService[] = (catalog as Record<string, unkno
     categoryLabel: CATEGORY_LABELS[cat] ?? "כללי",
     pilotGoalsServed,
   } as CatalogService;
-});
+}
 
 // ─── Stats & utilities ──────────────────────────────────────────
 
-export const catalogAnalytics = {
+function computeAnalytics() {
+  return {
   total: serviceCatalog.length,
   bySector: {
     secular: serviceCatalog.filter(s => s.sector === "secular").length,
@@ -196,7 +207,16 @@ export const catalogAnalytics = {
     goal: g,
     count: serviceCatalog.filter(s => s.pilotGoalsServed.includes(g)).length,
   })),
-};
+  };
+}
+
+export const catalogAnalytics = computeAnalytics();
+
+/** מחליף את הקטלוג של מנוע ההתאמה (בעלייה מהקטלוג המאושר, או בבדיקות). */
+export function setServiceCatalogRaw(raw: Record<string, unknown>[]): void {
+  serviceCatalog.splice(0, serviceCatalog.length, ...raw.map(toCatalogService));
+  Object.assign(catalogAnalytics, computeAnalytics());
+}
 
 /** Get services by sector */
 export const getBySector = (sector: string) =>

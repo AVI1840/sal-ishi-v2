@@ -1,7 +1,16 @@
 // מימוש SyncAdapter מבוסס קבצים. הקריאה והכתיבה עצמן עוברות דרך FileIO,
 // כך שבדפדפן זו הורדה ובחירת קובץ, ובבדיקות זה זיכרון.
 
-import { citizenCatalogSchema, type CatalogExport, type CitizenCatalog, type PilotPackage } from "../model";
+import {
+  citizenCatalogIndexSchema,
+  citizenCatalogSchema,
+  unmetDemandFileSchema,
+  type CatalogExport,
+  type CitizenCatalog,
+  type CitizenCatalogIndex,
+  type PilotPackage,
+  type UnmetDemandFile,
+} from "../model";
 import { parsePilotPackage } from "../pilotPackage";
 import { parseSeed, type Seed } from "../seed";
 import type { ReceivedPackage, SyncAdapter } from "./SyncAdapter";
@@ -21,6 +30,10 @@ export interface FileIO {
 }
 
 const JSON_MIME = "application/json";
+
+export function citizenCatalogIndexPath(basePath = "catalog"): string {
+  return `${basePath}/index.json`;
+}
 
 export function citizenCatalogPath(authority: string, neighborhoodId: string, basePath = "catalog"): string {
   return `${basePath}/${encodeURIComponent(authority)}/${encodeURIComponent(neighborhoodId)}.json`;
@@ -55,8 +68,8 @@ export class FileSyncAdapter implements SyncAdapter {
   }
 
   async publishCitizenCatalog(catalog: CitizenCatalog): Promise<void> {
-    // בשלב א' המטה מוריד את הקובץ ומעלה אותו לתיקיית public/catalog של הכלי לאזרח.
-    const name = `catalog_${catalog.authority}_${catalog.neighborhood.id}.json`;
+    // בשלב א' המטה מוריד את הקובץ ומעלה אותו ל-public/catalog/<רשות>/ באתר של הכלי לאזרח.
+    const name = `${catalog.neighborhood.id}.json`;
     await this.io.save(name, JSON.stringify(citizenCatalogSchema.parse(catalog), null, 2), JSON_MIME);
   }
 
@@ -64,6 +77,25 @@ export class FileSyncAdapter implements SyncAdapter {
     const text = await this.io.fetchText(citizenCatalogPath(authority, neighborhoodId, this.options.catalogBasePath));
     if (text === null) return null;
     return citizenCatalogSchema.parse(JSON.parse(text));
+  }
+
+  async publishCitizenCatalogIndex(index: CitizenCatalogIndex): Promise<void> {
+    await this.io.save("index.json", JSON.stringify(citizenCatalogIndexSchema.parse(index), null, 2), JSON_MIME);
+  }
+
+  async loadCitizenCatalogIndex(): Promise<CitizenCatalogIndex | null> {
+    const text = await this.io.fetchText(citizenCatalogIndexPath(this.options.catalogBasePath));
+    if (text === null) return null;
+    return citizenCatalogIndexSchema.parse(JSON.parse(text));
+  }
+
+  async sendUnmetDemand(file: UnmetDemandFile): Promise<void> {
+    await this.io.save(`unmet_demand_${stamp(file.exportedAt)}.json`, JSON.stringify(unmetDemandFileSchema.parse(file), null, 2), JSON_MIME);
+  }
+
+  async receiveUnmetDemand(): Promise<UnmetDemandFile | null> {
+    const [file] = await this.io.pick(".json,application/json", false);
+    return file ? unmetDemandFileSchema.parse(JSON.parse(file.text)) : null;
   }
 
   async publishSeed(seed: Seed): Promise<void> {

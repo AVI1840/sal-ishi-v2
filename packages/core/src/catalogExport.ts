@@ -4,10 +4,15 @@
 
 import {
   catalogExportSchema,
+  citizenCatalogIndexSchema,
   citizenCatalogSchema,
   type CatalogExport,
   type CatalogItem,
   type CitizenCatalog,
+  type CitizenCatalogIndex,
+  type CitizenCatalogItem,
+  type DemandBand,
+  type MonthlyActivity,
   type Neighborhood,
   type Service,
   type Supplier,
@@ -15,9 +20,10 @@ import {
 import { contentHash } from "./hash";
 import { EXPORT_FORBIDDEN_KEYS, findForbiddenKeys } from "./privacy";
 import { isPublishable } from "./rules/publish";
-import type { Seed } from "./seed";
+import { supplierScore } from "./rules/suppliers";
+import type { Seed, Settings } from "./seed";
 import { seedIndex } from "./seed";
-import { copayRate } from "./settings";
+import { copayRate, windowMonths } from "./settings";
 
 export interface SkippedService {
   serviceId: string;
@@ -28,7 +34,10 @@ interface CatalogSource {
   neighborhoods: readonly Neighborhood[];
   suppliers: readonly Supplier[];
   services: readonly Service[];
+  activity?: readonly MonthlyActivity[];
 }
+
+export const NATIONAL_AUTHORITY = "ארצי";
 
 function toCatalogItems(source: CatalogSource, seed: Seed): { items: CatalogItem[]; skipped: SkippedService[] } {
   const { categories, serviceTypes } = seedIndex(seed);
@@ -39,6 +48,8 @@ function toCatalogItems(source: CatalogSource, seed: Seed): { items: CatalogItem
 
   for (const s of source.services) {
     if (!isPublishable(s, seed.settings)) continue;
+    const reach = s.reach ?? "neighborhood";
+    const national = reach === "national";
     const neighborhood = neighborhoods.get(s.neighborhoodId);
     const supplier = suppliers.get(`${s.authority}|${s.supplierCode}`);
     const category = categories.get(s.categoryCode);
@@ -46,16 +57,17 @@ function toCatalogItems(source: CatalogSource, seed: Seed): { items: CatalogItem
     const pricePoints =
       s.pricePoints ?? (s.unitPrice !== undefined ? s.unitPrice * seed.settings.points_per_shekel : undefined);
 
-    const problem = !neighborhood
-      ? "שכונה לא מוכרת"
-      : !supplier
-        ? "ספק לא מוכר"
-        : !category || !type
-          ? "קטגוריה או סוג שירות לא מוכרים"
-          : pricePoints === undefined
-            ? "אין מחיר בנקודות"
-            : null;
-    if (problem || !neighborhood || !supplier || !category || !type || pricePoints === undefined) {
+    const problem =
+      !neighborhood && !national
+        ? "שכונה לא מוכרת"
+        : !supplier
+          ? "ספק לא מוכר"
+          : !category || !type
+            ? "קטגוריה או סוג שירות לא מוכרים"
+            : pricePoints === undefined
+              ? "אין מחיר בנקודות"
+              : null;
+    if (problem || !supplier || !category || !type || pricePoints === undefined) {
       skipped.push({ serviceId: s.id, reason: problem ?? "נתונים חסרים" });
       continue;
     }
@@ -63,8 +75,8 @@ function toCatalogItems(source: CatalogSource, seed: Seed): { items: CatalogItem
     items.push({
       serviceId: s.id,
       authority: s.authority,
-      neighborhoodId: s.neighborhoodId,
-      neighborhoodName: neighborhood.name,
+      neighborhoodId: national ? "" : s.neighborhoodId,
+      neighborhoodName: national ? NATIONAL_AUTHORITY : neighborhood!.name,
       name: s.name,
       categoryCode: s.categoryCode,
       categoryName: category.name,
@@ -82,6 +94,7 @@ function toCatalogItems(source: CatalogSource, seed: Seed): { items: CatalogItem
       communityFit: [...s.communityFit],
       attendanceMethod: [...s.attendanceMethod],
       cancellationPolicy: s.cancellationPolicy ?? null,
+      reach,
       startMonth: s.startMonth,
     });
   }
@@ -124,7 +137,40 @@ export async function buildCatalogExport(
   return { export: validateCatalogExport(result), skipped };
 }
 
-/** הקטלוג המאושר של שכונה אחת, כפי שהכלי לאזרח קורא אותו. */
+/**
+ * רמת ביקוש לשירות: שיא המשתתפים (כולל סבבים של אותה תוכנית) בחלון המיצוי.
+ * מתחת לסף התא הקטן אין רמה, כך שלא נחשף מספר קטן.
+ */
+export function demandBand(
+  service: Pick<Service, "id">,
+  activity: readonly MonthlyActivity[],
+  settings: Pick<Settings, "min_participants" | "small_cell_threshold" | "utilization_window">,
+  asOfMonth?: string,
+): DemandBand | null {
+  const rows = activity.filter((a) => a.serviceId === service.id);
+  if (!rows.length) return null;
+  const months_ = rows.map((a) => a.month).sort();
+  const latest = asOfMonth ?? months_[months_.length - 1]!;
+  const size = Number(/(\d+)/.exec(settings.utilization_window)?.[1] ?? 3);
+  const months = new Set(windowMonths(latest, size));
+  const peak = Math.max(0, ...rows.filter((a) => months.has(a.month)).map((a) => a.uniqueParticipants));
+  if (peak >= settings.min_participants * 2) return "high";
+  if (peak >= settings.min_participants) return "medium";
+  if (peak >= settings.small_cell_threshold) return "low";
+  return null;
+}
+
+/** האם השירות זמין לתושבי השכונה: בשכונה עצמה, משרת אותה, ברמת רשות, אזורי או ארצי. */
+export function servesNeighborhood(service: Service, neighborhood: Neighborhood): boolean {
+  const reach = service.reach ?? "neighborhood";
+  if (reach === "national") return true;
+  if (service.neighborhoodId === neighborhood.id) return true;
+  if (service.authority !== neighborhood.authority) return false;
+  if (reach === "authority" || reach === "regional") return true;
+  return (service.servesNeighborhoods ?? []).includes(neighborhood.id);
+}
+
+/** הקטלוג המאושר של שכונה אחת, כפי שהכלי לאזרח ולמלווה קורא אותו. */
 export function buildCitizenCatalog(
   source: CatalogSource,
   neighborhoodId: string,
@@ -133,19 +179,42 @@ export function buildCitizenCatalog(
 ): { catalog: CitizenCatalog; skipped: SkippedService[] } {
   const neighborhood = source.neighborhoods.find((n) => n.id === neighborhoodId);
   if (!neighborhood) throw new Error(`שכונה ${neighborhoodId} לא נמצאה`);
-  const { items, skipped } = toCatalogItems(
-    { ...source, services: source.services.filter((s) => s.neighborhoodId === neighborhoodId) },
-    seed,
-  );
+  const visible = source.services.filter((s) => servesNeighborhood(s, neighborhood));
+  const { items, skipped } = toCatalogItems({ ...source, services: visible }, seed);
+  const byId = new Map(visible.map((s) => [s.id, s]));
+  const suppliers = new Map(source.suppliers.map((s) => [`${s.authority}|${s.code}`, s]));
+  const activity = source.activity ?? [];
+  const sortedMonths = activity.map((a) => a.month).sort();
+  const latest = sortedMonths[sortedMonths.length - 1];
+
+  const services: CitizenCatalogItem[] = items.map((item) => {
+    const s = byId.get(item.serviceId)!;
+    const sup = suppliers.get(`${s.authority}|${s.supplierCode}`);
+    return {
+      ...item,
+      demand: demandBand(s, activity, seed.settings, latest),
+      supplierScore: sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
+    };
+  });
+
   const catalog = citizenCatalogSchema.parse({
     schema: "citizen_catalog_v1",
     authority: neighborhood.authority,
     neighborhood,
     seedVersion: seed.meta.version,
     generatedAt: now.toISOString(),
-    services: items,
+    services,
   });
   const forbidden = findForbiddenKeys(catalog.services, EXPORT_FORBIDDEN_KEYS);
   if (forbidden.length) throw new Error(`בקטלוג לאזרח יש שדות אסורים: ${forbidden.join(", ")}`);
   return { catalog, skipped };
+}
+
+export function buildCitizenCatalogIndex(neighborhoods: readonly Neighborhood[], seed: Seed, now = new Date()): CitizenCatalogIndex {
+  return citizenCatalogIndexSchema.parse({
+    schema: "citizen_catalog_index_v1",
+    generatedAt: now.toISOString(),
+    seedVersion: seed.meta.version,
+    entries: neighborhoods.map((n) => ({ authority: n.authority, neighborhoodId: n.id, neighborhoodName: n.name, community: n.community })),
+  });
 }

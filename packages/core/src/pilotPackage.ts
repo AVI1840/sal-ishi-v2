@@ -13,6 +13,7 @@ import {
   type PilotPackage,
   type Service,
   type Supplier,
+  type UnmetDemand,
 } from "./model";
 import { contentHash } from "./hash";
 import { RESIDENT_FIELD_KEYS, findForbiddenKeys } from "./privacy";
@@ -46,6 +47,14 @@ function packageContent(data: AuthorityData, seed: Seed): PackageContent {
     enrollment: [...data.enrollment].sort(
       (a, b) => a.neighborhoodId.localeCompare(b.neighborhoodId) || a.month.localeCompare(b.month),
     ),
+    // שדה אופציונלי: נכלל רק כשיש בו משהו, כך שחבילות ישנות שומרות על אותה חתימה.
+    ...(data.unmetDemand?.length
+      ? {
+          unmetDemand: [...data.unmetDemand].sort(
+            (a, b) => a.neighborhoodId.localeCompare(b.neighborhoodId) || a.serviceTypeId.localeCompare(b.serviceTypeId) || a.month.localeCompare(b.month),
+          ),
+        }
+      : {}),
   };
 }
 
@@ -101,6 +110,7 @@ export interface HqState {
   services: Service[];
   activity: MonthlyActivity[];
   enrollment: NeighborhoodMonth[];
+  unmetDemand?: UnmetDemand[];
 }
 
 export const emptyHqState = (): HqState => ({
@@ -110,6 +120,7 @@ export const emptyHqState = (): HqState => ({
   services: [],
   activity: [],
   enrollment: [],
+  unmetDemand: [],
 });
 
 export interface ServiceChange {
@@ -239,6 +250,10 @@ export function mergePackage(state: HqState, pkg: PilotPackage): HqState {
     enrollment: [
       ...state.enrollment.filter((e) => !neighborhoodIds.has(e.neighborhoodId)),
       ...pkg.enrollment,
+    ],
+    unmetDemand: [
+      ...(state.unmetDemand ?? []).filter((u) => !neighborhoodIds.has(u.neighborhoodId)),
+      ...(pkg.unmetDemand ?? []),
     ],
   };
 }

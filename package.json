@@ -23,6 +23,7 @@
     "build:offline": "npm run build:offline -w @sal-ishi/field && npm run build:offline -w @sal-ishi/hq"
   },
   "dependencies": {
+    "@sal-ishi/core": "*",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.2",

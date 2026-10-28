@@ -7,6 +7,8 @@ import { useState, useMemo } from "react";
 import { Search, MapPin, Phone, Clock, ExternalLink, ChevronDown, ChevronUp, Users, Heart, Activity, Laptop, Wrench, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { serviceCatalog, catalogAnalytics, type CatalogService, type ServiceDimensions } from "@/data/serviceCatalog";
+import { NEIGHBORHOODS_LIST } from "@/data/realServices";
+import { UnmetDemandPanel } from "@/components/atlas/UnmetDemandPanel";
 
 // ─── Category icons (lucide, not emoji) ─────────────────────────
 
@@ -18,7 +20,8 @@ const CATEGORY_META: Record<number, { label: string; icon: typeof Heart; color: 
   5: { label: "מוצרים מסייעים", icon: Wrench, color: "#f59e0b" },
 };
 
-const NEIGHBORHOODS = ["הכל", "פסגת זאב", "תלפיות מזרח", "תלפיות", "בית חנינא", "ואדי ג'וז", "נווה יעקב", "עין כרם", "רמות", "גילה", "קטמון", "עירוני"];
+// השכונות מהקטלוג המאושר שנטען, ולא רשימה קבועה.
+const NEIGHBORHOODS = NEIGHBORHOODS_LIST;
 const SECTORS = [
   { value: "all", label: "כל המגזרים" },
   { value: "secular", label: "חילוני" },
@@ -184,7 +187,7 @@ export default function CoordinatorServices() {
 
   const results = useMemo(() => {
     let list = serviceCatalog;
-    if (neighborhood !== "הכל") list = list.filter(s => s.neighborhood === neighborhood);
+    if (neighborhood !== "הכל") list = list.filter(s => s.neighborhood === neighborhood || ((s as { servesNeighborhoods?: string[] }).servesNeighborhoods ?? []).includes(neighborhood) || (s as { reach?: string }).reach === "national");
     if (category !== 0) list = list.filter(s => s.category === category);
     if (sector !== "all") list = list.filter(s => s.sector === sector);
     if (cost !== "all") list = list.filter(s => s.cost === cost);
@@ -201,8 +204,10 @@ export default function CoordinatorServices() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-gray-900">קטלוג שירותים</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{catalogAnalytics.total} שירותים ממופים · 5 שכונות · ניתוח מימדי</p>
+        <p className="text-sm text-gray-600 mt-0.5">{catalogAnalytics.total} שירותים מהקטלוג המאושר · {NEIGHBORHOODS_LIST.length - 1} שכונות · ניתוח מימדי</p>
       </div>
+
+      <UnmetDemandPanel />
 
       {/* Category navigation */}
       <div className="grid grid-cols-5 gap-2">

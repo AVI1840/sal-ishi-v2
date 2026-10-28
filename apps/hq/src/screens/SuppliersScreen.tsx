@@ -2,7 +2,7 @@
 // (הכרעה 28.10.2026) ולא יוצאים מהמטה: לא לאינטגרטור ולא לכלי לאזרח.
 
 import { useState } from "react";
-import { SUPPLIER_TYPES } from "@sal-ishi/core";
+import { SUPPLIER_TYPES, competitionFlags, supplierScore } from "@sal-ishi/core";
 import { Alert, Badge, PageHeader, SelectField, TableWrap } from "@sal-ishi/ui";
 import { useHqAnalysis } from "../analysis";
 
@@ -24,6 +24,15 @@ export default function SuppliersScreen() {
           ? "שם ופרטי קשר של עוסק פטור ומורשה מגיעים למטה בחבילה ונשמרים כאן לניהול. הם לא נכללים ב-catalog_export ולא בקטלוג לאזרח."
           : "לפי ההגדרות, ספקים שהם אנשים פרטיים מגיעים למטה כקוד וסוג בלבד."}
       </Alert>
+      {(() => {
+        const flags = competitionFlags(state.services, seed.settings);
+        const nName = new Map(state.neighborhoods.map((n) => [n.id, n.name]));
+        return flags.length ? (
+          <Alert tone="info" title={`מדד תחרות: ${flags.length} חריגות (הצעה, לא חוסם)`}>
+            {flags.map((f) => `${f.authority} ${nName.get(f.neighborhoodId) ?? ""}: ${f.suppliers} ספקים ל-${f.serviceTypeId} (עד ${f.max})`).join(". ")}
+          </Alert>
+        ) : null;
+      })()}
       <div className="card">
         <div className="grid grid--form">
           <SelectField label="פיילוט" value={authority} onChange={(e) => setAuthority(e.target.value)} placeholder="כל הפיילוטים"
@@ -46,6 +55,7 @@ export default function SuppliersScreen() {
               <th scope="col">התאמה</th>
               <th scope="col">פרטי קשר</th>
               <th scope="col">שירותים</th>
+              <th scope="col">דירוג</th>
             </tr>
           </thead>
           <tbody>
@@ -60,6 +70,12 @@ export default function SuppliersScreen() {
                 <td>{s.communityFit.map((c) => labels.community[c]).join(", ")}</td>
                 <td dir="ltr" style={{ textAlign: "right" }}>{[s.contact?.phone, s.contact?.email].filter(Boolean).join(" | ") || "-"}</td>
                 <td className="num">{state.services.filter((x) => x.authority === s.authority && x.supplierCode === s.code).length}</td>
+                <td>
+                  {(() => {
+                    const sc = supplierScore(s, seed.settings);
+                    return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} ({sc.quarter})</Badge> : <span className="muted">אין</span>;
+                  })()}
+                </td>
               </tr>
             ))}
           </tbody>

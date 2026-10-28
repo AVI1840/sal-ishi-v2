@@ -4,12 +4,15 @@
 import { create } from "zustand";
 import {
   buildDemoAuthority,
+  buildDemoNationalChannel,
+  NATIONAL_AUTHORITY,
   buildPilotPackage,
   defaultSeed,
   emptyHqState,
   mergePackage,
   openStore,
   parseSeed,
+  upgradeSeed,
   publishSeedVersion,
   settingsSchema,
   type ChangeLogEntry,
@@ -17,7 +20,9 @@ import {
   type KeyValueStore,
   type PilotPackage,
   type Seed,
+  type Service,
   type Settings,
+  type Supplier,
   DEMO_VARIANT_COUNT,
 } from "@sal-ishi/core";
 import { EDITION } from "@sal-ishi/ui";
@@ -45,6 +50,8 @@ export interface HqStore {
   updateSetting(key: string, value: unknown, note?: string): string | null;
   updateServiceType(id: string, patch: Partial<ServiceType>): void;
   addServiceType(type: ServiceType): void;
+  upsertNationalService(s: Service): void;
+  upsertNationalSupplier(s: Supplier): void;
   publishSeed(): Seed;
 }
 
@@ -54,8 +61,13 @@ const KEY = "hq-state";
 async function demoState(): Promise<HqState> {
   let state = emptyHqState();
   for (let v = 0; v < DEMO_VARIANT_COUNT; v++) state = mergePackage(state, await buildPilotPackage(buildDemoAuthority(v), defaultSeed));
-  return state;
+  // ערוץ המוצרים הארצי מנוהל במטה, ולא מגיע בחבילות.
+  const national = buildDemoNationalChannel();
+  return { ...state, suppliers: [...state.suppliers, ...national.suppliers], services: [...state.services, ...national.services] };
 }
+
+const upsertBy = <T,>(list: T[], item: T, same: (a: T) => boolean) =>
+  list.some(same) ? list.map((x) => (same(x) ? item : x)) : [...list, item];
 
 export const useHq = create<HqStore>()((set, get) => {
   const log = (entry: Omit<ChangeLogEntry, "at">) =>
@@ -74,7 +86,7 @@ export const useHq = create<HqStore>()((set, get) => {
       if (saved) {
         let seed = defaultSeed;
         try {
-          seed = parseSeed(saved.seed);
+          seed = upgradeSeed(parseSeed(saved.seed));
         } catch {
           /* seed שמור לא תקין: חוזרים לברירת המחדל */
         }
@@ -121,6 +133,18 @@ export const useHq = create<HqStore>()((set, get) => {
       const { seed } = get();
       set({ seed: { ...seed, service_types: [...seed.service_types, type] } });
       log({ kind: "service_type", key: type.id, before: null, after: type });
+    },
+
+    upsertNationalService(s) {
+      const item: Service = { ...s, authority: NATIONAL_AUTHORITY, neighborhoodId: "", reach: "national" };
+      set((st) => ({ state: { ...st.state, services: upsertBy(st.state.services, item, (x) => x.id === item.id) } }));
+    },
+
+    upsertNationalSupplier(s) {
+      const item: Supplier = { ...s, authority: NATIONAL_AUTHORITY };
+      set((st) => ({
+        state: { ...st.state, suppliers: upsertBy(st.state.suppliers, item, (x) => x.authority === NATIONAL_AUTHORITY && x.code === item.code) },
+      }));
     },
 
     publishSeed() {

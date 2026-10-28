@@ -2,7 +2,8 @@
 // מומצא, ונבחר כך שכל מצב בכלי יופיע (ירוק, כתום, אדום, אירוע, חריגת מחיר,
 // התראה קהילתית ודגל מיצוי). שתי וריאציות, כדי שהמטה יוכל להשוות בין פיילוטים.
 
-import type { AuthorityData, Community, MonthlyActivity, Neighborhood, Service, Supplier } from "./model";
+import type { AuthorityData, Community, MonthlyActivity, Neighborhood, Service, Supplier, SupplierEvaluation, UnmetDemand } from "./model";
+import { NATIONAL_AUTHORITY } from "./catalogExport";
 import { defaultSeed, seedIndex } from "./seed";
 import { defaultCopayTier } from "./settings";
 
@@ -26,6 +27,7 @@ interface Spec {
   enforceable?: boolean;
   name?: string;
   copay?: Service["copayTier"];
+  reach?: Service["reach"];
 }
 
 const G: Community[] = ["general"];
@@ -45,7 +47,7 @@ const SPECS: Spec[] = [
   { n: 0, type: "T35", sup: "S-006", fit: G, price: 200, pattern: "cont", base: 10, status: "הוגש" },
   { n: 0, type: "T40", sup: "S-007", fit: G, price: 280, pattern: "cont", base: 13, status: "אושר" },
   { n: 0, type: "T42", sup: "S-007", fit: G, price: 300, pattern: "cont", base: 12, status: "אושר" },
-  { n: 0, type: "T45", sup: "S-007", fit: G, price: 150, pattern: "low", base: 6, status: "טיוטה" },
+  { n: 0, type: "T45", sup: "S-007", fit: G, price: 150, pattern: "cont", base: 11, status: "אושר", reach: "authority", name: "תמיכה טכנית בבית (לכל הרשות)" },
   { n: 0, type: "T48", sup: "S-008", fit: G, price: 50, pattern: "cont", base: 40, status: "אושר", copay: "qol" },
   { n: 0, type: "T28", sup: "S-001", fit: G, price: 0, pattern: "event", base: 35, otherFunder: true, status: "טיוטה", name: "הרצאת קופת חולים (הדגמה)" },
 
@@ -75,7 +77,7 @@ const SPECS: Spec[] = [
   // שכונה ה (ערבית)
   { n: 4, type: "T01", sup: "S-001", fit: A, price: 115, pattern: "cont", base: 20, status: "אושר" },
   { n: 4, type: "T06", sup: "S-001", fit: A, price: 40, pattern: "event", base: 60, status: "אושר" },
-  { n: 4, type: "T09", sup: "S-005", fit: A, price: 90, pattern: "cont", base: 25, status: "אושר" },
+  { n: 4, type: "T09", sup: "S-005", fit: A, price: 90, pattern: "cont", base: 25, status: "אושר", reach: "regional", name: "טיולים וסיורים (אזורי)" },
   { n: 4, type: "T12", sup: "S-005", fit: A, price: 55, pattern: "cont", base: 10, status: "הוגש" },
   { n: 4, type: "T17", sup: "S-003", fit: A, price: 90, pattern: "cont", base: 16, status: "אושר" },
   { n: 4, type: "T19", sup: "S-003", fit: A, price: 85, pattern: "cont", base: 11, status: "אושר" },
@@ -92,13 +94,39 @@ interface Variant {
   enrolled: number[];
   priceFactor: number;
   rngSeed: number;
+  /** שמות שכונות. בלי זה: "שכונה א (תווית)". */
+  names?: string[];
 }
 
 // וריאציה 0 משמשת את משטח השטח. וריאציה 1 היא פיילוט שני להדגמת המטה:
-// מחירים גבוהים ב-15%, שכונה רביעית כללית במקום חרדית.
+// מחירים גבוהים ב-15%, שכונה רביעית כללית במקום חרדית. וריאציה 2 משמשת את
+// הכלי המרכזי: שמות השכונות של אזרחי ההדגמה שלו, כדי שההתאמה לפי שכונה תעבוד.
+// השמות הם גיאוגרפיה בלבד. השירותים, הספקים והמספרים בה סינתטיים כמו בשאר.
 const VARIANTS: Variant[] = [
   { authority: "רשות הדגמה", prefix: "demo", label: "הדגמה", communities: ["general", "haredi", "haredi", "haredi", "arab"], enrolled: [60, 58, 47, 13, 56], priceFactor: 1, rngSeed: 2026 },
   { authority: "רשות הדגמה ב", prefix: "demob", label: "הדגמה ב", communities: ["general", "haredi", "general", "general", "arab"], enrolled: [75, 98, 27, 20, 77], priceFactor: 1.15, rngSeed: 7 },
+  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "קטמון", "גילה", "רוממה", "בית חנינא"] },
+];
+
+// הערכות רבעוניות לדוגמה (איכות, תוצאות מניעה, שביעות רצון, עלות-תועלת).
+const ev = (quarter: string, quality: number, outcomes: number, satisfaction: number, value: number): SupplierEvaluation => ({ quarter, quality, outcomes, satisfaction, value });
+const EVALUATIONS: Record<string, SupplierEvaluation[] | undefined> = {
+  "S-001": [ev("2026-Q2", 4, 3, 4, 4), ev("2026-Q3", 4, 4, 4, 4)],
+  "S-002": [ev("2026-Q3", 5, 4, 5, 4)],
+  "S-003": [ev("2026-Q2", 3, 3, 3, 2), ev("2026-Q3", 3, 2, 3, 2)],
+  "S-004": [ev("2026-Q3", 4, 4, 5, 5)],
+  "S-007": [ev("2026-Q3", 4, 3, 4, 3)],
+};
+
+// ביקוש שלא נענה: מה שמלוות סימנו כ"ביקשו ואין", לפי שכונה וסוג שירות.
+const UNMET: [number, string, number][] = [
+  [1, "T33", 7],
+  [1, "T22", 4],
+  [2, "T22", 9],
+  [2, "T16", 6],
+  [3, "T01", 3],
+  [3, "T33", 8],
+  [4, "T35", 6],
 ];
 
 /** מחולל פסאודו-אקראי קבוע, כדי שההדגמה תיראה אותו דבר בכל טעינה. */
@@ -122,7 +150,7 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
   const N: Neighborhood[] = v.communities.map((community, i) => ({
     id: `${v.prefix}-n${i + 1}`,
     authority: v.authority,
-    name: `שכונה ${letters[i]} (${v.label})`,
+    name: v.names?.[i] ?? `שכונה ${letters[i]} (${v.label})`,
     community,
   }));
   const nid = (i: number) => `${v.prefix}-n${i + 1}`;
@@ -137,7 +165,7 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
     { code: "S-006", type: "licensed", displayName: `יועצת לדוגמה 3 (${v.label})`, neighborhoods: all, languages: ["עברית", "אנגלית"], communityFit: ["general", "haredi"], accessible: true, deliveryModes: ["home", "remote"], contact: { email: "demo3@example.test" } },
     { code: "S-007", type: "npo", displayName: `עמותת ${v.label} לדיגיטל`, neighborhoods: all, languages: ["עברית", "ערבית", "יידיש"], communityFit: ["general", "haredi", "arab"], accessible: true, deliveryModes: ["community", "home", "remote"] },
     { code: "S-008", type: "company", displayName: `בית קפה ${v.label}`, neighborhoods: [nid(0)], languages: ["עברית"], communityFit: ["general"], accessible: true, deliveryModes: ["community"] },
-  ].map((s) => ({ ...s, authority: v.authority }) as Supplier);
+  ].map((s) => ({ ...s, authority: v.authority, evaluations: EVALUATIONS[s.code] }) as Supplier);
 
   const services: Service[] = [];
   const activity: MonthlyActivity[] = [];
@@ -174,6 +202,7 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
       otherFunder: spec.otherFunder ?? false,
       enforceable: spec.enforceable ?? true,
       ...(spec.program ? { programId: `${v.prefix}-${spec.program}` } : {}),
+      ...(spec.reach ? { reach: spec.reach } : {}),
       startMonth: MONTHS[start]!,
       status: spec.status ?? "טיוטה",
       ...(spec.status === "נדחה" ? { committeeNote: "מחיר גבוה ממחיר הייחוס, לבקש הצעה מחודשת (הדגמה)" } : {}),
@@ -209,5 +238,71 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
     services,
     activity,
     enrollment: N.flatMap((n, i) => MONTHS.map((month) => ({ neighborhoodId: n.id, month, enrolled: v.enrolled[i]! }))),
+    // כל פיילוט עם ביקוש קצת שונה, כדי שההשוואה במטה תהיה אמינה.
+    unmetDemand: UNMET.map(([n, serviceTypeId, requests]): UnmetDemand => ({
+      neighborhoodId: nid(n),
+      serviceTypeId,
+      month: "2026-10",
+      requests: Math.max(1, requests + Math.round((rand() - 0.5) * 6) - variant),
+    })),
+  };
+}
+
+/**
+ * ערוץ המוצרים הארצי להדגמה: מוצרי מניעה ובטיחות ממסמך הקטלוג, מספקים
+ * ארציים דמיוניים. מנוהל במטה ומופיע בקטלוג של כל שכונה.
+ */
+export function buildDemoNationalChannel(): { suppliers: Supplier[]; services: Service[] } {
+  const supplier = (code: string, name: string, score: number[]): Supplier => ({
+    code,
+    authority: NATIONAL_AUTHORITY,
+    type: "company",
+    displayName: name,
+    neighborhoods: [],
+    languages: ["עברית", "ערבית", "רוסית", "אמהרית"],
+    communityFit: ["general", "haredi", "arab"],
+    accessible: true,
+    deliveryModes: ["home"],
+    evaluations: [ev("2026-Q3", score[0]!, score[1]!, score[2]!, score[3]!)],
+  });
+  const suppliers = [
+    supplier("N-001", "ספק מוצרי בטיחות ארצי (הדגמה)", [4, 4, 4, 3]),
+    supplier("N-002", "ספק טכנולוגיה מסייעת ארצי (הדגמה)", [5, 4, 4, 4]),
+    supplier("N-003", "ספק ציוד כושר ביתי ארצי (הדגמה)", [3, 3, 4, 4]),
+  ];
+  const item = (id: string, typeId: string, name: string, sup: string, price: number): Service => ({
+    id: `nat-${id}`,
+    authority: NATIONAL_AUTHORITY,
+    neighborhoodId: "",
+    name,
+    categoryCode: "6",
+    serviceTypeId: typeId,
+    supplierCode: sup,
+    languages: ["עברית", "ערבית", "רוסית"],
+    format: "מוצר",
+    unit: "מוצר",
+    unitPrice: price,
+    pricePoints: price,
+    marketPrice: Math.round(price * 1.1),
+    copayTier: "core_and_prevention",
+    communityFit: ["general", "haredi", "arab"],
+    deliveryMode: "home",
+    attendanceMethod: ["companion"],
+    otherFunder: false,
+    enforceable: true,
+    reach: "national",
+    startMonth: "2026-12",
+    status: "אושר",
+  });
+  return {
+    suppliers,
+    services: [
+      item("grab", "T54", "מאחזי יד ומעקות בטיחות, כולל התקנה", "N-001", 380),
+      item("bath", "T54", "ערכת אמבטיה נגד החלקה", "N-001", 220),
+      item("button", "T55", "לחצן מצוקה עם מוקד", "N-002", 450),
+      item("light", "T55", "תאורת לילה אוטומטית", "N-002", 120),
+      item("amp", "T57", "מגבר קול לטלפון", "N-002", 160),
+      item("fit", "T56", "ערכת כושר ביתית מותאמת", "N-003", 280),
+    ],
   };
 }

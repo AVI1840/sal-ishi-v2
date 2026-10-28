@@ -4,6 +4,7 @@
  */
 import { User, Phone, MapPin, Heart, Wallet, Target, Calendar, Sparkles, ChevronLeft, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
 import { CITIZENS } from "@/data/mockData";
 import { BARRIER_LABELS, MOTIVATION_LABELS, READINESS_LABELS } from "@/data/types";
 import { ProgressBar } from "@/components/shared/ProgressBar";
@@ -163,7 +164,7 @@ export default function CitizenProfile() {
               <Calendar className="w-4 h-4 text-[#1B3A5C]" />
               <h2 className="text-sm font-semibold text-gray-900">פעילויות קרובות</h2>
             </div>
-            <Link to="/citizen/chat" className="text-xs text-[#1B3A5C] hover:underline flex items-center gap-0.5">
+            <Link to={CITIZEN_CHAT_ENABLED ? "/citizen/chat" : "/citizen/services"} className="text-xs text-[#1B3A5C] hover:underline flex items-center gap-0.5">
               הוסף <ChevronLeft className="w-3 h-3" />
             </Link>
           </div>

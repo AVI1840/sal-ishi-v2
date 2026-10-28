@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { CITIZEN_CHAT_ENABLED, SHOW_DEMO_LAYERS } from "@/lib/edition";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MessageCircle } from "lucide-react";
@@ -77,7 +78,7 @@ export default function App() {
                 <Route index element={<CitizenHome />} />
                 <Route path="services" element={<CitizenServices />} />
                 <Route path="services/:id" element={<CitizenServiceDetail />} />
-                <Route path="chat" element={<CitizenChat />} />
+                <Route path="chat" element={CITIZEN_CHAT_ENABLED ? <CitizenChat /> : <Navigate to="/citizen" replace />} />
                 <Route path="profile" element={<CitizenProfile />} />
               </Route>
 
@@ -107,7 +108,8 @@ export default function App() {
                 <Route index element={<ProviderDashboard />} />
               </Route>
 
-              {/* National / Inter-ministerial Prototype */}
+              {/* National / Inter-ministerial Prototype: רק בגרסת ההאקתון */}
+              {SHOW_DEMO_LAYERS && (<>
               <Route path="/national" element={<Suspense fallback={<RouteFallback />}><PolicyIntelligence /></Suspense>} />
               <Route path="/national/architecture" element={<Suspense fallback={<RouteFallback />}><Architecture /></Suspense>} />
               <Route path="/national/early-warning" element={<Suspense fallback={<RouteFallback />}><EarlyWarning /></Suspense>} />
@@ -119,22 +121,25 @@ export default function App() {
               <Route path="/national/proposal" element={<Suspense fallback={<RouteFallback />}><Proposal /></Suspense>} />
               <Route path="/hackathon" element={<Suspense fallback={<RouteFallback />}><Hackathon /></Suspense>} />
               <Route path="/demo" element={<Suspense fallback={<RouteFallback />}><AutoDemo /></Suspense>} />
+              </>)}
 
               <Route path="*" element={<NotFound />} />
             </Routes>
             </div>
 
             {/* GuidedDemo MUST be inside HashRouter — uses Link */}
-            <GuidedDemo />
-            <AutoDemoOverlay />
+            {SHOW_DEMO_LAYERS && <GuidedDemo />}
+            {SHOW_DEMO_LAYERS && <AutoDemoOverlay />}
           </HashRouter>
 
-          {/* AWS Badge - discreet footer */}
+          {/* AWS Badge - discreet footer: רק בגרסת ההאקתון, כי השירותים האלה לא פועלים בגרסה הזו */}
+          {SHOW_DEMO_LAYERS && (
           <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-center py-1.5 bg-white/80 backdrop-blur border-t border-gray-100 pointer-events-none">
             <span className="text-[10px] text-gray-400">
               Powered by <span className="font-semibold text-[#FF9900]">Amazon Bedrock</span> · Transcribe · Personalize
             </span>
           </div>
+          )}
 
           {/* Feedback FAB */}
           <button

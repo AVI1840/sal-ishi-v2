@@ -11,7 +11,9 @@
    "שדות הספק והשירות - ליישור מול מודל ההתקשרות של החשכ\"ל (פגישת המשך 3.11)",
    "הבחירה במלווה אחרי חצי שנה - מפגש 3, לא משפיע על הכלי בגרסה 1",
    "תקורה 59 ש\"ח - פירוט במפגש 3",
-   "פרטי ספק יחיד בחבילה למטה - הוכרע 28.10 (supplier_contact_to_hq), לעדכן את הקווים האדומים באיפיון ולהציג לאבטחת מידע ב-20.11"
+   "פרטי ספק יחיד בחבילה למטה - הוכרע 28.10 (supplier_contact_to_hq), לעדכן את הקווים האדומים באיפיון ולהציג לאבטחת מידע ב-20.11",
+   "כללי בחירה לאזרח (שירות מכל תחום, עד 8 פעילים, החלפה חודשית) ומשקלות ההתאמה - ממסמך הקטלוג, להכרעה במפגש 3",
+   "דירוג ספקים (40% איכות, 30% תוצאות מניעה, 20% שביעות רצון, 10% עלות-תועלת) ותקרת ספקים לסוג שירות - להכרעה במפגש 3"
   ]
  },
  "settings": {
@@ -68,7 +70,34 @@
    "אושר"
   ],
   "supplier_contact_to_hq": true,
-  "supplier_contact_to_hq_status": "הוכרע 28.10.2026 - פרטי ספק יחיד עוברים למטה, לא לייצוא. לבדיקת אבטחת מידע 20.11"
+  "supplier_contact_to_hq_status": "הוכרע 28.10.2026 - פרטי ספק יחיד עוברים למטה, לא לייצוא. לבדיקת אבטחת מידע 20.11",
+  "matching_weights": {
+   "prevention": 0.3,
+   "motivation": 0.25,
+   "profileFit": 0.2,
+   "socialProof": 0.15,
+   "proximity": 0.1
+  },
+  "matching_weights_status": "proposal - ועדת הסל קובעת אחת לחציון (מסמך הקטלוג, מפגש 2). ערכי ברירת המחדל מהכלי הקיים",
+  "selection_min_per_domain": 1,
+  "selection_max_active": 8,
+  "selection_change_months": 1,
+  "selection_status": "proposal - מסמך הקטלוג (מפגש 2), להכרעה במפגש 3",
+  "suggestions_per_domain": 3,
+  "supplier_rating_weights": {
+   "quality": 0.4,
+   "outcomes": 0.3,
+   "satisfaction": 0.2,
+   "value": 0.1
+  },
+  "supplier_rating_status": "proposal - משקלות ממסמך הקטלוג (מפגש 2). דירוג ספקים רלוונטי לפי הבעלים (28.10)",
+  "competition_max_suppliers_local": 3,
+  "competition_max_suppliers_national": 5,
+  "competition_status": "proposal - מסמך הקטלוג (מפגש 2), מדד בלבד ולא חוסם",
+  "subcategory_breadth_min": 2,
+  "subarea_alert_min": 1,
+  "subcategory_status": "proposal - רצפה של 3 לכל קטגוריית ליבה נשארת. נוסף מדד רוחב: לפחות 2 תתי-קטגוריות שונות",
+  "subarea_status": "proposal - התראה קוגניטיבית כשאין אף שירות רציף בתת-התחום"
  },
  "categories": [
   {
@@ -1354,7 +1383,8 @@
    "delivery mode",
    "community fit",
    "attendance method",
-   "cancellation policy"
+   "cancellation policy",
+   "reach (neighborhood, authority, regional, national)"
   ],
   "excludes": [
    "any resident data",
