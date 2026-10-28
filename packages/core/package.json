@@ -1,0 +1,20 @@
+{
+  "name": "@sal-ishi/core",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "description": "ליבה משותפת לאטלס וקטלוג סל אישי: מודל נתונים, seed, מנוע כללים, SyncAdapter וחוזה ייצוא",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./seed": "./seed/seed_data_catalog_v0.3.json"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  }
+}

@@ -3,12 +3,17 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:core": "npm run test -w @sal-ishi/core",
+    "typecheck:core": "npm run typecheck -w @sal-ishi/core"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",
