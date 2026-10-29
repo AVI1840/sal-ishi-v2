@@ -200,6 +200,17 @@ export default function CompanionPerson() {
         </section>
       ))}
 
+      {["c1", "c2", "c3"].includes(person.id) ? (
+        <div className="p-row">
+          <Link to={`/companion/session/${person.id}`} className="p-btn p-btn--primary">
+            פגישה משותפת: שאלון והמלצות
+          </Link>
+          <Link to={`/companion/review/${person.id}`} className="p-btn p-btn--secondary">
+            מעקב חודשי
+          </Link>
+        </div>
+      ) : null}
+
       <div className="p-row">
         <button type="button" className="p-btn p-btn--primary" aria-expanded={panel === "visit"} onClick={() => setPanel(panel === "visit" ? null : "visit")}>
           <NotebookPen aria-hidden="true" size={18} />

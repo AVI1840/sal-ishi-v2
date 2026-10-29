@@ -21,6 +21,14 @@ import {
   statusNote,
   suggestedGate,
   suggestedServiceMode,
+  OTHER_FUNDERS,
+  FUNCTIONAL_LEVELS,
+  MOBILITY_LEVELS,
+  DIGITAL_LEVELS,
+  EVIDENCE_LEVELS,
+  complementOf,
+  complementSentence,
+  type FitProfile,
   type Seed,
   type Service,
 } from "@sal-ishi/core";
@@ -102,6 +110,12 @@ function fromDraft(d: Draft): Service {
   if (!s.serviceMode) delete s.serviceMode;
   if (s.serviceMode !== "group") delete s.capacityLimited;
   if (!s.gatedByCompanion) delete s.gateReason;
+  if (!s.otherFunder) {
+    delete s.otherFunderName;
+    delete s.otherFunderCoverage;
+    delete s.requiresPriorClaim;
+  }
+  if (s.fitProfile && (!s.fitProfile.functionalLevels.length || !s.fitProfile.mobility.length)) delete s.fitProfile;
   if (!s.programId) delete s.programId;
   if (!s.reach || s.reach === "neighborhood") delete s.reach;
   if (!s.servesNeighborhoods?.length || s.reach) delete s.servesNeighborhoods;
@@ -127,6 +141,32 @@ export const REACH_LABELS: Record<string, string> = {
   regional: "אזורי (כמה רשויות)",
   national: "ארצי",
 };
+
+const FUNCTIONAL_LABEL: Record<string, string> = { independent: "עצמאי", partial_help: "זקוק לעזרה חלקית", homebound: "מרותק לבית" };
+const MOBILITY_LABEL: Record<string, string> = { independent_walking: "הליכה עצמאית", walker_wheelchair: "נגיש להליכון ולכיסא גלגלים", home_remote: "בבית או מרחוק" };
+const DIGITAL_LABEL: Record<string, string> = { none: "לא", basic_phone: "טלפון רגיל", smartphone: "סמארטפון" };
+const EVIDENCE_LABEL: Record<string, string> = { high: "גבוהה", medium: "בינונית", low: "נמוכה", unknown: "לא ידוע" };
+
+/** פרופיל התאמה (תוספת 3): מתאר את השירות, לא את האדם. הכל בחירה, בלי טקסט חופשי. */
+function FitProfileFields(props: { value: FitProfile | undefined; onChange: (v: FitProfile) => void }) {
+  const v: FitProfile = props.value ?? { functionalLevels: [], mobility: [], digitalRequired: "none" };
+  return (
+    <fieldset className="fieldset">
+      <legend className="fieldset__legend">פרופיל התאמה של השירות</legend>
+      <CheckboxGroup legend="למי מתאים: רמת תפקוד" required value={v.functionalLevels} onChange={(x) => props.onChange({ ...v, functionalLevels: x as FitProfile["functionalLevels"] })} options={FUNCTIONAL_LEVELS.map((x) => ({ value: x, label: FUNCTIONAL_LABEL[x]! }))} />
+      <CheckboxGroup legend="ניידות" required value={v.mobility} onChange={(x) => props.onChange({ ...v, mobility: x as FitProfile["mobility"] })} options={MOBILITY_LEVELS.map((x) => ({ value: x, label: MOBILITY_LABEL[x]! }))} hint="לפחות שירות אחד מכל שלושה ברצפה צריך להיות נגיש להליכון ולכיסא גלגלים" />
+      <div className="grid grid--form">
+        <SelectField label="נדרש טלפון" value={v.digitalRequired} onChange={(e) => props.onChange({ ...v, digitalRequired: e.target.value as FitProfile["digitalRequired"] })} options={DIGITAL_LEVELS.map((x) => ({ value: x, label: DIGITAL_LABEL[x]! }))} />
+        <SelectField label="רמת ראיות (רשות)" placeholder="לא נבחר" value={v.evidenceLevel ?? ""} onChange={(e) => props.onChange({ ...v, evidenceLevel: (e.target.value || undefined) as FitProfile["evidenceLevel"] })} options={EVIDENCE_LEVELS.map((x) => ({ value: x, label: EVIDENCE_LABEL[x]! }))} />
+      </div>
+      <div className="grid grid--form">
+        <CheckboxField label="מתאים לירידה קוגניטיבית קלה" checked={v.suitableMildCognitiveDecline ?? false} onChange={(x) => props.onChange({ ...v, suitableMildCognitiveDecline: x })} />
+        <CheckboxField label="נדרש אישור רפואי" checked={v.medicalClearanceRequired ?? false} onChange={(x) => props.onChange({ ...v, medicalClearanceRequired: x })} />
+      </div>
+      <p className="muted">אין סינון לפי מגדר או דת. אלה מסננים שהאזרח בוחר בעצמו.</p>
+    </fieldset>
+  );
+}
 
 export function ServiceForm(props: { open: boolean; onClose: () => void; service?: Service; prefill?: Partial<Service> }) {
   const data = useField((s) => s.data);
@@ -395,9 +435,46 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
         extra={cancellationIsProposal ? <ProposalBadge note={statusNote(seed.settings, "cancellation_notice_hours")} /> : null}
       />
       <div className="grid grid--form">
-        <CheckboxField label="יש לשירות מממן אחר" checked={draft.otherFunder} onChange={(v) => set("otherFunder", v)} hint="סל הבריאות, שב&quot;ן, רווחה או גמלה" />
+        <CheckboxField label="יש לשירות מממן אחר" checked={draft.otherFunder} onChange={(v) => set("otherFunder", v)} hint="סל משלים בלבד: הסל מממן רק את ההשלמה" />
         <CheckboxField label="יש מנגנון מימוש ואימות" checked={draft.enforceable} onChange={(v) => set("enforceable", v)} hint="שובר או נקודות, וסימון נוכחות" />
       </div>
+      {draft.otherFunder ? (
+        <fieldset className="fieldset">
+          <legend className="fieldset__legend">מממן אחר: סל משלים בלבד</legend>
+          <div className="grid grid--form">
+            <SelectField
+              label="מי מממן"
+              required
+              placeholder="לבחור"
+              value={draft.otherFunderName ?? ""}
+              onChange={(e) => set("otherFunderName", (e.target.value || undefined) as Service["otherFunderName"])}
+              options={OTHER_FUNDERS.filter((f) => f !== "אין").map((f) => ({ value: f, label: f }))}
+            />
+            <SelectField
+              label="כמה הוא מכסה"
+              required
+              placeholder="לבחור"
+              value={draft.otherFunderCoverage?.kind ?? ""}
+              onChange={(e) => set("otherFunderCoverage", e.target.value ? { kind: e.target.value as "amount" | "percent" | "varies", value: draft.otherFunderCoverage?.value } : undefined)}
+              options={[{ value: "amount", label: "סכום (ש\"ח)" }, { value: "percent", label: "אחוז מהמחיר" }, { value: "varies", label: "משתנה לפי מקרה" }]}
+            />
+            {draft.otherFunderCoverage && draft.otherFunderCoverage.kind !== "varies" ? (
+              <TextField
+                label={draft.otherFunderCoverage.kind === "amount" ? "הסכום שהוא מכסה" : "האחוז שהוא מכסה"}
+                inputMode="decimal"
+                value={draft.otherFunderCoverage.value ?? ""}
+                onChange={(e) => set("otherFunderCoverage", { kind: draft.otherFunderCoverage!.kind, value: e.target.value === "" ? undefined : Number(e.target.value) })}
+              />
+            ) : null}
+          </div>
+          <CheckboxField label="חובה לממש קודם מול המממן האחר" checked={draft.requiresPriorClaim ?? false} onChange={(v) => set("requiresPriorClaim", v)} hint="המלווה תקבל משימת מיצוי" />
+          {(() => {
+            const line = complementSentence(complementOf({ ...draft, unitPrice: undefined, pricePoints: Number(draft.pricePoints) || Number(draft.unitPrice) || 0 }, seed), seed.settings.points_per_shekel);
+            return line ? <Alert tone="info">{line}</Alert> : <Alert tone="warning">חסר כמה המממן האחר מכסה: השירות יקבל "חסרים נתונים".</Alert>;
+          })()}
+        </fieldset>
+      ) : null}
+      <FitProfileFields value={draft.fitProfile} onChange={(v) => set("fitProfile", v)} />
       {draft.categoryCode === "5.4" ? (
         <Alert tone="info" title="ארוחה חמה">
           קריטריון הכניסה עדיין בהכרעה ({String(seed.settings.hot_meal_entry_status ?? "")}): {seed.settings.hot_meal_entry_criteria.join(", ")}.

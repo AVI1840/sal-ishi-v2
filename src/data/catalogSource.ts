@@ -112,13 +112,13 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
         cost: costType({ copayRate: rate, copayPoints: item.copayPoints }),
         cost_note: costNote({ pricePoints: item.pricePoints, unit: item.unit, copayRate: rate, coveredPoints: item.coveredPoints, copayPoints: item.copayPoints }),
         target_age: "65+",
-        target_mobility: item.deliveryMode === "home" ? "homebound" : "any",
+        target_mobility: item.deliveryMode === "home" ? "homebound" : item.fitProfile && !item.fitProfile.mobility.includes("walker_wheelchair") ? "independent" : "any",
         languages: item.languages.map((l) => LANGUAGE_CODES[l] ?? l),
         phone: "",
         website: "",
         match_score: socialProofScore(item),
         certainty: "high",
-        accessibility: item.deliveryMode === "home" ? ["home_visit"] : item.deliveryMode === "remote" ? ["remote"] : [],
+        accessibility: item.deliveryMode === "home" || item.serviceMode === "home" ? ["home_visit"] : item.deliveryMode === "remote" || item.serviceMode === "remote" ? ["remote"] : [],
         ratings: [],
         // שם סוג השירות וההערה מהספרייה מזינים את כללי המניעה במנוע (נפילות, קוגניטיבי, מועדון).
         notes: [item.serviceTypeName, type?.note].filter(Boolean).join(". "),
@@ -146,6 +146,11 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
         coveredPoints: item.coveredPoints ?? null,
         copayPoints: item.copayPoints ?? null,
         copayBasis: item.copayBasis,
+        // תוספת 3
+        fitProfile: item.fitProfile,
+        otherFunderName: item.otherFunderName ?? null,
+        complementState: item.complementState ?? "none",
+        otherPaysPoints: item.otherPaysPoints ?? null,
       });
     }
   }

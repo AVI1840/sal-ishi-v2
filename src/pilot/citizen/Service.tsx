@@ -3,7 +3,7 @@ import type { RealService } from "@/data/realServices";
 import type { Strings } from "../i18n/he";
 import { formatSlot, useT } from "../i18n";
 import { createRequest, usePilot } from "../store";
-import { cancelRuleOf, isCoordinated, isProduct, priceOf, serviceById, slotsFor } from "../services";
+import { cancelRuleOf, isCoordinated, isProduct, priceOf, serviceById, slotsFor, type Price } from "../services";
 import { Alert } from "../components/Frame";
 import { HelpButton, PageTitle, reasonKey, useCitizen, useWallet } from "./common";
 
@@ -20,6 +20,23 @@ export function ruleText(t: Strings, s: RealService): string[] {
   const lines = [rule.noticeHours === null ? (rule.charged ? t.rule.unknown : t.rule.free) : rule.charged ? t.rule.notice(rule.noticeHours) : t.rule.noticeNoCharge(rule.noticeHours)];
   if (rule.proposal && (rule.noticeHours !== null || rule.charged)) lines.push(t.rule.notFinal);
   return lines;
+}
+
+/** סל משלים בלבד (תוספת 3): מי עוד מממן, כמה הסל משלים וכמה עלייך. */
+export function complementLine(t: Strings, price: Price): string | null {
+  const funder = price.funder ?? t.otherFunder;
+  switch (price.state) {
+    case "partial":
+      return t.complementPartial(funder, price.covered, price.copay);
+    case "prior_claim":
+      return `${t.complementPrior(funder)} ${t.complementPartial(funder, price.covered, price.copay)}`;
+    case "full":
+      return t.complementFull(funder);
+    case "varies":
+      return t.complementVaries(funder);
+    default:
+      return null;
+  }
 }
 
 export default function CitizenService() {
@@ -46,6 +63,8 @@ export default function CitizenService() {
   const tooExpensive = !price.unknown && price.covered > wallet.left;
   const openRequest = derived.requests.find((r) => r.citizenId === profile.id && r.serviceId === s.id && r.kind === "gated_service" && (r.status === "open" || r.status === "approved"));
   const gated = s.gatedByCompanion === true && openRequest?.status !== "approved";
+  const needsClaim = price.state === "full" || price.state === "prior_claim" || price.state === "varies";
+  const claimOpen = derived.requests.some((r) => r.citizenId === profile.id && r.serviceId === s.id && r.kind === "claim_help" && r.status === "open");
 
   return (
     <>
@@ -69,7 +88,7 @@ export default function CitizenService() {
           <div>
             <dt>{t.cost}</dt>
             <dd>
-              {price.unknown ? t.costUnknown(price.total) : t.costLine(price.covered, price.copay)}
+              {complementLine(t, price) ?? (price.unknown ? t.costUnknown(price.total) : t.costLine(price.covered, price.copay))}
               {s.unit ? <span className="p-muted"> ({t.perUnit(s.unit)})</span> : null}
             </dd>
           </div>
@@ -90,7 +109,22 @@ export default function CitizenService() {
         </dl>
       </section>
 
-      {hospitalized ? (
+      {needsClaim ? (
+        claimOpen ? (
+          <Alert tone="success" live>
+            <p>{t.claimSent}</p>
+          </Alert>
+        ) : (
+          <button
+            type="button"
+            className="p-btn p-btn--primary p-btn--block"
+            onClick={() => createRequest({ citizenId: profile.id, kind: "claim_help", serviceId: s.id, serviceName: s.name, note: price.funder ?? undefined, actor: "citizen" })}
+          >
+            {t.claimHelp}
+          </button>
+        )
+      ) : null}
+      {price.state === "full" ? null : hospitalized ? (
         <Alert tone="info">
           <p>{t.hospitalBlock}</p>
         </Alert>

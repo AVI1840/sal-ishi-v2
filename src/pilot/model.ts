@@ -40,6 +40,9 @@ export interface Derived {
   visits: Visit[];
   hospitalized: Set<string>;
   interests: Map<string, string[]>;
+  /** תשובות השאלון המשותף לפי אזרח. */
+  answers: Map<string, Record<string, string>>;
+  reviews: { citizenId: string; serviceId: string; verdict: string; at: string }[];
 }
 
 /** גוזר את המצב מהאירועים, בסדר שבו נרשמו. */
@@ -49,6 +52,8 @@ export function derive(events: PilotEvent[]): Derived {
   const visits: Visit[] = [];
   const hospitalized = new Set<string>();
   const interests = new Map<string, string[]>();
+  const answers = new Map<string, Record<string, string>>();
+  const reviews: Derived["reviews"] = [];
   for (const e of events) {
     switch (e.type) {
       case "booking.created":
@@ -102,10 +107,14 @@ export function derive(events: PilotEvent[]): Derived {
         break;
       case "needs.updated":
         interests.set(e.citizenId, e.interests);
+        if (e.answers) answers.set(e.citizenId, e.answers);
+        break;
+      case "review.logged":
+        reviews.push({ citizenId: e.citizenId, serviceId: e.serviceId, verdict: e.verdict, at: e.at });
         break;
     }
   }
-  return { bookings: [...bookings.values()], requests: [...requests.values()], visits, hospitalized, interests };
+  return { bookings: [...bookings.values()], requests: [...requests.values()], visits, hospitalized, interests, answers, reviews };
 }
 
 export const EMPTY_SIMULATION: Simulation = { offline: false, walletEmpty: false, companionAway: false, noServices: false };

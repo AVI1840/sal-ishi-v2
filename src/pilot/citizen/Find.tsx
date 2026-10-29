@@ -7,6 +7,7 @@ import { usePilot } from "../store";
 import { priceOf, recommend, servicesFor } from "../services";
 import { Alert } from "../components/Frame";
 import { HelpButton, PageTitle, reasonKey, useCitizen } from "./common";
+import { complementLine } from "./Service";
 
 export default function CitizenFind() {
   const { t } = useT();
@@ -50,7 +51,7 @@ export default function CitizenFind() {
                 <strong>{t.reasonTitle}: </strong>
                 {t.reason[reasonKey(s)]}
               </p>
-              <p>{price.unknown ? t.costUnknown(price.total) : t.costLine(price.covered, price.copay)}</p>
+              <p>{complementLine(t, price) ?? (price.unknown ? t.costUnknown(price.total) : t.costLine(price.covered, price.copay))}</p>
               <Link to={`/citizen/service/${encodeURIComponent(s.id)}`} className="p-btn p-btn--secondary p-btn--block" aria-label={`${t.details}: ${s.name}`}>
                 {t.details}
                 <ChevronLeft aria-hidden="true" size={20} />

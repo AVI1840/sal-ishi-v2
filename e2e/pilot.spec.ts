@@ -170,7 +170,7 @@ test("נגישות: axe בלי ליקויים חמורים בכל המסכים",
     "./", "./#/scope", "./#/citizen", "./#/citizen/find", "./#/citizen/service/demoj-balance", "./#/citizen/book/demoj-balance",
     "./#/citizen/activities", "./#/citizen/help", "./#/citizen/needs", "./#/companion", "./#/companion/requests",
     "./#/companion/caseload", "./#/companion/person/c1", "./#/companion/log", "./hq/#/", "./hq/#/learning", "./hq/#/history",
-    "./hq/#/rules", "./hq/#/export", "./field/#/", "./field/#/learning",
+    "./hq/#/rules", "./hq/#/export", "./hq/#/gaps", "./#/companion/session/c2", "./#/companion/review/c1", "./field/#/", "./field/#/learning",
   ];
   const problems: string[] = [];
   for (const route of routes) {
@@ -254,4 +254,39 @@ test("פנקס למידה: רשומות פתיחה ורישום דרישות ל�
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "רישום דרישות למכרז (Excel)" }).click();
   expect((await download).suggestedFilename()).toMatch(/^רישום_דרישות_למכרז_.*\.xlsx$/);
+});
+
+test("תוספת 3: פגישה משותפת, שאלון, המלצות עם למה ובדיקת תקציב חיה", async ({ page }) => {
+  await page.goto("./#/companion/person/c2");
+  await page.getByRole("link", { name: "פגישה משותפת: שאלון והמלצות" }).click();
+  await expect(page.getByText("שאלה 1 מתוך 8")).toBeVisible();
+  await page.getByRole("button", { name: "למלא תשובות לדוגמה (הדגמה)" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "מה מתאים לאהרון" })).toBeVisible();
+  await expect(page.getByText("למה זה מתאים:").first()).toBeVisible();
+  const box = page.getByRole("checkbox", { disabled: false }).first();
+  await box.check();
+  await expect(page.getByText(/נבחר החודש ₪[1-9]/)).toBeVisible();
+  await page.getByRole("button", { name: /^לאשר את הבחירה/ }).click();
+  await expect(page.getByRole("heading", { name: "הסל נבחר" })).toBeVisible();
+  await page.getByRole("link", { name: "למעקב החודשי" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: /מעקב חודשי/ })).toBeVisible();
+});
+
+test("תוספת 3: סל משלים בלבד בצד האזרח, והפניה עם משימת מיצוי למלווה", async ({ page }) => {
+  await page.goto("./#/citizen/service/demoj-nutrition");
+  await expect(page.getByText(/סל בריאות מממן חלק. הסל משלים עד ₪/)).toBeVisible();
+  await page.goto("./#/citizen/service/demoj-checkups");
+  await expect(page.getByText("סל בריאות מממן את זה. לא צריך את הסל.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "להזמין" })).toHaveCount(0);
+  await page.getByRole("button", { name: "לבקש עזרה בהגשה" }).click();
+  await page.goto("./#/companion/person/c1");
+  await expect(page.getByText(/משימת מיצוי: בדיקות מונעות/)).toBeVisible();
+});
+
+test("תוספת 3: פערים וחלופות במטה, ויעד עושר כמדד", async ({ page }) => {
+  await page.goto("./hq/#/gaps");
+  await expect(page.getByRole("heading", { level: 1, name: "פערים וחלופות" })).toBeVisible();
+  await expect(page.getByText(/יעד עושר:/)).toBeVisible();
+  await expect(page.getByRole("row", { name: /רוממה/ }).first()).toBeVisible();
+  await expect(page.getByText(/^מרחוק:/).first()).toBeVisible();
 });

@@ -57,6 +57,17 @@ export interface CatalogService {
   sector: "secular" | "arab" | "haredi" | "mixed";
   categoryLabel: string;
   pilotGoalsServed: number[]; // G1-G5
+  // תוספת 3 (מהקטלוג המאושר)
+  fitProfile?: {
+    functionalLevels: string[];
+    mobility: string[];
+    digitalRequired: string;
+    evidenceLevel?: string;
+    goals?: string[];
+  };
+  coveredPoints?: number | null;
+  pricePoints?: number;
+  complementState?: string;
 }
 
 // ─── Dimension generation rules ─────────────────────────────────

@@ -26,7 +26,8 @@ const base = {
   synced: z.boolean().optional().describe("פנימי לכלי. לא נשלח."),
 };
 
-export const requestKindSchema = z.enum(["callback", "gated_service"]);
+/** claim_help: עזרה בהגשה למממן אחר (משימת מיצוי למלווה, סל משלים בלבד). */
+export const requestKindSchema = z.enum(["callback", "gated_service", "claim_help"]);
 export const visitKindSchema = z.enum(["home", "phone", "no_answer"]);
 
 export const pilotEventSchema = z.discriminatedUnion("type", [
@@ -54,7 +55,15 @@ export const pilotEventSchema = z.discriminatedUnion("type", [
   z.object({ ...base, type: z.literal("visit.logged"), visitId: z.string(), kind: visitKindSchema, note: z.string().optional() }),
   z.object({ ...base, type: z.literal("hospitalization.started"), note: z.string().optional() }),
   z.object({ ...base, type: z.literal("hospitalization.ended") }),
-  z.object({ ...base, type: z.literal("needs.updated"), interests: z.array(z.string()) }),
+  z.object({
+    ...base,
+    type: z.literal("needs.updated"),
+    interests: z.array(z.string()),
+    /** תשובות סגורות מהשאלון המשותף (מפתח שאלה: תשובה). בלי טקסט חופשי. */
+    answers: z.record(z.string(), z.string()).optional(),
+  }),
+  /** מעקב חודשי: מה עבד ומה להחליף, בליווי המלווה. */
+  z.object({ ...base, type: z.literal("review.logged"), serviceId: z.string(), verdict: z.enum(["worked", "partly", "replace"]) }),
 ]);
 
 export const pilotEventsFileSchema = z.object({

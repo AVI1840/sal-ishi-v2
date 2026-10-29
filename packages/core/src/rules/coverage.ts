@@ -259,8 +259,9 @@ export function gapAlternatives(
   const n = input.neighborhoods.find((x) => x.id === neighborhoodId);
   const cc = seed.core_categories.find((c) => c.id === coreCategoryId);
   if (!n || !cc) return { otherAuthority: [], regional: [], remote: [] };
-  const inCat = input.services.filter((s) => cc.codes.includes(s.categoryCode) && s.reach !== "national" && countsTowardCoverage(s, seed));
   const isRemote = (s: Service) => s.serviceMode === "remote" || s.deliveryMode === "remote";
+  // שירות ארצי נחשב חלופה רק כשהוא מרחוק (מוצרים לא נספרים ברצפה).
+  const inCat = input.services.filter((s) => cc.codes.includes(s.categoryCode) && (s.reach !== "national" || isRemote(s)) && countsTowardCoverage(s, seed));
   const notHere = (s: Service) => s.neighborhoodId !== n.id && !(s.servesNeighborhoods ?? []).includes(n.id);
   return {
     otherAuthority: inCat.filter((s) => s.authority !== n.authority && (s.reach ?? "neighborhood") === "neighborhood" && !isRemote(s)).slice(0, limit),

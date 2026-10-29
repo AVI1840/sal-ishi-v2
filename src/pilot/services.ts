@@ -29,18 +29,24 @@ export interface Price {
   total: number;
   covered: number;
   copay: number;
+  /** סל משלים בלבד (תוספת 3): מי עוד מממן וכמה. */
+  funder: string | null;
+  otherPays: number;
+  state: NonNullable<RealService["complementState"]>;
   /** החלוקה עוד לא נקבעה בקטלוג. */
   unknown: boolean;
 }
 
 export function priceOf(s: RealService): Price {
   const total = toShekel(s.pricePoints ?? 0);
-  if (s.coveredPoints === null && s.copayPoints === null) return { total, covered: total, copay: 0, unknown: true };
+  const extra = { funder: s.otherFunderName ?? null, otherPays: toShekel(s.otherPaysPoints ?? 0), state: s.complementState ?? "none" } as const;
+  if (extra.state === "full") return { total, covered: 0, copay: 0, unknown: false, ...extra };
+  if (s.coveredPoints === null && s.copayPoints === null) return { total, covered: total, copay: 0, unknown: true, ...extra };
   if (typeof s.coveredPoints === "number" && typeof s.copayPoints === "number") {
-    return { total, covered: toShekel(s.coveredPoints), copay: toShekel(s.copayPoints), unknown: false };
+    return { total, covered: toShekel(s.coveredPoints), copay: toShekel(s.copayPoints), unknown: false, ...extra };
   }
   const copay = Math.round(total * (s.copayRate ?? 0));
-  return { total, covered: total - copay, copay, unknown: false };
+  return { total, covered: total - copay, copay, unknown: false, ...extra };
 }
 
 export const isProduct = (s: RealService) => s.coreCategoryId === "prevention_products" || s.unit === "מוצר";
@@ -118,8 +124,8 @@ export type Domain = (typeof INTEREST_DOMAINS)[number];
  * ההמלצה: הטוב ביותר מכל תחום לפי מנוע ההתאמה, כשהתחומים שהאזרח בחר
  * קודם. שירות שכבר הוזמן לא מוצע שוב.
  */
-export function recommend(profile: PersonalProfile, interests: string[], exclude: Set<string>): RealService[] {
-  const domains = suggestByDomain(profile, profile.neighborhood);
+export function recommend(profile: PersonalProfile, interests: string[], exclude: Set<string>, walletLeft?: number): RealService[] {
+  const domains = suggestByDomain(profile, profile.neighborhood, { walletLeft });
   const order = (id: string) => {
     const i = interests.indexOf(id);
     return i === -1 ? 100 + domains.findIndex((d) => d.domainId === id) : i;

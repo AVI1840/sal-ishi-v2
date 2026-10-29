@@ -93,6 +93,10 @@ export const READINESS_LABELS: Record<ReadinessStage, string> = {
 
 // ─── פרופיל אישי דינמי ────────────────────────────────────────
 export interface PersonalProfile {
+  // תוספת 3: יכולות ומגבלות מהשאלון המשותף. בלי אלה אין סינון בטיחות.
+  mobilityLevel?: "independent_walking" | "walker_wheelchair" | "home_remote";
+  functionalLevel?: "independent" | "partial_help" | "homebound";
+  digitalLevel?: "none" | "basic_phone" | "smartphone";
   // בסיס
   id: string;
   name: string;

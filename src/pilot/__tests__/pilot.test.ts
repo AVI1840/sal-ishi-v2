@@ -101,8 +101,8 @@ describe("ארנק ומחיר בשקלים", () => {
 
 describe("תיק המלווה", () => {
   it("76 אנשים, בדויים וקבועים בין הרצות", () => {
-    const a = buildCaseload(76);
-    const b = buildCaseload(76);
+    const a = buildCaseload();
+    const b = buildCaseload();
     expect(a).toHaveLength(76);
     expect(a.map((p) => p.name)).toEqual(b.map((p) => p.name));
     expect(a[0]).toEqual(PERSONA_PERSON);

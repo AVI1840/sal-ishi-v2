@@ -13,7 +13,8 @@ export type TriageRule =
   | "gated_request"
   | "cognitive_alert"
   | "no_first_service"
-  | "low_utilization";
+  | "low_utilization"
+  | "claim_task";
 
 export interface AppSettings {
   mode: AppMode;

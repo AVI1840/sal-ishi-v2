@@ -73,6 +73,12 @@ export const PERSONA_PERSON: CaseloadPerson = {
   language: "עברית",
 };
 
+/** שתי דמויות נוספות להדגמת סלים שונים (תוספת 3): פרופיל מלא ב-mockData. */
+export const EXTRA_PERSONAS: CaseloadPerson[] = [
+  { id: "c2", name: "אהרון מ.", age: 82, neighborhood: "פסגת זאב", utilization: 0.12, daysSinceEnrollment: 25, firstServiceDone: true, cognitiveAlert: false, lastContactDays: 14, language: "עברית" },
+  { id: "c3", name: "יוסף כ.", age: 72, neighborhood: "פסגת זאב", utilization: 0.78, daysSinceEnrollment: 60, firstServiceDone: true, cognitiveAlert: false, lastContactDays: 20, language: "עברית" },
+];
+
 export function buildCaseload(size = appSettings.companion.caseload_size): CaseloadPerson[] {
   const r = rng(20261103);
   const hoods: [string, number][] = [["פסגת זאב", 0.45], ["קטמון", 0.2], ["גילה", 0.15], ["בית חנינא", 0.12], ["רוממה", 0.08]];
@@ -81,7 +87,7 @@ export function buildCaseload(size = appSettings.companion.caseload_size): Casel
     for (const [h, w] of hoods) if ((x -= w) <= 0) return h;
     return hoods[0][0];
   };
-  const people: CaseloadPerson[] = [PERSONA_PERSON];
+  const people: CaseloadPerson[] = [PERSONA_PERSON, ...EXTRA_PERSONAS];
   for (let i = 1; i < size; i++) {
     const neighborhood = pickHood();
     const arab = neighborhood === "בית חנינא";
@@ -115,6 +121,7 @@ export function reasonsFor(p: CaseloadPerson, derived: Derived): TriageReason[] 
   if (derived.hospitalized.has(p.id)) out.push({ rule: "hospitalization", text: "באשפוז: לבדוק שחרור ולעדכן את הספקים" });
   for (const req of derived.requests.filter((x) => x.citizenId === p.id && x.status === "open")) {
     if (req.kind === "callback") out.push({ rule: "callback", text: "ביקש/ה שיחזרו אליו/ה", request: req });
+    else if (req.kind === "claim_help") out.push({ rule: "claim_task", text: `משימת מיצוי: ${req.serviceName ?? "הגשה למממן אחר"}${req.note ? ` (${req.note})` : ""}`, request: req });
     else out.push({ rule: "gated_request", text: `מחכה לאישור: ${req.serviceName ?? "שירות"}`, request: req });
   }
   if (p.cognitiveAlert) out.push({ rule: "cognitive_alert", text: "התראה בתחום הקוגניטיבי" });
@@ -129,6 +136,7 @@ const BUCKET: Record<TriageRule, TriageItem["bucket"]> = {
   hospitalization: "today",
   callback: "today",
   gated_request: "today",
+  claim_task: "week",
   cognitive_alert: "week",
   no_first_service: "week",
   low_utilization: "watch",
@@ -151,6 +159,7 @@ export const RULE_LABEL: Record<TriageRule, string> = {
   hospitalization: "אשפוז",
   callback: "שיחזרו אליי",
   gated_request: "ממתין לאישור",
+  claim_task: "משימת מיצוי",
   cognitive_alert: "התראה קוגניטיבית",
   no_first_service: "בלי שירות ראשון",
   low_utilization: "מיצוי נמוך",

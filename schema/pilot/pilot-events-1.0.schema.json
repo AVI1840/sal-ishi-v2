@@ -238,7 +238,8 @@
                 "type": "string",
                 "enum": [
                   "callback",
-                  "gated_service"
+                  "gated_service",
+                  "claim_help"
                 ]
               },
               "serviceId": {
@@ -598,6 +599,12 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "answers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
               }
             },
             "required": [
@@ -607,6 +614,80 @@
               "citizenId",
               "type",
               "interests"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "review.logged"
+              },
+              "serviceId": {
+                "type": "string"
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "worked",
+                  "partly",
+                  "replace"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "serviceId",
+              "verdict"
             ],
             "additionalProperties": false
           }

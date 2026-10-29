@@ -19,7 +19,7 @@ export function describe(e: PilotEvent): string {
     case "booking.cancelled":
       return `ביטול הזמנה${e.charged ? " (מאוחר, מחויב)" : " (בלי חיוב)"}.`;
     case "request.created":
-      return e.kind === "callback" ? `בקשה: שיחזרו אליי${e.note ? ` (${e.note})` : ""}.` : `בקשה לשירות מותנה: ${e.serviceName}.`;
+      return e.kind === "callback" ? `בקשה: שיחזרו אליי${e.note ? ` (${e.note})` : ""}.` : e.kind === "claim_help" ? `בקשה לעזרה בהגשה: ${e.serviceName}${e.note ? ` (${e.note})` : ""}.` : `בקשה לשירות מותנה: ${e.serviceName}.`;
     case "request.decided":
       return `החלטה: ${DECISION[e.decision]}. סיבה: ${e.reason}.`;
     case "visit.logged":
@@ -29,7 +29,9 @@ export function describe(e: PilotEvent): string {
     case "hospitalization.ended":
       return "שחרור מאשפוז נרשם.";
     case "needs.updated":
-      return "עודכן מה חשוב לאזרח/ית.";
+      return e.answers ? "שאלון משותף: עודכנו רצונות, יכולות ומגבלות." : "עודכן מה חשוב לאזרח/ית.";
+    case "review.logged":
+      return `מעקב חודשי: ${e.serviceId}, ${e.verdict === "worked" ? "עבד" : e.verdict === "partly" ? "עבד חלקית" : "להחליף"}.`;
   }
 }
 

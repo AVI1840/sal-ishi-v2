@@ -122,8 +122,12 @@ export function setHospitalized(citizenId: string, on: boolean, note?: string) {
   else record({ type: "hospitalization.ended", actor: "companion", citizenId });
 }
 
-export function updateInterests(citizenId: string, interests: string[], actor: Actor) {
-  record({ type: "needs.updated", actor, citizenId, interests });
+export function updateInterests(citizenId: string, interests: string[], actor: Actor, answers?: Record<string, string>) {
+  record({ type: "needs.updated", actor, citizenId, interests, ...(answers ? { answers } : {}) });
+}
+
+export function logReview(citizenId: string, serviceId: string, verdict: "worked" | "partly" | "replace") {
+  record({ type: "review.logged", actor: "companion", citizenId, serviceId, verdict });
 }
 
 export function setSimulation(patch: Partial<Simulation>) {

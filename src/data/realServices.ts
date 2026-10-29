@@ -73,6 +73,11 @@ export interface RealService {
   coveredPoints?: number | null;
   copayPoints?: number | null;
   copayBasis?: "tier" | "qol_fixed" | "qol_percent" | "reference_binding";
+  // תוספת 3
+  fitProfile?: { functionalLevels: string[]; mobility: string[]; digitalRequired: string; evidenceLevel?: string; goals?: string[] };
+  otherFunderName?: string | null;
+  complementState?: "none" | "partial" | "prior_claim" | "full" | "varies" | "missing";
+  otherPaysPoints?: number | null;
 }
 
 // ─── maps ───────────────────────────────────────────────────────

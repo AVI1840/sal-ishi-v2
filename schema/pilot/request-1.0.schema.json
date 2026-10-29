@@ -11,7 +11,8 @@
       "type": "string",
       "enum": [
         "callback",
-        "gated_service"
+        "gated_service",
+        "claim_help"
       ]
     },
     "serviceId": {

@@ -59,6 +59,24 @@ export interface MatchConfig {
   };
   topN?: number;
   minScore?: number;
+  /** כמה נשאר בארנק החודש (נקודות). שכבת הזמינות המעשית מורידה שירות שלא נכנס. */
+  walletLeft?: number;
+}
+
+const DIGITAL_RANK: Record<string, number> = { none: 0, basic_phone: 1, smartphone: 2 };
+
+/**
+ * אי-התאמה בטיחותית גוברת על הציון (תוספת 3): שירות שדורש הליכה עצמאית לא
+ * מומלץ למי שמרותק לבית, ושירות שדורש סמארטפון לא למי שאין לו. רק כשיש גם
+ * פרופיל התאמה לשירות וגם תשובות מהשאלון.
+ */
+export function safetyMismatch(citizen: PersonalProfile, service: CatalogService): string | null {
+  const fp = service.fitProfile;
+  if (!fp) return null;
+  if (citizen.mobilityLevel && !fp.mobility.includes(citizen.mobilityLevel)) return "לא מתאים לניידות";
+  if (citizen.functionalLevel && !fp.functionalLevels.includes(citizen.functionalLevel)) return "לא מתאים לרמת התפקוד";
+  if (citizen.digitalLevel && (DIGITAL_RANK[fp.digitalRequired] ?? 0) > (DIGITAL_RANK[citizen.digitalLevel] ?? 0)) return "דורש טלפון שאין";
+  return null;
 }
 
 // ─── Default weights ────────────────────────────────────────────
@@ -201,6 +219,11 @@ function scoreProfileFit(citizen: PersonalProfile, service: CatalogService): { s
     score += 5;
   }
 
+  // תוספת 3: פרופיל ההתאמה של השירות מול התשובות מהשאלון (אי-התאמה כבר סוננה).
+  if (service.fitProfile && (citizen.mobilityLevel || citizen.functionalLevel)) {
+    score += 20;
+    reasons.push("מתאים ליכולות שלך");
+  }
   return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
 }
 
@@ -216,7 +239,7 @@ const ADJACENT_NEIGHBORHOODS: Record<string, string[]> = {
   "רמות": ["פסגת זאב", "נווה יעקב"],
 };
 
-function scoreProximity(citizen: PersonalProfile, service: CatalogService): { score: number; reasons: string[] } {
+function scoreProximity(citizen: PersonalProfile, service: CatalogService, walletLeft?: number): { score: number; reasons: string[] } {
   const reasons: string[] = [];
   let score = 40; // baseline for city-wide
 
@@ -248,7 +271,13 @@ function scoreProximity(citizen: PersonalProfile, service: CatalogService): { sc
     reasons.push("זמין מרחוק");
   }
 
-  return { score: Math.min(100, Math.round(score)), reasons };
+  // תוספת 3: היתרה בארנק היא חלק מהזמינות המעשית.
+  if (walletLeft !== undefined && typeof service.coveredPoints === "number") {
+    if (service.coveredPoints > walletLeft) score -= 50;
+    else reasons.push("נכנס בסל של החודש");
+  }
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
 }
 
 // ─── Layer 5: Social Proof (5%) ─────────────────────────────────
@@ -299,11 +328,11 @@ export function matchServicesForCitizen(
   const topN = config.topN ?? 10;
   const minScore = config.minScore ?? 20;
 
-  const results: MatchResult[] = serviceCatalog.map((service) => {
+  const results: MatchResult[] = serviceCatalog.filter((service) => !safetyMismatch(citizen, service) && service.complementState !== "full").map((service) => {
     const l1 = scorePrevention(citizen, service);
     const l2 = scoreMotivation(citizen, service);
     const l3 = scoreProfileFit(citizen, service);
-    const l4 = scoreProximity(citizen, service);
+    const l4 = scoreProximity(citizen, service, config.walletLeft);
     const l5 = scoreSocialProof(service);
 
     const layers: LayerScores = {

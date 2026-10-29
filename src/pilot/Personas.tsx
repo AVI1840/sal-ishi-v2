@@ -6,6 +6,7 @@ import { DemoControls } from "./components/DemoControls";
 import { appSettings, isDemo } from "./settings";
 import { resetDemo } from "./reset";
 import { prepareOffline } from "./offline";
+import { buildCaseload } from "./caseload";
 
 /** כתובת המטה: אותו אתר בבנייה, שרת הפיתוח של המטה בהרצה מקומית. */
 export const HQ_URL = import.meta.env.DEV ? "http://localhost:5175/" : "./hq/";
@@ -50,7 +51,7 @@ export default function Personas() {
                 <HeartHandshake size={26} />
               </span>
               <h2>{appSettings.companion.name}, מלווה</h2>
-              <p>{appSettings.companion.caseload_size} אנשים בתיק. מי דורש פנייה היום, אישורים, ביקורים ואשפוז.</p>
+              <p>{buildCaseload().length} אנשים בתיק. מי דורש פנייה היום, פגישה משותפת, אישורים, ביקורים ואשפוז.</p>
               <span className="p-btn p-btn--primary">להיכנס כמלווה</span>
             </div>
           </Link>

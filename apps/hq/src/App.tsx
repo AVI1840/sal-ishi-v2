@@ -12,7 +12,7 @@ import {
   PartnerGuide,
   ToastProvider,
 } from "@sal-ishi/ui";
-import { BookOpenCheck, Building2, Compass, FileOutput, Globe2, History, Inbox, LayoutDashboard, Map as MapIcon, MessageSquare, Scale, SlidersHorizontal } from "lucide-react";
+import { BookOpenCheck, Building2, Grid3x3, Compass, FileOutput, Globe2, History, Inbox, LayoutDashboard, Map as MapIcon, MessageSquare, Scale, SlidersHorizontal } from "lucide-react";
 import { useHq } from "./store";
 import IntakeScreen from "./screens/IntakeScreen";
 import NationalScreen from "./screens/NationalScreen";
@@ -22,6 +22,7 @@ import RulesScreen from "./screens/RulesScreen";
 import ExportScreen from "./screens/ExportScreen";
 import OverviewScreen from "./screens/OverviewScreen";
 import HistoryScreen from "./screens/HistoryScreen";
+import GapsScreen from "./screens/GapsScreen";
 import NationalChannelScreen from "./screens/NationalChannelScreen";
 
 const preview = EDITION === "preview";
@@ -31,6 +32,7 @@ const NAV = [
   { to: "/", label: "סקירה", icon: <LayoutDashboard size={18} /> },
   { to: "/intake", label: "קליטת חבילות", icon: <Inbox size={18} /> },
   { to: "/national", label: "תמונה ארצית", icon: <MapIcon size={18} /> },
+  { to: "/gaps", label: "פערים וחלופות", icon: <Grid3x3 size={18} /> },
   { to: "/suppliers", label: "ספקים", icon: <Building2 size={18} /> },
   { to: "/national-channel", label: "ערוץ ארצי", icon: <Globe2 size={18} /> },
   { to: "/prices", label: "מחירי ייחוס", icon: <Scale size={18} /> },
@@ -98,6 +100,7 @@ export default function App() {
                 <Route path="/intake" element={<IntakeScreen />} />
                 <Route path="/learning" element={<LearningNotebook surface="מטה" />} />
                 <Route path="/history" element={<HistoryScreen />} />
+                <Route path="/gaps" element={<GapsScreen />} />
                 <Route path="/national" element={<NationalScreen />} />
                 <Route path="/suppliers" element={<SuppliersScreen />} />
                 <Route path="/prices" element={<PricesScreen />} />

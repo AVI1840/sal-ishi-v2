@@ -22,6 +22,8 @@ import CompanionRequests from "./companion/Requests";
 import CompanionCaseload from "./companion/Caseload";
 import CompanionPerson from "./companion/Person";
 import CompanionLog from "./companion/Log";
+import CompanionSession from "./companion/Session";
+import CompanionReview from "./companion/Review";
 
 /** האפליקציה של 0.5: אזרח, מלווה, ובחירת דמות. המטה והשטח הם אפליקציות נפרדות באותו אתר. */
 export default function PilotApp() {
@@ -59,6 +61,8 @@ export default function PilotApp() {
             <Route path="caseload" element={<CompanionCaseload />} />
             <Route path="person/:id" element={<CompanionPerson />} />
             <Route path="log" element={<CompanionLog />} />
+            <Route path="session/:id" element={<CompanionSession />} />
+            <Route path="review/:id" element={<CompanionReview />} />
           </Route>
           <Route path="/coordinator/*" element={<Navigate to="/companion" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />

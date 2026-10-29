@@ -12,9 +12,9 @@
   },
   "companion": {
     "name": "רונית",
-    "caseload_size": 76,
+    "caseload_size": 74,
     "cover_name": "יעל",
-    "triage_order": ["hospitalization", "callback", "gated_request", "cognitive_alert", "no_first_service", "low_utilization"],
+    "triage_order": ["hospitalization", "callback", "gated_request", "claim_task", "cognitive_alert", "no_first_service", "low_utilization"],
     "approval_reasons": {
       "approve": ["צורך שזוהה בביקור", "בקשת האזרח, מתאים לתוכנית", "המלצת גורם מקצועי"],
       "reject": ["לא מתאים כרגע לתוכנית", "יש שירות אחר שעונה על הצורך", "חסר מידע, אחזור לאזרח"]

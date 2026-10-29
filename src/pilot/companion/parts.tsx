@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, BedDouble, Brain, Clock, Hourglass, Phone, TrendingDown } from "lucide-react";
+import { AlertTriangle, BedDouble, Brain, Clock, FileText, Hourglass, Phone, TrendingDown } from "lucide-react";
 import { RULE_LABEL, type TriageItem, type TriageReason } from "../caseload";
 import type { Request } from "../model";
 import type { TriageRule } from "../settings";
@@ -14,6 +14,7 @@ const RULE_ICON: Record<TriageRule, typeof Clock> = {
   cognitive_alert: Brain,
   no_first_service: Clock,
   low_utilization: TrendingDown,
+  claim_task: FileText,
 };
 
 const BUCKET_TEXT = { today: "היום", week: "השבוע", watch: "במעקב", ok: "תקין" } as const;
@@ -90,6 +91,15 @@ export function DecisionPanel(props: { request: Request; personName: string }) {
         {text}
         {r.reason ? `: ${r.reason}` : ""}
       </p>
+    );
+  }
+
+  if (r.kind === "claim_help") {
+    return (
+      <button type="button" className="p-btn p-btn--primary" onClick={() => decideRequest({ citizenId: r.citizenId, requestId: r.id, decision: "done", reason: "ההגשה למממן האחר בוצעה" })}>
+        <FileText aria-hidden="true" size={18} />
+        ההגשה בוצעה: לסגור ולתעד
+      </button>
     );
   }
 
