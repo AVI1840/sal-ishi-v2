@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen, Menu, X } from "lucide-react";
+import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen, Menu, X, WifiOff } from "lucide-react";
+import { useOnline } from "@/pilot/components/Frame";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -37,11 +38,12 @@ interface AppShellProps {
 
 export default function AppShell({ variant }: AppShellProps) {
   const nav = variant === "coordinator" ? COORDINATOR_NAV : variant === "executive" ? EXECUTIVE_NAV : PROVIDER_NAV;
-  const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי — ניהולי" : "פורטל ספקים";
+  const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי - ניהולי" : "פורטל ספקים";
   const subtitle = variant === "coordinator" ? "לוח בקרה למלווה חברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
   const { pathname } = useLocation();
   // בטלפון התפריט נפתח בכפתור ולא מכסה את התוכן (0.5: המלווה עובדת מהנייד).
   const [open, setOpen] = useState(false);
+  const online = useOnline();
   useEffect(() => setOpen(false), [pathname]);
 
   return (
@@ -136,6 +138,11 @@ export default function AppShell({ variant }: AppShellProps) {
 
       {/* Main content */}
       <main id="main" tabIndex={-1} className="lg:mr-64 min-h-screen">
+        {!online ? (
+          <div role="status" className="sticky top-10 z-30 flex items-center gap-2 bg-warning-soft border-b border-border text-foreground px-4 lg:px-8 py-2.5 text-sm font-medium">
+            <WifiOff className="w-4 h-4 shrink-0" aria-hidden="true" /> אין חיבור. אפשר להמשיך לעבוד: הכל נשמר במכשיר ויסונכרן כשהחיבור יחזור.
+          </div>
+        ) : null}
         <div className="p-4 lg:p-8 animate-fade-in">
           <Outlet />
         </div>

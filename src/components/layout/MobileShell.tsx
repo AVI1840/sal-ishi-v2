@@ -72,13 +72,13 @@ export default function MobileShell() {
 
       {/* אין חיבור: מה שעושים נשמר במכשיר ויישלח כשהחיבור יחזור */}
       {!online ? (
-        <div role="status" className="sticky top-10 z-[45] flex items-start gap-2 bg-amber-100 border-b border-amber-300 text-amber-950 px-5 py-3 text-base font-medium">
+        <div role="status" className="fixed bottom-20 left-0 right-0 z-40 flex items-start gap-2 bg-amber-100 border-t border-amber-300 text-amber-950 pr-5 pl-20 py-3 text-base font-medium shadow-md">
           <WifiOff className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" /> {he.offline}
         </div>
       ) : null}
 
       {/* Content */}
-      <div className="pb-24">
+      <div className={online ? "pb-24" : "pb-44"}>
         <Outlet />
         {/* "שיחזרו אליי": בכל מסך של האזרח */}
         <div className="px-6 pt-2 pb-6 max-w-3xl mx-auto">

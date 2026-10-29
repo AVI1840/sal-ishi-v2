@@ -40,6 +40,7 @@ import CoordinatorAgents from "@/pages/coordinator/CoordinatorAgents";
 import ExecutiveOverview from "@/pages/executive/ExecutiveOverview";
 import ProviderDashboard from "@/pages/providers/ProviderDashboard";
 import NotFound from "@/pages/NotFound";
+import ScopePage from "@/pages/ScopePage";
 
 // National / Inter-ministerial Prototype (lazy-loaded)
 const PolicyIntelligence = lazy(() => import("@/pages/prototype/PolicyIntelligence"));
@@ -75,6 +76,7 @@ export default function LegacyApp() {
             <Routes>
               {/* Demo Home — Module Switcher */}
               <Route path="/" element={<DemoHome />} />
+              <Route path="/scope" element={<ScopePage />} />
 
               {/* Citizen App (Mobile) */}
               <Route path="/citizen" element={<MobileShell />}>

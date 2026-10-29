@@ -16,6 +16,8 @@ import { CITIZENS } from "@/data/mockData";
 import { catalogState } from "@/data/catalogSource";
 import { DEMAND_LABEL, REACH_LABEL, selectionRules, suggestByDomain } from "@/lib/suggestions";
 import { needsCompanion, termLines } from "@/lib/serviceTerms";
+import { usePilot } from "@/pilot/store";
+import { he } from "@/pilot/i18n/he";
 
 // Cost badge is now rendered by SubsidyBadge component
 
@@ -238,6 +240,7 @@ export default function CitizenServices() {
   const [cost, setCost] = useState<CostType | "all">("all");
   const [showFilters, setShowFilters] = useState(false);
   const showImages = useShowImages();
+  const { simulation } = usePilot().state;
 
   const results = useMemo(
     () => filterServices({ neighborhood, category, cost, query }),
@@ -245,6 +248,15 @@ export default function CitizenServices() {
   );
 
   const freeCount = results.filter(s => s.cost === "free").length;
+
+  if (simulation.noServices) {
+    return (
+      <div className="px-6 pt-16 pb-6 space-y-3" dir="rtl">
+        <h1 className="text-2xl font-bold text-gray-900">{he.noServicesTitle}</h1>
+        <p className="text-base text-gray-800">{he.noServicesText}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 pt-5 pb-6 space-y-4" dir="rtl">

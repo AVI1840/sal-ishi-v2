@@ -36,7 +36,7 @@ export function copayBadge(result: MatchResult): { text: string; tone: "free" | 
 
 export default function CitizenHome() {
   const showImages = useShowImages();
-  const { derived } = usePilot();
+  const { state, derived } = usePilot();
   const { profile: citizen, firstName } = useCitizen();
   const wallet = useWallet();
   const month = he.monthNames[new Date().getMonth()];
@@ -72,6 +72,7 @@ export default function CitizenHome() {
           <div className="mt-3 h-3 bg-white/25 rounded-full overflow-hidden" role="img" aria-label={`השתמשת ב-₪${wallet.used} מתוך ₪${wallet.total}`}>
             <div className="h-full bg-white rounded-full" style={{ width: `${usedPct}%` }} />
           </div>
+          {wallet.left === 0 ? <p className="text-base font-semibold text-white mt-2" role="status">{he.walletEmpty}</p> : null}
           <p className="text-sm text-white/85 mt-2">
             השתתפות עצמית: {Math.round(tiers.core_and_prevention * 100)}% בשירותי ליבה ומניעה, {Math.round(tiers.classes * 100)}% בחוגים, {Math.round(tiers.qol * 100)}% באיכות חיים
           </p>
@@ -107,6 +108,12 @@ export default function CitizenHome() {
               עוד <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
+          {state.simulation.noServices ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2" role="status">
+              <h3 className="text-lg font-bold text-gray-900">{he.noServicesTitle}</h3>
+              <p className="text-base text-gray-800">{he.noServicesText}</p>
+            </div>
+          ) : (
           <div className="space-y-3">
             {recommended.map((result, idx) => {
               const isHero = idx === 0;
@@ -171,6 +178,7 @@ export default function CitizenHome() {
               );
             })}
           </div>
+          )}
         </section>
 
         {/* Schedule from bookings */}
