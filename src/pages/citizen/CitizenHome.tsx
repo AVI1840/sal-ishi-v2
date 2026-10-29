@@ -5,17 +5,16 @@
  * 0.5 מאוחד: הארנק בשקלים מההגדרות (500 לחודש), ההשתתפות לפי המדרגות, עד 3
  * המלצות עם "למה", הפעילויות מההזמנות, ודרך למלווה בכל מסך.
  */
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, MapPin, Phone, PhoneCall, Search, Heart, CalendarCheck, Clock, Wallet } from "lucide-react";
+import { ChevronLeft, MapPin, Phone, Search, Heart, CalendarCheck, Clock, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
 import { PersonalReasonCard } from "@/components/shared/PersonalReasonCard";
 import { catalogState } from "@/data/catalogSource";
 import { matchServicesForCitizen, type MatchResult } from "@/lib/matchingEngine";
-import { appSettings } from "@/pilot/settings";
-import { createRequest, usePilot } from "@/pilot/store";
+import { usePilot } from "@/pilot/store";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { useCitizen, useWallet } from "@/pilot/citizen/common";
@@ -40,7 +39,6 @@ export default function CitizenHome() {
   const { derived } = usePilot();
   const { profile: citizen, firstName } = useCitizen();
   const wallet = useWallet();
-  const [callback, setCallback] = useState(false);
   const month = he.monthNames[new Date().getMonth()];
   const usedPct = wallet.total ? Math.round((wallet.used / wallet.total) * 100) : 0;
   const tiers = catalogState.seed.settings.copay_tiers;
@@ -53,7 +51,6 @@ export default function CitizenHome() {
     .filter((b) => b.citizenId === citizen.id && b.status !== "cancelled")
     .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt))
     .slice(0, 3);
-  const callbackOpen = callback || derived.requests.some((r) => r.citizenId === citizen.id && r.kind === "callback" && r.status === "open");
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
@@ -81,7 +78,7 @@ export default function CitizenHome() {
         </div>
       </div>
 
-      <main id="main" tabIndex={-1} className="px-6 -mt-4 space-y-6 pb-28" data-read>
+      <main id="main" tabIndex={-1} className="px-6 -mt-4 space-y-6 pb-6" data-read>
 
         {/* One primary action, two secondary */}
         <div className="space-y-3">
@@ -178,7 +175,12 @@ export default function CitizenHome() {
 
         {/* Schedule from bookings */}
         <section aria-labelledby="sched-title">
-          <h2 id="sched-title" className="text-xl font-bold text-gray-900 mb-3">לוח הפעילויות שלך</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 id="sched-title" className="text-xl font-bold text-gray-900">לוח הפעילויות שלך</h2>
+            <Link to="/citizen/activities" className="min-h-[48px] inline-flex items-center text-base text-[#1B3A5C] font-semibold gap-0.5 px-2">
+              {he.toActivity} <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          </div>
           {activities.length === 0 ? (
             <p className="text-base text-gray-700">עוד אין לך פעילויות. אפשר למצוא חוג או שירות.</p>
           ) : (
@@ -199,31 +201,8 @@ export default function CitizenHome() {
           )}
         </section>
 
-        {/* Help: always a way out of digital */}
-        <section id="help" className="bg-[#1B3A5C] rounded-xl p-5 text-white scroll-mt-16" aria-labelledby="help-title">
-          <h2 id="help-title" className="text-xl font-bold">צריכה עזרה?</h2>
-          <p className="text-base text-white/90 mt-1">
-            {callbackOpen ? `${appSettings.companion.name}, המלווה שלך, קיבלה את הבקשה ותתקשר אלייך.` : `${appSettings.companion.name}, המלווה שלך, תתקשר אלייך.`}
-          </p>
-          {!callbackOpen ? (
-            <button
-              type="button"
-              className="mt-3 w-full min-h-[52px] bg-white text-[#1B3A5C] rounded-xl text-lg font-bold flex items-center justify-center gap-2"
-              onClick={() => {
-                createRequest({ citizenId: citizen.id, kind: "callback", actor: "citizen" });
-                setCallback(true);
-              }}
-            >
-              <PhoneCall className="w-5 h-5" aria-hidden="true" /> שיחזרו אליי
-            </button>
-          ) : null}
-        </section>
-
-        {/* Emergency */}
+        {/* "שיחזרו אליי" והמוקד: בכרטיס העזרה שב-MobileShell, בכל מסך */}
         <div className="flex items-center justify-center gap-4 pt-2">
-          <a href="tel:*6050" className="flex items-center gap-1.5 px-4 min-h-[48px] bg-gray-100 rounded-lg text-base font-medium text-gray-800">
-            <Phone className="w-4 h-4" aria-hidden="true" /> מוקד ביטוח לאומי *6050
-          </a>
           <a href="tel:106" className="flex items-center gap-1.5 px-4 min-h-[48px] bg-gray-100 rounded-lg text-base font-medium text-gray-800">
             <Phone className="w-4 h-4" aria-hidden="true" /> עירייה 106
           </a>

@@ -247,7 +247,7 @@ export default function CitizenServices() {
   const freeCount = results.filter(s => s.cost === "free").length;
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-4" dir="rtl">
+    <div className="px-4 pt-5 pb-6 space-y-4" dir="rtl">
 
       {/* Header */}
       <div>

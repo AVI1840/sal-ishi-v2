@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
-import { Home, Star, MessageCircle, User, ImageOff, Image, Volume2, Square, Type } from "lucide-react";
+import { Home, Star, MessageCircle, User, ImageOff, Image, Volume2, Square, Type, CalendarCheck, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVisualMode } from "@/hooks/use-visual-mode";
 import { useReadAloud } from "@/pilot/speech";
+import { useOnline } from "@/pilot/components/Frame";
+import { he } from "@/pilot/i18n/he";
+import { CallbackCard } from "@/components/citizen/CallbackCard";
 
 const TABS = [
   { to: "/citizen", label: "בית", icon: Home, end: true },
   { to: "/citizen/services", label: "שירותים", icon: Star },
+  { to: "/citizen/activities", label: "פעילויות", icon: CalendarCheck },
   ...(CITIZEN_CHAT_ENABLED ? [{ to: "/citizen/chat", label: "שיחה", icon: MessageCircle }] : []),
   { to: "/citizen/profile", label: "פרופיל", icon: User },
 ];
@@ -49,6 +53,7 @@ export default function MobileShell() {
   const isImages = mode === "images";
   const { speaking, read, stop, supported } = useReadAloud("he-IL");
   const { scale, next } = useTextScale();
+  const online = useOnline();
 
   useEffect(() => stop(), [pathname, stop]);
 
@@ -65,9 +70,20 @@ export default function MobileShell() {
         לדלג לתוכן
       </a>
 
+      {/* אין חיבור: מה שעושים נשמר במכשיר ויישלח כשהחיבור יחזור */}
+      {!online ? (
+        <div role="status" className="sticky top-10 z-[45] flex items-start gap-2 bg-amber-100 border-b border-amber-300 text-amber-950 px-5 py-3 text-base font-medium">
+          <WifiOff className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" /> {he.offline}
+        </div>
+      ) : null}
+
       {/* Content */}
       <div className="pb-24">
         <Outlet />
+        {/* "שיחזרו אליי": בכל מסך של האזרח */}
+        <div className="px-6 pt-2 pb-6 max-w-3xl mx-auto">
+          <CallbackCard />
+        </div>
       </div>
 
       {/* כלי נגישות: להקריא, א+, תמונות. בפינת הכותרת, בכל מסכי האזרח */}

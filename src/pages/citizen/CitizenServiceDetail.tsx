@@ -1,29 +1,27 @@
 /**
- * CitizenServiceDetail — דף שירות בודד
- * שירות אמיתי מהקטלוג · דירוג · הזמנה
- * ללא אימוגי — מקצועי
+ * CitizenServiceDetail: דף שירות בודד, שירות אמיתי מהקטלוג.
+ *
+ * 0.5 מאוחד: העלות בשקלים (מהסל וממך), השלמה למממן אחר (תוספת 3), כללי
+ * הביטול, והזמנה בשלושה צעדים. שירות שנפתח באישור המלווה, אשפוז וסל ריק
+ * מקבלים הסבר ודרך הלאה במקום כפתור.
  */
 import { useParams, Link } from "react-router-dom";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
-import { ArrowRight, MapPin, Clock, Phone, Globe, AlertCircle, CheckCircle, Heart, Activity, Users, Laptop, Wrench } from "lucide-react";
+import { ArrowRight, MapPin, Clock, Phone, Globe, AlertCircle, Heart, Activity, Users, Laptop, Wrench, Wallet, CalendarX, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { realServices } from "@/data/realServices";
-import { serviceCatalog } from "@/data/serviceCatalog";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
-import { CITIZENS } from "@/data/mockData";
 import { MatchExplainability } from "@/components/shared/MatchExplainability";
-import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import ServiceRating from "@/components/shared/ServiceRating";
-import { toast } from "sonner";
+import { BookingPanel } from "@/components/citizen/BookingPanel";
 import { needsCompanion, termLines } from "@/lib/serviceTerms";
-
-const COST_MAP: Record<string, { label: string; cls: string }> = {
-  free:       { label: "חינם — סבסוד מלא",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  subsidized: { label: "מסובסד (גמלת סיעוד)", cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  paid:       { label: "בתשלום",               cls: "bg-gray-50 text-gray-600 border-gray-200" },
-};
+import { he } from "@/pilot/i18n/he";
+import { createRequest, usePilot } from "@/pilot/store";
+import { isProduct, priceOf } from "@/pilot/services";
+import { complementLine, ruleText } from "@/pilot/citizen/Service";
+import { reasonKey, useCitizen, useWallet } from "@/pilot/citizen/common";
 
 const LANG_MAP: Record<string, string> = {
   hebrew: "עברית", arabic: "ערבית", russian: "רוסית", english: "אנגלית",
@@ -45,47 +43,72 @@ const CATEGORY_ICON: Record<number, typeof Heart> = {
   1: Heart, 2: Activity, 3: Users, 4: Laptop, 5: Wrench,
 };
 
+const actionPrimary = "w-full min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold hover:bg-[#15304d] transition-colors flex items-center justify-center gap-2";
+
+function Notice(props: { children: ReactNode; tone?: "info" | "warning" }) {
+  return (
+    <div className={cn("flex items-start gap-2.5 p-4 rounded-xl border text-base", props.tone === "warning" ? "bg-amber-50 border-amber-200 text-amber-950" : "bg-blue-50 border-blue-200 text-gray-900")}>
+      <Info className="w-5 h-5 mt-0.5 shrink-0" aria-hidden="true" />
+      <div>{props.children}</div>
+    </div>
+  );
+}
+
 export default function CitizenServiceDetail() {
   const { id } = useParams();
-  const service = realServices.find((s) => s.id === id) ?? realServices[0];
-  const catalogEntry = serviceCatalog.find((s) => s.id === id);
-  const costInfo = COST_MAP[service.cost];
+  const service = realServices.find((s) => s.id === id);
+  const { derived } = usePilot();
+  const { profile: citizen } = useCitizen();
+  const wallet = useWallet();
+  const showImages = useShowImages();
 
-  // Personalized match result for שרה כהן (citizen[0])
-  const citizen = CITIZENS[0];
   const matchResult = useMemo(() => {
-    const all = matchServicesForCitizen(citizen, { topN: 102, minScore: 0 });
-    return all.find((r) => r.service.id === id) ?? null;
-  }, [id, citizen]);
+    if (!service) return null;
+    const all = matchServicesForCitizen(citizen, { topN: 500, minScore: 0 });
+    return all.find((r) => r.service.id === service.id) ?? null;
+  }, [service, citizen]);
+
+  if (!service) {
+    return (
+      <main id="main" tabIndex={-1} className="px-6 pt-16 pb-6 space-y-4" dir="rtl">
+        <h1 className="text-2xl font-bold text-gray-900">השירות לא נמצא</h1>
+        <p className="text-base text-gray-700">ייתכן שהוא כבר לא בקטלוג. אפשר לחפש שירות אחר, או לבקש מהמלווה.</p>
+        <Link to="/citizen/services" className="flex items-center justify-center min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold">
+          {he.findService}
+        </Link>
+      </main>
+    );
+  }
   const certaintyInfo = CERTAINTY_MAP[service.certainty];
   const Icon = CATEGORY_ICON[service.category] ?? Heart;
   const imgInfo = getServiceImageInfo(service);
-  const showImages = useShowImages();
 
-  const gated = needsCompanion(service);
-  const terms = termLines(service);
-
-  const handleBook = () => {
-    toast.success(`${service.name}: הבקשה נשלחה`, {
-      description: gated ? "המלווה שלך תבדוק את הצורך ותחזור אליך" : "המלווה שלך תיצור קשר לתיאום",
-    });
-  };
+  // תנאי השירות בלי שורת הביטול: הביטול מוסבר בשפה פשוטה בכרטיס נפרד.
+  const terms = termLines(service).filter((t) => t.term !== "ביטול" && t.term !== "אי-הגעה" && t.term !== "פתיחה");
+  const price = priceOf(service);
+  const complement = complementLine(he, price);
+  const mine = (kind: string) => derived.requests.find((r) => r.citizenId === citizen.id && r.serviceId === service.id && r.kind === kind && (r.status === "open" || r.status === "approved"));
+  const gateRequest = mine("gated_service");
+  const gated = needsCompanion(service) && gateRequest?.status !== "approved";
+  const hospitalized = derived.hospitalized.has(citizen.id);
+  const tooExpensive = !price.unknown && price.covered > wallet.left;
+  const needsClaim = price.state === "full" || price.state === "prior_claim" || price.state === "varies";
+  const claimOpen = Boolean(mine("claim_help"));
+  const booked = derived.bookings.some((b) => b.citizenId === citizen.id && b.serviceId === service.id && b.status !== "cancelled");
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28" dir="rtl">
+    <div className="min-h-screen bg-gray-50 pb-6" dir="rtl">
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 h-14 flex items-center gap-3">
-        <Link to="/citizen/services" className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center" aria-label="חזרה">
-          <ArrowRight className="w-4 h-4 text-gray-500" />
+      {/* חזרה. שם השירות הוא הכותרת שבכרטיס הראשי, כי כלי הנגישות יושבים בפינה השמאלית העליונה */}
+      <header className="sticky top-10 z-30 bg-white border-b border-gray-200 px-5 h-14 flex items-center">
+        <Link to="/citizen/services" className="min-h-[44px] px-2 -mx-2 inline-flex items-center gap-1.5 text-base font-semibold text-[#1B3A5C]">
+          <ArrowRight className="w-5 h-5" aria-hidden="true" /> לשירותים
         </Link>
-        <h1 className="text-sm font-bold text-gray-900 flex-1 line-clamp-1">{service.name}</h1>
-        <SubsidyBadge cost={service.cost} />
       </header>
 
-      <main className="px-5 pt-5 space-y-4 max-w-3xl mx-auto">
+      <main id="main" tabIndex={-1} className="px-5 pt-5 space-y-4 max-w-3xl mx-auto" data-read>
 
-        {/* Hero — image mode: h-48 photo / clean mode: original blue card */}
+        {/* Hero: תמונה במצב תמונות, כרטיס כחול במצב נקי */}
         {showImages ? (
           <div className="relative h-48 rounded-xl overflow-hidden">
             {imgInfo.image ? (
@@ -96,7 +119,7 @@ export default function CitizenServiceDetail() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 right-0 left-0 p-5 flex items-end justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold text-white drop-shadow leading-tight">{service.name}</h2>
+                <h1 className="text-xl font-bold text-white drop-shadow leading-tight">{service.name}</h1>
                 <p className="text-sm text-white/90 mt-1">{service.provider}</p>
               </div>
               <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center shrink-0">
@@ -117,7 +140,7 @@ export default function CitizenServiceDetail() {
                 <Icon className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold">{service.name}</h2>
+                <h1 className="text-lg font-bold">{service.name}</h1>
                 <p className="text-sm text-white/90 mt-0.5">{service.provider}</p>
                 <p className="text-xs text-white/80 mt-1">{service.categoryLabel}</p>
               </div>
@@ -125,19 +148,37 @@ export default function CitizenServiceDetail() {
           </div>
         )}
 
-        {/* Cost */}
-        <div className={cn("p-4 rounded-xl border", costInfo.cls)}>
-          <p className="text-sm font-semibold">{costInfo.label}</p>
-          {service.cost_note && <p className="text-xs mt-0.5">{service.cost_note}</p>}
-        </div>
+        {/* כמה זה עולה: בשקלים, מהסל וממך, או השלמה למממן אחר */}
+        <section aria-labelledby="cost-h" className="bg-white rounded-xl p-5 border border-gray-200 space-y-2">
+          <h2 id="cost-h" className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> {he.cost}
+          </h2>
+          <p className="text-base text-gray-900">
+            {complement ?? (price.unknown ? he.costUnknown(price.total) : he.costLine(price.covered, price.copay))}
+            {service.unit ? <span className="text-gray-600"> ({he.perUnit(service.unit)})</span> : null}
+          </p>
+          <p className="text-sm text-gray-700">נשארו בסל שלך החודש ₪{wallet.left} מתוך ₪{wallet.total}.</p>
+        </section>
+
+        {/* אם צריך לבטל */}
+        {!isProduct(service) && (
+          <section aria-labelledby="cancel-h" className="bg-white rounded-xl p-5 border border-gray-200 space-y-1">
+            <h2 id="cancel-h" className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <CalendarX className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> {he.cancelTitle}
+            </h2>
+            {ruleText(he, service).map((line) => (
+              <p key={line} className="text-base text-gray-800">{line}</p>
+            ))}
+          </section>
+        )}
 
         {/* תנאי השירות לפי מודל התשלום */}
         {terms.length > 0 && (
           <section aria-labelledby="terms-h" className="bg-white rounded-xl p-4 border border-gray-100">
-            <h2 id="terms-h" className="text-xs font-semibold text-gray-700 mb-2">תנאי השירות</h2>
+            <h2 id="terms-h" className="text-sm font-semibold text-gray-700 mb-2">תנאי השירות</h2>
             <dl className="space-y-1.5">
               {terms.map((t) => (
-                <div key={t.term} className="flex gap-3 text-xs">
+                <div key={t.term} className="flex gap-3 text-sm">
                   <dt className="w-24 shrink-0 font-medium text-gray-700">{t.term}</dt>
                   <dd className="text-gray-700">{t.text}</dd>
                 </div>
@@ -146,7 +187,8 @@ export default function CitizenServiceDetail() {
           </section>
         )}
 
-        {/* Details */}
+        {/* Details: רק כשיש פרטים בקטלוג */}
+        {(service.address || service.days || service.phone || service.website) && (
         <div className="bg-white rounded-xl p-5 border border-gray-100 space-y-3">
           {service.address && (
             <div className="flex items-start gap-2.5">
@@ -173,43 +215,18 @@ export default function CitizenServiceDetail() {
             </div>
           )}
         </div>
+        )}
 
-        {/* Personal match — hook + expandable "למה?" with 5 layers */}
+        {/* למה זה מתאים לך, עם פירוט השכבות */}
         <div className="bg-white rounded-xl p-5 border border-gray-100 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-gray-900">למה זה מומלץ עבורך</p>
+            <h2 className="text-lg font-bold text-gray-900">{he.reasonTitle}</h2>
             <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", certaintyInfo.cls)}>{certaintyInfo.label}</span>
           </div>
           {matchResult ? (
             <MatchExplainability result={matchResult} />
           ) : (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-[#1B3A5C]/5 border border-[#1B3A5C]/10">
-                <div className="text-2xl font-bold text-[#1B3A5C]">{service.match_score}</div>
-                <div>
-                  <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
-                  <p className="text-xs text-gray-600 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>מאושר על ידי מלווה</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Clock className="w-3.5 h-3.5 text-gray-600" />
-                  <span>עודכן לפני 7 ימים</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Globe className="w-3.5 h-3.5 text-blue-400" />
-                  <span>מאומת מול עיריית ירושלים</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Activity className="w-3.5 h-3.5 text-[#1B3A5C]" />
-                  <span>רמת ביטחון: {service.match_score}%</span>
-                </div>
-              </div>
-            </div>
+            <p className="text-base text-gray-800">{he.reason[reasonKey(service)]}</p>
           )}
         </div>
 
@@ -249,30 +266,55 @@ export default function CitizenServiceDetail() {
           </div>
         )}
 
-        {/* Rating */}
-        <ServiceRating serviceId={service.id} serviceName={service.name} />
+        {/* דירוג: רק למי שכבר הזמינה את השירות */}
+        {booked && <ServiceRating serviceId={service.id} serviceName={service.name} />}
 
-        {/* Action buttons */}
-        <div className="space-y-2 pt-2">
-          <button
-            onClick={handleBook}
-            className="w-full h-12 bg-[#1B3A5C] text-white rounded-xl text-sm font-bold hover:bg-[#15304d] transition-colors flex items-center justify-center gap-2"
-          >
-            <CheckCircle className="w-4 h-4" aria-hidden="true" />
-            {gated ? "בקשה לאישור המלווה" : "שלח בקשת הצטרפות"}
-          </button>
-          {gated && (
-            <p className="text-xs text-gray-700 text-center">
-              שירות זה נפתח רק באישור המלווה{service.gateReason ? ` (${service.gateReason})` : ""}. אי אפשר להצטרף אליו ישירות.
-            </p>
+        {/* מה אפשר לעשות עכשיו */}
+        <div className="space-y-3 pt-2">
+          {needsClaim && (
+            claimOpen ? (
+              <p role="status" className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-base text-emerald-900">{he.claimSent}</p>
+            ) : (
+              <button
+                type="button"
+                className={actionPrimary}
+                onClick={() => createRequest({ citizenId: citizen.id, kind: "claim_help", serviceId: service.id, serviceName: service.name, note: price.funder ?? undefined, actor: "citizen" })}
+              >
+                {he.claimHelp}
+              </button>
+            )
+          )}
+          {price.state === "full" ? null : hospitalized ? (
+            <Notice>{he.hospitalBlock}</Notice>
+          ) : gated ? (
+            <>
+              <Notice>
+                {he.gatedExplain}
+                {service.gateReason ? ` (${service.gateReason})` : ""}
+                {gateRequest ? <strong className="block mt-1">{he.status.open}</strong> : null}
+              </Notice>
+              {!gateRequest && (
+                <button
+                  type="button"
+                  className={actionPrimary}
+                  onClick={() => createRequest({ citizenId: citizen.id, kind: "gated_service", serviceId: service.id, serviceName: service.name, actor: "citizen" })}
+                >
+                  {he.askCompanion}
+                </button>
+              )}
+            </>
+          ) : tooExpensive ? (
+            <Notice tone="warning">{he.notEnough}</Notice>
+          ) : (
+            <BookingPanel service={service} />
           )}
           {service.phone && (
             <a
               href={`tel:${service.phone}`}
-              className="w-full h-11 bg-white border border-[#1B3A5C] text-[#1B3A5C] rounded-xl text-sm font-semibold hover:bg-[#1B3A5C]/5 transition-colors flex items-center justify-center gap-2"
+              className="w-full min-h-[48px] bg-white border border-[#1B3A5C] text-[#1B3A5C] rounded-xl text-base font-semibold hover:bg-[#1B3A5C]/5 transition-colors flex items-center justify-center gap-2"
             >
-              <Phone className="w-4 h-4" />
-              התקשר — {service.phone}
+              <Phone className="w-4 h-4" aria-hidden="true" />
+              להתקשר למפעיל: {service.phone}
             </a>
           )}
         </div>

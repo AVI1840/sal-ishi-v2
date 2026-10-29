@@ -1,22 +1,19 @@
 /**
- * CitizenProfile — פרופיל אישי
- * מקצועי, מדויק, מרשים
+ * CitizenProfile: פרופיל אישי.
+ *
+ * 0.5 מאוחד: הסל בשקלים (כמו בבית), והפעילויות מההזמנות, במקום ארנק
+ * היחידות ורשימת הפעילויות הקבועה.
  */
-import { User, Phone, MapPin, Heart, Wallet, Target, Calendar, Sparkles, ChevronLeft, CheckCircle, Clock } from "lucide-react";
+import { Phone, MapPin, Heart, Wallet, Target, Calendar, Sparkles, ChevronLeft, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
-import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
-import { CITIZENS } from "@/data/mockData";
 import { BARRIER_LABELS, MOTIVATION_LABELS, READINESS_LABELS } from "@/data/types";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { cn } from "@/lib/utils";
-
-const citizen = CITIZENS[0];
-
-const BOOKINGS = [
-  { id: 1, name: "התעמלות קבוצתית", date: "12.06.26", time: "10:00", status: "confirmed" },
-  { id: 2, name: "חוג ציור", date: "14.06.26", time: "14:00", status: "confirmed" },
-  { id: 3, name: "ביקור בית — רונית לוי", date: "18.06.26", time: "09:00", status: "pending" },
-];
+import { catalogState } from "@/data/catalogSource";
+import { formatSlot } from "@/pilot/i18n";
+import { he } from "@/pilot/i18n/he";
+import { usePilot } from "@/pilot/store";
+import { useCitizen, useWallet } from "@/pilot/citizen/common";
 
 const RISK_LEVEL_MAP = {
   low:      { label: "נמוך",    cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -26,14 +23,18 @@ const RISK_LEVEL_MAP = {
 };
 
 export default function CitizenProfile() {
-  // ארנק רמה 2 — 32 יחידות/חודש (775₪ שווי), מיצוי פיילוט ממוצע 71%
-  const total = 32;
-  const used = Math.round(total * 0.71); // 23 יחידות נוצלו
-  const balance = total - used;          // 9 יחידות נותרו
+  const { derived } = usePilot();
+  const { profile: citizen } = useCitizen();
+  const wallet = useWallet();
+  const tiers = catalogState.seed.settings.copay_tiers;
+  const bookings = derived.bookings
+    .filter((b) => b.citizenId === citizen.id && b.status !== "cancelled")
+    .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt))
+    .slice(0, 3);
   const risk = RISK_LEVEL_MAP[citizen.riskLevel];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
+    <div className="min-h-screen bg-gray-50 pb-6" dir="rtl">
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 h-14 flex items-center justify-between">
@@ -91,31 +92,20 @@ export default function CitizenProfile() {
           </div>
         </div>
 
-        {/* Wallet */}
+        {/* הסל בשקלים, כמו בבית */}
         <div className="bg-white rounded-xl p-5 border border-gray-100">
           <div className="flex items-center gap-2 mb-4">
-            <Wallet className="w-4 h-4 text-[#1B3A5C]" />
-            <h2 className="text-sm font-semibold text-gray-900">ארנק יחידות</h2>
+            <Wallet className="w-4 h-4 text-[#1B3A5C]" aria-hidden="true" />
+            <h2 className="text-base font-semibold text-gray-900">{he.walletTitle(he.monthNames[new Date().getMonth()])}</h2>
           </div>
-          <div className="flex items-end gap-3 mb-3">
-            <div>
-              <p className="text-3xl font-bold text-[#1B3A5C]">{balance}</p>
-              <p className="text-xs text-gray-400">יחידות נותרו</p>
-            </div>
-            <div className="pb-0.5">
-              <p className="text-sm text-gray-500">מתוך <span className="font-semibold">{total}</span> יחידות</p>
-              <p className="text-xs text-gray-400">{used} יחידות נוצלו (≈ {used * 24}₪)</p>
-            </div>
-            <div className="mr-auto text-left pb-0.5">
-              <p className="text-xs text-gray-400">שווי חודשי</p>
-              <p className="text-sm font-bold text-emerald-700">775₪</p>
-            </div>
-          </div>
-          <ProgressBar value={used} max={total} tone="primary" size="sm" />
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-gray-400">שירותי מניעה — 100% ממומנים · שירותי חוסן — 50%</p>
-            <p className="text-xs font-medium text-[#1B3A5C]">רמה 2</p>
-          </div>
+          <p className="text-3xl font-bold text-[#1B3A5C] mb-1">
+            נשארו ₪{wallet.left} <span className="text-base font-normal text-gray-700">מתוך ₪{wallet.total}</span>
+          </p>
+          <ProgressBar value={wallet.used} max={wallet.total} tone="primary" size="sm" />
+          <p className="text-sm text-gray-700 mt-2">{he.walletRenews}</p>
+          <p className="text-sm text-gray-700">
+            השתתפות עצמית: {Math.round(tiers.core_and_prevention * 100)}% בשירותי ליבה ומניעה, {Math.round(tiers.classes * 100)}% בחוגים, {Math.round(tiers.qol * 100)}% באיכות חיים
+          </p>
         </div>
 
         {/* Motivations */}
@@ -145,7 +135,7 @@ export default function CitizenProfile() {
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-4 h-4 text-amber-500" />
               <h2 className="text-sm font-semibold text-gray-900">חסמים מזוהים</h2>
-              <span className="text-xs text-gray-400">— המערכת מתאימה שירותים בהתאם</span>
+              <span className="text-xs text-gray-600">ההמלצות מותאמות לכך</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {citizen.barriers.map((b) => (
@@ -157,40 +147,44 @@ export default function CitizenProfile() {
           </div>
         )}
 
-        {/* Bookings */}
+        {/* פעילויות קרובות: מההזמנות */}
         <div className="bg-white rounded-xl p-5 border border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#1B3A5C]" />
-              <h2 className="text-sm font-semibold text-gray-900">פעילויות קרובות</h2>
+              <Calendar className="w-4 h-4 text-[#1B3A5C]" aria-hidden="true" />
+              <h2 className="text-base font-semibold text-gray-900">פעילויות קרובות</h2>
             </div>
-            <Link to={CITIZEN_CHAT_ENABLED ? "/citizen/chat" : "/citizen/services"} className="text-xs text-[#1B3A5C] hover:underline flex items-center gap-0.5">
-              הוסף <ChevronLeft className="w-3 h-3" />
+            <Link to="/citizen/activities" className="min-h-[44px] text-sm text-[#1B3A5C] font-semibold hover:underline flex items-center gap-0.5">
+              {he.activitiesTitle} <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
-          <div className="space-y-2">
-            {BOOKINGS.map((b) => (
-              <div key={b.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{b.name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {b.date} · {b.time}
-                  </p>
+          {bookings.length === 0 ? (
+            <p className="text-base text-gray-700">{he.noActivities}</p>
+          ) : (
+            <div className="space-y-2">
+              {bookings.map((b) => (
+                <div key={b.id} className="flex items-center justify-between gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div>
+                    <p className="text-base font-medium text-gray-900">{b.serviceName}</p>
+                    <p className="text-sm text-gray-600 mt-0.5 flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" aria-hidden="true" /> {b.slot ? formatSlot(he, b.slot) : he.coordinated}
+                    </p>
+                  </div>
+                  {b.status === "booked" ? (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200 shrink-0">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+                      <span className="text-sm text-emerald-800">{he.status.booked}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-50 border border-amber-200 shrink-0">
+                      <Clock className="w-3.5 h-3.5 text-amber-700" aria-hidden="true" />
+                      <span className="text-sm text-amber-900">{he.status[b.status]}</span>
+                    </div>
+                  )}
                 </div>
-                {b.status === "confirmed" ? (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200">
-                    <CheckCircle className="w-3 h-3 text-emerald-600" />
-                    <span className="text-xs text-emerald-700">אושר</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-50 border border-amber-200">
-                    <Clock className="w-3 h-3 text-amber-600" />
-                    <span className="text-xs text-amber-700">ממתין</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Emergency */}
