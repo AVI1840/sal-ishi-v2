@@ -18,12 +18,18 @@ export interface CoverageCell {
   missing: number;
   level: CoverageLevel;
   unitKeys: string[];
+  // תוספת 3 (הצעה): גיוון, נגישות ויעד עושר. היעד הוא מדד בלבד ולא משנה את הרמה.
+  subcategories?: number;
+  accessible?: number;
+  /** כמה מהנספרים הם שירות רשותי או אזורי מחוץ לשכונה. */
+  nonlocal?: number;
+  target?: number;
 }
 
 export interface CoverageAlert {
   neighborhoodId: string;
   coreCategoryId: string;
-  kind: "subarea" | "community" | "breadth";
+  kind: "subarea" | "community" | "breadth" | "accessible";
   code?: string;
   community?: Community;
   message: string;
@@ -61,6 +67,19 @@ export function coverage(
   const breadthMin = settings.subcategory_breadth_min ?? 0;
   const subareaMin = settings.subarea_alert_min ?? floor;
   const communityNames = new Map(seed.community_profiles.map((c) => [c.id, c.name]));
+  const valueOf = (x: unknown, fallback: number): number =>
+    typeof x === "number" ? x : x && typeof x === "object" && typeof (x as { value?: unknown }).value === "number" ? (x as { value: number }).value : fallback;
+  const accessibleMin = valueOf(settings.floor_min_accessible, 0);
+  const target = valueOf(settings.target_per_category, floor);
+  const largeCities = new Set(settings.large_city_authorities ?? []);
+  const maxNonlocal = (authority: string) =>
+    settings.floor_max_nonlocal ? (largeCities.has(authority) ? settings.floor_max_nonlocal.large_city : settings.floor_max_nonlocal.small_authority) : Infinity;
+  const unitServices = (u: ContinuityUnit) => u.serviceIds.map((id) => serviceById.get(id)).filter((s): s is Service => Boolean(s));
+  const isLocalTo = (u: ContinuityUnit, nid: string) =>
+    u.neighborhoodId === nid || unitServices(u).some((s) => (s.servesNeighborhoods ?? []).includes(nid));
+  const isRemote = (u: ContinuityUnit) => unitServices(u).every((s) => s.serviceMode === "remote" || s.deliveryMode === "remote");
+  const isAccessible = (u: ContinuityUnit) => unitServices(u).some((s) => s.fitProfile?.mobility.includes("walker_wheelchair"));
+  const hasFitData = (u: ContinuityUnit) => unitServices(u).some((s) => s.fitProfile);
 
   // יחידה נספרת אם היא רציפה ולפחות אחד השירותים בה נכנס או אושר.
   const qualifying = units.filter(
@@ -103,8 +122,14 @@ export function coverage(
         }
         continue;
       }
-      const inCategory = inNeighborhood.filter((u) => cc.codes.includes(u.categoryCode));
+      // שירות רשותי או אזורי נספר ברצפה של שכונה רק עד floor_max_nonlocal (לפי גודל
+      // הרשות), ושירות מרחוק מחוץ לשכונה לא נספר בכלל.
+      const all = inNeighborhood.filter((u) => cc.codes.includes(u.categoryCode));
+      const local = all.filter((u) => isLocalTo(u, n.id));
+      const nonlocal = all.filter((u) => !isLocalTo(u, n.id) && !isRemote(u)).slice(0, maxNonlocal(n.authority));
+      const inCategory = [...local, ...nonlocal];
       const missing = Math.max(0, floor - inCategory.length);
+      const accessible = inCategory.filter(isAccessible).length;
       cells.push({
         neighborhoodId: n.id,
         coreCategoryId: cc.id,
@@ -113,7 +138,20 @@ export function coverage(
         missing,
         level: levelForMissing(missing),
         unitKeys: inCategory.map((u) => u.key),
+        subcategories: new Set(inCategory.map((u) => u.categoryCode)).size,
+        accessible,
+        nonlocal: nonlocal.length,
+        target,
       });
+
+      if (accessibleMin > 0 && inCategory.length > 0 && inCategory.some(hasFitData) && accessible < accessibleMin) {
+        alerts.push({
+          neighborhoodId: n.id,
+          coreCategoryId: cc.id,
+          kind: "accessible",
+          message: `${cc.name}: אף שירות רציף לא נגיש להליכון ולכיסא גלגלים`,
+        });
+      }
 
       for (const sub of cc.subareas) {
         if (!sub.alert_if_below_floor || !settings.subarea_alerts.includes(sub.code)) continue;
@@ -196,4 +234,37 @@ export function unmetByCell(unmet: readonly UnmetDemand[], seed: Seed) {
     out.set(key, cell);
   }
   return out;
+}
+
+export interface GapAlternatives {
+  /** שירותים באותה קטגוריה ברשות אחרת (בהדגמה אין גיאוגרפיה, אז כל רשות אחרת). */
+  otherAuthority: Service[];
+  /** שירותים אזוריים או רשותיים שלא נספרו ברצפה של השכונה. */
+  regional: Service[];
+  /** שירותים מרחוק באותה קטגוריה. */
+  remote: Service[];
+}
+
+/**
+ * חלופות לפער ברצפה (תוספת 3, הצעה): רשות סמוכה, שירות אזורי, שירות מרחוק.
+ * לא "תקציב חירום". מוצגות כהצעה, וההחלטה אצל הרשות והמטה.
+ */
+export function gapAlternatives(
+  input: { neighborhoods: readonly Neighborhood[]; services: readonly Service[] },
+  seed: Seed,
+  neighborhoodId: string,
+  coreCategoryId: string,
+  limit = 3,
+): GapAlternatives {
+  const n = input.neighborhoods.find((x) => x.id === neighborhoodId);
+  const cc = seed.core_categories.find((c) => c.id === coreCategoryId);
+  if (!n || !cc) return { otherAuthority: [], regional: [], remote: [] };
+  const inCat = input.services.filter((s) => cc.codes.includes(s.categoryCode) && s.reach !== "national" && countsTowardCoverage(s, seed));
+  const isRemote = (s: Service) => s.serviceMode === "remote" || s.deliveryMode === "remote";
+  const notHere = (s: Service) => s.neighborhoodId !== n.id && !(s.servesNeighborhoods ?? []).includes(n.id);
+  return {
+    otherAuthority: inCat.filter((s) => s.authority !== n.authority && (s.reach ?? "neighborhood") === "neighborhood" && !isRemote(s)).slice(0, limit),
+    regional: inCat.filter((s) => notHere(s) && (s.reach === "regional" || s.reach === "authority") && !isRemote(s)).slice(0, limit),
+    remote: inCat.filter((s) => notHere(s) && isRemote(s)).slice(0, limit),
+  };
 }

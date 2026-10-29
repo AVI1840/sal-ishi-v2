@@ -20,6 +20,31 @@ export const SERVICE_MODES = ["group", "individual", "home", "remote"] as const;
 /** על מה מבוסס החלק שהקשיש משלם בייצוא. */
 export const COPAY_BASES = ["tier", "qol_fixed", "qol_percent", "reference_binding"] as const;
 
+/** פרופיל התאמה (תוספת 3): מתאר את השירות, לא את האדם. הכל בחירה, בלי טקסט חופשי. */
+export const FUNCTIONAL_LEVELS = ["independent", "partial_help", "homebound"] as const;
+export const MOBILITY_LEVELS = ["independent_walking", "walker_wheelchair", "home_remote"] as const;
+export const DIGITAL_LEVELS = ["none", "basic_phone", "smartphone"] as const;
+export const EVIDENCE_LEVELS = ["high", "medium", "low", "unknown"] as const;
+export const fitProfileSchema = z
+  .object({
+    functionalLevels: z.array(z.enum(FUNCTIONAL_LEVELS)).min(1),
+    mobility: z.array(z.enum(MOBILITY_LEVELS)).min(1),
+    digitalRequired: z.enum(DIGITAL_LEVELS),
+    goals: z.array(z.string()).optional(),
+    intensity: z.enum(["low", "medium", "high"]).optional(),
+    suitableMildCognitiveDecline: z.boolean().optional(),
+    culturalAdaptation: z.array(z.enum(COMMUNITIES)).optional(),
+    medicalClearanceRequired: z.boolean().optional(),
+    evidenceLevel: z.enum(EVIDENCE_LEVELS).optional(),
+  })
+  .strict();
+export type FitProfile = z.infer<typeof fitProfileSchema>;
+
+/** כיסוי המממן האחר: סכום, אחוז, או משתנה לפי מקרה. */
+export const otherFunderCoverageSchema = z
+  .object({ kind: z.enum(["amount", "percent", "varies"]), value: z.number().finite().nonnegative().optional() })
+  .strict();
+
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "חודש בפורמט YYYY-MM");
 const nonNegative = z.number().finite().nonnegative();
 const count = z.number().int().nonnegative();
@@ -103,6 +128,14 @@ export const serviceSchema = z
     attendanceMethod: z.array(attendanceMethodSchema),
     cancellationPolicy: z.string().optional(),
     otherFunder: z.boolean(),
+    // תוספת 3: סל משלים בלבד. אופציונליים, כדי שנתונים מגרסאות קודמות ייקלטו.
+    otherFunderName: z.enum(["סל בריאות", "משרד הבריאות", "גמלת סיעוד", "רווחה", "אחר", "אין"]).optional(),
+    otherFunderCoverage: otherFunderCoverageSchema.optional(),
+    /** חובה לממש קודם מול המממן האחר. */
+    requiresPriorClaim: z.boolean().optional(),
+    /** אזור השירות בטקסט חופשי קצר (למשל "מזרח העיר"). */
+    serviceArea: z.string().optional(),
+    fitProfile: fitProfileSchema.optional(),
     enforceable: z.boolean(),
     programId: z.string().optional(),
     /** ברירת מחדל: שכונה. שירות ברמת רשות נספר בכיסוי של כל שכונות הרשות. */
@@ -257,6 +290,11 @@ export const citizenCatalogItemSchema = catalogItemSchema
     coveredPoints: nonNegative.nullable().optional(),
     copayPoints: nonNegative.nullable().optional(),
     copayBasis: copayBasisSchema.optional(),
+    // תוספת 3
+    fitProfile: fitProfileSchema.optional(),
+    otherFunderName: z.string().nullable().optional(),
+    complementState: z.enum(["none", "partial", "prior_claim", "full", "varies", "missing"]).optional(),
+    otherPaysPoints: nonNegative.nullable().optional(),
   })
   .strict();
 

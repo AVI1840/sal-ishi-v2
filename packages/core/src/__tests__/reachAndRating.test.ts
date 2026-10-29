@@ -5,7 +5,10 @@ import { buildPilotPackage, emptyHqState, mergePackage, parsePilotPackage } from
 import { coverage, suggestServiceTypes, unmetByCell } from "../rules/coverage";
 import { competitionFlags, supplierScore } from "../rules/suppliers";
 import { proposalKeys } from "../settings";
-import { defaultSeed as seed, upgradeSeed, withSettings } from "../seed";
+import { defaultSeed, upgradeSeed, withSettings } from "../seed";
+
+// הדירוג כבוי כברירת מחדל (תוספת 3, הדירוג אצל ספק העל). הבדיקות כאן בודקות את המנגנון כשמדליקים אותו.
+const seed = withSettings(defaultSeed, { supplier_rating_enabled: true });
 import { act, continuousMonths, nGeneral, nHaredi, svc } from "./fixtures";
 
 const cover = (services: ReturnType<typeof svc>[], s = seed) =>
@@ -83,7 +86,7 @@ describe("דירוג ספקים", () => {
     expect(up.settings.core_floor).toBe(4);
     expect(up.settings.selection_max_active).toBe(8);
     expect(up.settings.matching_weights).toEqual(seed.settings.matching_weights);
-    expect(upgradeSeed(seed)).toBe(seed);
+    expect(upgradeSeed(defaultSeed)).toBe(defaultSeed);
   });
 
   it("ההגדרות החדשות מסומנות כהצעה", () => {
@@ -100,7 +103,7 @@ describe("קטלוג לאזרח עם ערוץ ארצי, ביקוש וציון ס
   it("שכונה מקבלת את השירותים שלה, את הרשותיים ואת הארציים", () => {
     const n = data.neighborhoods.find((x) => x.name === "גילה")!;
     const { catalog } = buildCitizenCatalog(source, n.id, seed);
-    expect(catalog.services.filter((s) => s.reach === "national")).toHaveLength(6);
+    expect(catalog.services.filter((s) => s.reach === "national" && s.categoryCode === "6")).toHaveLength(national.services.length);
     expect(catalog.services.some((s) => s.reach === "authority")).toBe(true);
     expect(catalog.services.every((s) => s.reach !== "neighborhood" || s.neighborhoodId === n.id)).toBe(true);
   });
@@ -119,7 +122,8 @@ describe("קטלוג לאזרח עם ערוץ ארצי, ביקוש וציון ס
     expect(catalog.services.some((s) => s.supplierScore !== null)).toBe(true);
     const { export: exp } = await buildOnboardingStandard(source, seed);
     expect(JSON.stringify(exp)).not.toContain("supplierScore");
-    expect(exp.services.filter((s) => s.reach === "national")).toHaveLength(6);
+    // הליכון במימון מלא של מממן אחר: הפניה בלבד, לא בתקן.
+    expect(exp.services.filter((s) => s.reach === "national" && s.categoryCode === "6")).toHaveLength(national.services.length - 1);
   });
 });
 

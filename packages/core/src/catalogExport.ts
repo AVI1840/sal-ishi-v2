@@ -21,6 +21,7 @@ import {
 } from "./model";
 import { contentHash } from "./hash";
 import { EXPORT_FORBIDDEN_KEYS, findForbiddenKeys } from "./privacy";
+import { complementOf } from "./rules/complement";
 import { isPublishable } from "./rules/publish";
 import { referenceBindings } from "./rules/referencePrice";
 import { supplierScore } from "./rules/suppliers";
@@ -128,8 +129,18 @@ function paymentFields(s: Service, pricePoints: number, seed: Seed, bindingOf: R
     cancellationNoticeHours: terms?.cancellationNoticeHours ?? null,
     noShowCharged: terms?.noShowCharged ?? null,
     hospitalizationRefund: terms?.hospitalizationRefund ?? null,
-    ...pointsSplit(s, pricePoints, seed, bindingOf(s)),
+    ...basketSplit(s, pricePoints, seed, bindingOf),
   };
+}
+
+/**
+ * חלוקת הנקודות. כשיש מממן אחר (סל משלים בלבד): הארנק מכסה רק את ההשלמה, ועל
+ * הקשיש ההשתתפות ומה שמעל התקרה. כיסוי משתנה לפי מקרה: null עד הבדיקה.
+ */
+function basketSplit(s: Service, pricePoints: number, seed: Seed, bindingOf: ReturnType<typeof referenceBindings>) {
+  const c = complementOf({ ...s, pricePoints }, seed);
+  if (c.state === "none") return pointsSplit(s, pricePoints, seed, bindingOf(s));
+  return { coveredPoints: c.basketCovers, copayPoints: c.citizenPays, copayBasis: "tier" as const };
 }
 
 /** מה חסר לשירות כדי להיכנס לתקן קליטת המפעילים (שדות 0.4). */
@@ -169,6 +180,10 @@ export async function buildOnboardingStandard(
   const items: OnboardingItem[] = [];
   for (const item of base) {
     const s = byId.get(item.serviceId)!;
+    if (complementOf(s, seed).state === "full") {
+      skipped.push({ serviceId: s.id, reason: "הפניה בלבד: מממן אחר מכסה את כל המחיר" });
+      continue;
+    }
     const gaps = onboardingGaps(s, seed);
     if (gaps.length) {
       skipped.push({ serviceId: s.id, reason: `דורש השלמה: ${gaps.join(", ")}` });
@@ -239,6 +254,15 @@ export function servesNeighborhood(service: Service, neighborhood: Neighborhood)
   return (service.servesNeighborhoods ?? []).includes(neighborhood.id);
 }
 
+/** פרופיל ההתאמה ומצב ההשלמה, לכלי לאזרח (תוספת 3). */
+function citizenFitFields(s: Service, pricePoints: number, seed: Seed) {
+  const c = complementOf({ ...s, pricePoints }, seed);
+  return {
+    ...(s.fitProfile ? { fitProfile: s.fitProfile } : {}),
+    ...(c.state !== "none" ? { otherFunderName: c.funder, complementState: c.state, otherPaysPoints: c.otherPays } : {}),
+  };
+}
+
 /** הקטלוג המאושר של שכונה אחת, כפי שהכלי לאזרח ולמלווה קורא אותו. */
 export function buildCitizenCatalog(
   source: CatalogSource,
@@ -267,6 +291,7 @@ export function buildCitizenCatalog(
       ...item,
       ...payment,
       capacityLimited: s.capacityLimited ?? false,
+      ...citizenFitFields(s, item.pricePoints, seed),
       demand: demandBand(s, activity, seed.settings, latest),
       supplierScore: sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
     };

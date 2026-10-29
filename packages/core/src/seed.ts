@@ -57,6 +57,14 @@ export const settingsSchema = z
     subcategory_breadth_min: z.number().int().nonnegative().optional(),
     subarea_alert_min: z.number().int().nonnegative().optional(),
     supplier_rating_enabled: z.boolean().optional(),
+    // תוספת 3: גיוון ונגישות ברצפה, יעד עושר, וספירת שירותים לא מקומיים.
+    floor_min_accessible: withStatus(z.number().int().nonnegative()).optional(),
+    target_per_category: withStatus(z.number().int().positive()).optional(),
+    floor_max_nonlocal: z
+      .object({ large_city: z.number().int().nonnegative(), small_authority: z.number().int().nonnegative(), status: z.string().optional() })
+      .passthrough()
+      .optional(),
+    large_city_authorities: z.array(z.string()).optional(),
     // גרסה 0.4: מודל התשלום של החשכ"ל.
     qol_copay: ratio,
     qol_cap_month: z.number().nonnegative(),

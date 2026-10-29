@@ -46,7 +46,7 @@ test("מבחן הסבתא: ארנק, הזמנה, ביטול ובקשת עזרה,
 });
 
 test("כל כפתור בצד האזרח לפחות 48 פיקסלים, ובכל מסך יש דרך למלווה", async ({ page }) => {
-  for (const route of ["citizen", "citizen/find", "citizen/service/demoj-s05", "citizen/activities", "citizen/needs"]) {
+  for (const route of ["citizen", "citizen/find", "citizen/service/demoj-balance", "citizen/activities", "citizen/needs"]) {
     await page.goto(`./#/${route}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByRole("link", { name: "לדבר עם המלווה" })).toBeVisible();
@@ -61,7 +61,7 @@ test("כל כפתור בצד האזרח לפחות 48 פיקסלים, ובכל �
 });
 
 test("שירות מותנה: האזרחית מבקשת, המלווה מאשרת בשלוש נגיעות, האזרחית רואה", async ({ page, context }) => {
-  await page.goto("./#/citizen/service/demoj-s41");
+  await page.goto("./#/citizen/service/demoj-care");
   await page.getByRole("button", { name: "לבקש מהמלווה" }).click();
   await expect(page.getByText("מחכה לתשובת המלווה")).toBeVisible();
 
@@ -78,7 +78,7 @@ test("שירות מותנה: האזרחית מבקשת, המלווה מאשרת 
 });
 
 test("שירות שנדחה: האזרחית רואה את הסיבה ומה אפשר לעשות", async ({ page, context }) => {
-  await page.goto("./#/citizen/service/demoj-s41");
+  await page.goto("./#/citizen/service/demoj-care");
   await page.getByRole("button", { name: "לבקש מהמלווה" }).click();
   const companion = await context.newPage();
   await companion.goto("./#/companion/requests");
@@ -158,7 +158,7 @@ test("שפות: ערבית מימין לשמאל ורוסית משמאל לימ�
 });
 
 test("טקסט ב-200 אחוז בלי שבירה", async ({ page }) => {
-  for (const route of ["citizen", "citizen/find", "citizen/service/demoj-s05", "companion", "companion/person/c1", ""]) {
+  for (const route of ["citizen", "citizen/find", "citizen/service/demoj-balance", "companion", "companion/person/c1", ""]) {
     await page.goto(`./#/${route}`);
     await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
     await noHorizontalScroll(page);
@@ -167,7 +167,7 @@ test("טקסט ב-200 אחוז בלי שבירה", async ({ page }) => {
 
 test("נגישות: axe בלי ליקויים חמורים בכל המסכים", async ({ page }) => {
   const routes = [
-    "./", "./#/scope", "./#/citizen", "./#/citizen/find", "./#/citizen/service/demoj-s05", "./#/citizen/book/demoj-s05",
+    "./", "./#/scope", "./#/citizen", "./#/citizen/find", "./#/citizen/service/demoj-balance", "./#/citizen/book/demoj-balance",
     "./#/citizen/activities", "./#/citizen/help", "./#/citizen/needs", "./#/companion", "./#/companion/requests",
     "./#/companion/caseload", "./#/companion/person/c1", "./#/companion/log", "./hq/#/", "./hq/#/learning", "./hq/#/history",
     "./hq/#/rules", "./hq/#/export", "./field/#/", "./field/#/learning",

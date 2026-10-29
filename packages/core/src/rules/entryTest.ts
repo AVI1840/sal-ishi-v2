@@ -5,12 +5,14 @@ import type { MonthlyActivity, Service } from "../model";
 import type { Seed } from "../seed";
 import { OUTSIDE_LAYER, QOL_LAYERS, seedIndex } from "../seed";
 import { isProduct } from "./terms";
+import { aboveQuarterlyCap, complementOf } from "./complement";
 
 export const ENTRY_STATUS = {
   outside: "בחוץ",
   otherFunder: "בחוץ: מממן אחר",
   remap: "מוחזר למיפוי",
   missingData: "חסרים נתונים",
+  aboveCap: "מעל התקרה הרבעונית",
   noMechanism: "לא נכנס עד שיש מנגנון",
   in: "נכנס",
 } as const;
@@ -25,7 +27,7 @@ export interface EntryResult {
 }
 
 type EntryInput = Pick<Service, "categoryCode" | "serviceTypeId" | "otherFunder" | "unitPrice" | "marketPrice" | "enforceable"> &
-  Partial<Pick<Service, "hoursPerUnit" | "gatedByCompanion" | "gateReason">>;
+  Partial<Pick<Service, "hoursPerUnit" | "gatedByCompanion" | "gateReason" | "copayTier" | "pricePoints" | "otherFunderName" | "otherFunderCoverage" | "requiresPriorClaim">>;
 
 export function entryTest(service: EntryInput, seed: Seed): EntryResult {
   const { categories, serviceTypes } = seedIndex(seed);
@@ -48,9 +50,12 @@ export function entryTest(service: EntryInput, seed: Seed): EntryResult {
     if (!hasRule) return fail(ENTRY_STATUS.outside, 1, `באיכות חיים נכנסים רק פריטים מכללי איכות החיים`);
   }
 
-  // 2. מממן אחר
-  if (service.otherFunder) {
-    return fail(ENTRY_STATUS.otherFunder, 2, "יש לשירות מממן אחר (סל הבריאות, שב\"ן, רווחה או גמלה)");
+  // 2. מממן אחר. סל משלים בלבד (הוכרע, תוספת 3): נכנס רק אם ידוע כמה המממן
+  //    האחר מכסה, והסל מממן את ההשלמה. מימון מלא: בחוץ, הפניה בלבד.
+  if (service.otherFunder || (service.otherFunderName && service.otherFunderName !== "אין")) {
+    const c = complementOf({ copayTier: "core_and_prevention", ...service }, seed);
+    if (c.state === "missing") return fail(ENTRY_STATUS.missingData, 2, "יש מממן אחר, וחסר כמה הוא מכסה (סכום, אחוז או משתנה לפי מקרה)");
+    if (c.state === "full") return fail(ENTRY_STATUS.otherFunder, 2, `${c.funder ?? "מממן אחר"} מממן את כל המחיר: הפניה בלבד, עם משימת מיצוי למלווה`);
   }
 
   // 3. קטגוריה וסוג שירות, ושהם מתאימים זה לזה
@@ -71,6 +76,9 @@ export function entryTest(service: EntryInput, seed: Seed): EntryResult {
   ].filter(Boolean);
   if (missing.length) {
     return fail(ENTRY_STATUS.missingData, 4, `חסר ${missing.join(", ")}`);
+  }
+  if (aboveQuarterlyCap({ copayTier: "core_and_prevention", ...service }, seed)) {
+    return fail(ENTRY_STATUS.aboveCap, 4, "מחיר המוצר מעל התקרה הרבעונית למוצרים");
   }
 
   // 6. מנגנון מימוש ואימות

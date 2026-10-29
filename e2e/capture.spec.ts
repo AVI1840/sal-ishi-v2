@@ -29,7 +29,7 @@ test("צילומי המסלול המלא", async ({ page, context }) => {
   await shot("09-בוטלה");
   await page.goto("./#/citizen/help");
   await shot("10-עזרה");
-  await page.goto("./#/citizen/service/demoj-s41");
+  await page.goto("./#/citizen/service/demoj-care");
   await page.getByRole("button", { name: "לבקש מהמלווה" }).click();
   await page.goto("./#/companion");
   await shot("11-מלווה-היום");

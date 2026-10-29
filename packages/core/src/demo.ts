@@ -2,7 +2,7 @@
 // מומצא, ונבחר כך שכל מצב בכלי יופיע (ירוק, כתום, אדום, אירוע, חריגת מחיר,
 // התראה קהילתית ודגל מיצוי). שתי וריאציות, כדי שהמטה יוכל להשוות בין פיילוטים.
 
-import type { AuthorityData, Community, MonthlyActivity, Neighborhood, Service, Supplier, SupplierEvaluation, UnmetDemand } from "./model";
+import type { AuthorityData, Community, DeliveryMode, FitProfile, MonthlyActivity, Neighborhood, Service, ServiceMode, Supplier, SupplierEvaluation, UnmetDemand } from "./model";
 import { NATIONAL_AUTHORITY } from "./catalogExport";
 import { defaultSeed, seedIndex } from "./seed";
 import { defaultCopayTier } from "./settings";
@@ -32,6 +32,12 @@ interface Spec {
   /** שירות מגרסה קודמת, בלי שדות 0.4: מופיע ברשימת ההשלמות. */
   legacy?: boolean;
   capacityLimited?: boolean;
+  // תוספת 3: מזהה קבוע, אופן מתן, פרופיל התאמה ומממן אחר.
+  key?: string;
+  mode?: ServiceMode;
+  delivery?: DeliveryMode;
+  fp?: FitProfile;
+  funder?: Pick<Service, "otherFunderName" | "otherFunderCoverage" | "requiresPriorClaim">;
 }
 
 // שעות שירות ליחידת תשלום, לפי היחידה בספריית סוגי השירות. מספרי הדגמה.
@@ -95,6 +101,94 @@ const SPECS: Spec[] = [
   { n: 0, type: "T51", sup: "S-008", fit: G, price: 100, pattern: "cont", base: 14, status: "אושר", copay: "qol" },
 ];
 
+// ── קטלוג ההדגמה של ירושלים (תוספת 3) ─────────────────────
+// סוגי השירות לפי הטבלה בתוספת 3, על ספריית הסוגים שב-seed. ספקים בדויים,
+// מחירי דמה. פסגת זאב עשירה (יעד עושר), קטמון ובית חנינא ברצפה, בגילה אין
+// שירות בריאות נגיש, ורוממה דלה (פערים עם חלופות).
+const WALK_AND_AID: FitProfile = { functionalLevels: ["independent", "partial_help"], mobility: ["independent_walking", "walker_wheelchair"], digitalRequired: "none", evidenceLevel: "medium" };
+const WALK_ONLY: FitProfile = { functionalLevels: ["independent"], mobility: ["independent_walking"], digitalRequired: "none", evidenceLevel: "medium" };
+const AT_HOME: FitProfile = { functionalLevels: ["independent", "partial_help", "homebound"], mobility: ["independent_walking", "walker_wheelchair", "home_remote"], digitalRequired: "none", evidenceLevel: "medium" };
+const BY_PHONE: FitProfile = { ...AT_HOME, digitalRequired: "basic_phone" };
+const BY_SMARTPHONE: FitProfile = { ...AT_HOME, digitalRequired: "smartphone" };
+const fp = (base: FitProfile, extra: Partial<FitProfile> = {}): FitProfile => ({ ...base, ...extra });
+const C = "cont" as const;
+
+const SPECS_J: Spec[] = [
+  // פסגת זאב: עשירה
+  { key: "club", n: 0, type: "T01", sup: "S-001", fit: G, price: 120, pattern: C, base: 24, status: "אושר", name: "מועדון שכונתי", fp: fp(WALK_AND_AID, { goals: ["belonging"], evidenceLevel: "high", suitableMildCognitiveDecline: true }) },
+  { key: "interest", n: 0, type: "T03", sup: "S-004", fit: G, price: 60, pattern: C, base: 14, status: "אושר", name: "קבוצות עניין", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
+  { key: "intergen", n: 0, type: "T04", sup: "S-001", fit: G, price: 70, pattern: C, base: 12, status: "אושר", reach: "regional", name: "פעילות בין-דורית", fp: fp(WALK_ONLY, { goals: ["belonging", "meaning"] }) },
+  { key: "volunteer", n: 0, type: "T12", sup: "S-002", fit: G, price: 40, pattern: C, base: 13, status: "אושר", name: "התנדבות מותאמת", fp: fp(WALK_AND_AID, { goals: ["meaning"] }) },
+  { key: "project", n: 0, type: "T02", sup: "S-002", fit: G, price: 90, pattern: C, base: 13, status: "אושר", name: "פרויקט קהילתי בהובלה אישית", fp: fp(WALK_ONLY, { goals: ["meaning"] }) },
+  { key: "mentor", n: 0, type: "T13", sup: "S-007", fit: G, price: 80, pattern: C, base: 13, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "חונכות של ותיקים לצעירים (מרחוק)", fp: fp(BY_PHONE, { goals: ["meaning"] }) },
+  { key: "culture", n: 0, type: "T11", sup: "S-001", fit: G, price: 60, pattern: C, base: 30, status: "אושר", name: "תרבות מקומית", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
+  { key: "learning", n: 0, type: "T10", sup: "S-006", fit: G, price: 90, pattern: C, base: 16, status: "אושר", reach: "regional", name: "למידה לאורך החיים", fp: fp(WALK_AND_AID, { goals: ["curiosity"], suitableMildCognitiveDecline: true }) },
+  { key: "tours", n: 0, type: "T09", sup: "S-005", fit: G, price: 95, pattern: C, base: 20, status: "אושר", reach: "regional", name: "סיורים קבוצתיים", fp: fp(WALK_ONLY, { goals: ["curiosity"], intensity: "medium" }) },
+  { key: "crafts", n: 0, type: "T07", sup: "S-004", fit: G, price: 100, pattern: C, base: 14, status: "אושר", copay: "classes", name: "חוגי יצירה", fp: fp(WALK_AND_AID, { goals: ["meaning"] }) },
+  { key: "exercise", n: 0, type: "T17", sup: "S-003", fit: G, price: 90, pattern: C, base: 18, status: "אושר", name: "התעמלות מותאמת", fp: fp(WALK_AND_AID, { goals: ["health"], evidenceLevel: "high", intensity: "low" }) },
+  { key: "hydro", n: 0, type: "T15", sup: "S-003", fit: G, price: 160, pattern: C, base: 13, status: "אושר", reach: "regional", capacityLimited: true, name: "הידרותרפיה", fp: fp(WALK_AND_AID, { goals: ["health"], evidenceLevel: "high", medicalClearanceRequired: true }) },
+  { key: "yoga", n: 0, type: "T17", sup: "S-004", fit: G, price: 95, pattern: C, base: 12, status: "אושר", copay: "classes", name: "יוגה ופילאטיס", fp: fp(WALK_ONLY, { goals: ["health"], intensity: "medium" }) },
+  { key: "balance", n: 0, type: "T16", sup: "S-003", fit: G, price: 110, pattern: C, base: 15, status: "אושר", capacityLimited: true, name: "כוח ושיווי משקל", fp: fp(WALK_AND_AID, { goals: ["health", "independence"], evidenceLevel: "high" }) },
+  { key: "cognitive", n: 0, type: "T22", sup: "S-006", fit: G, price: 140, pattern: C, base: 12, status: "אושר", reach: "regional", name: "אימון קוגניטיבי", fp: fp(WALK_AND_AID, { goals: ["independence"], evidenceLevel: "high", suitableMildCognitiveDecline: true }) },
+  { key: "memory", n: 0, type: "T22", sup: "S-004", fit: G, price: 90, pattern: C, base: 13, status: "אושר", name: "זיכרון ויצירה", fp: fp(WALK_AND_AID, { goals: ["independence", "meaning"], suitableMildCognitiveDecline: true }) },
+  { key: "games", n: 0, type: "T21", sup: "S-001", fit: G, price: 70, pattern: C, base: 13, status: "אושר", name: "משחקי חשיבה קבוצתיים", fp: fp(WALK_AND_AID, { goals: ["curiosity"], suitableMildCognitiveDecline: true }) },
+  { key: "cooking", n: 0, type: "T27", sup: "S-008", fit: G, price: 120, pattern: C, base: 13, status: "אושר", name: "סדנת בישול בריא קבוצתית", fp: fp(WALK_AND_AID, { goals: ["health"] }) },
+  { key: "support", n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: C, base: 12, status: "אושר", name: "קבוצת תמיכה נושאית", fp: fp(WALK_AND_AID, { goals: ["belonging"], evidenceLevel: "high" }) },
+  { key: "grief", n: 0, type: "T34", sup: "S-006", fit: G, price: 260, pattern: C, base: 13, status: "אושר", reach: "regional", name: "התמודדות עם אבל ואובדן", fp: fp(WALK_AND_AID, { evidenceLevel: "high" }) },
+  { key: "phonegroup", n: 0, type: "T32", sup: "S-007", fit: G, price: 120, pattern: C, base: 14, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "קבוצה טלפונית נגד בדידות", fp: fp(BY_PHONE, { goals: ["belonging"], evidenceLevel: "medium" }) },
+  { key: "counsel", n: 0, type: "T33", sup: "S-006", fit: G, price: 220, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ פרטני להתמודדות", fp: fp(AT_HOME, { evidenceLevel: "high" }) },
+  { key: "smartphone", n: 0, type: "T40", sup: "S-007", fit: G, price: 280, pattern: C, base: 13, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone", goals: ["independence"] }) },
+  { key: "apps", n: 0, type: "T40", sup: "S-007", fit: G, price: 200, pattern: C, base: 13, status: "אושר", name: "אפליקציות יומיומיות", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone", goals: ["independence"] }) },
+  { key: "gov", n: 0, type: "T41", sup: "S-007", fit: G, price: 150, pattern: C, base: 13, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "שירותים ממשלתיים דיגיטליים", fp: fp(BY_SMARTPHONE) },
+  { key: "banking", n: 0, type: "T43", sup: "S-007", fit: G, price: 170, pattern: C, base: 13, status: "אושר", reach: "regional", name: "בנקאות דיגיטלית", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
+  { key: "techhome", n: 0, type: "T45", sup: "S-007", fit: G, price: 150, pattern: C, base: 13, status: "אושר", reach: "authority", mode: "home", delivery: "home", name: "תמיכה טכנית בבית", fp: fp(AT_HOME, { digitalRequired: "basic_phone" }) },
+  { key: "install", n: 0, type: "T47", sup: "S-007", fit: G, price: 130, pattern: C, base: 13, status: "אושר", mode: "home", delivery: "home", name: "התקנת ציוד", fp: fp(AT_HOME) },
+  { key: "video", n: 0, type: "T44", sup: "S-007", fit: G, price: 110, pattern: C, base: 12, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "שיחות וידאו עם המשפחה", fp: fp(BY_SMARTPHONE, { goals: ["family", "belonging"] }) },
+  { key: "homeadapt", n: 0, type: "T29", sup: "S-003", fit: G, price: 300, pattern: C, base: 13, status: "אושר", mode: "home", delivery: "home", name: "התאמת הבית למניעת נפילות", fp: fp(AT_HOME, { goals: ["independence"], evidenceLevel: "high" }) },
+  // השלמה בלבד: ייעוץ תזונה (סל הבריאות מממן חלק), בדיקות מונעות (הפניה בלבד)
+  { key: "nutrition", n: 0, type: "T26", sup: "S-006", fit: G, price: 240, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ תזונה (השלמה)", fp: fp(AT_HOME, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 50 } } },
+  { key: "checkups", n: 0, type: "T31", sup: "S-001", fit: G, price: 120, pattern: C, base: 20, status: "אושר", mode: "individual", name: "בדיקות מונעות בקופה (הפניה)", fp: fp(WALK_AND_AID, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 100 } } },
+  // איכות חיים (seed, הוכרע): שובר בית קפה, וסל טיפוח באישור המלווה
+  { key: "coffee", n: 0, type: "T48", sup: "S-008", fit: G, price: 53, pattern: C, base: 40, status: "אושר", copay: "qol", name: "שובר בית קפה זוגי", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
+  { key: "care", n: 0, type: "T51", sup: "S-008", fit: G, price: 105, pattern: C, base: 14, status: "אושר", copay: "qol", name: "סל טיפוח", fp: fp(AT_HOME) },
+
+  // קטמון: ברצפה
+  { key: "k-club", n: 1, type: "T01", sup: "S-001", fit: G, price: 120, pattern: C, base: 20, status: "אושר", name: "מועדון שכונתי", fp: WALK_AND_AID },
+  { key: "k-crafts", n: 1, type: "T07", sup: "S-004", fit: G, price: 100, pattern: C, base: 12, status: "אושר", copay: "classes", name: "חוגי יצירה", fp: WALK_AND_AID },
+  { key: "k-volunteer", n: 1, type: "T12", sup: "S-002", fit: G, price: 40, pattern: C, base: 13, status: "אושר", name: "התנדבות מותאמת", fp: WALK_AND_AID },
+  { key: "k-exercise", n: 1, type: "T17", sup: "S-003", fit: G, price: 90, pattern: C, base: 16, status: "אושר", name: "התעמלות מותאמת", fp: WALK_AND_AID },
+  { key: "k-walk", n: 1, type: "T18", sup: "S-004", fit: G, price: 60, pattern: C, base: 12, status: "אושר", name: "קבוצות הליכה", fp: WALK_ONLY },
+  { key: "k-games", n: 1, type: "T21", sup: "S-001", fit: G, price: 70, pattern: C, base: 13, status: "אושר", name: "משחקי חשיבה קבוצתיים", fp: WALK_AND_AID },
+  { key: "k-support", n: 1, type: "T32", sup: "S-006", fit: G, price: 250, pattern: C, base: 13, status: "אושר", name: "קבוצת תמיכה נושאית", fp: WALK_AND_AID },
+  { key: "k-counsel", n: 1, type: "T33", sup: "S-006", fit: G, price: 220, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ פרטני להתמודדות", fp: AT_HOME },
+  { key: "k-grief", n: 1, type: "T34", sup: "S-006", fit: G, price: 260, pattern: C, base: 13, status: "אושר", name: "התמודדות עם אבל ואובדן", fp: WALK_AND_AID },
+  { key: "k-smart", n: 1, type: "T40", sup: "S-007", fit: G, price: 280, pattern: C, base: 12, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
+  { key: "k-apps", n: 1, type: "T40", sup: "S-007", fit: G, price: 200, pattern: C, base: 13, status: "אושר", name: "אפליקציות יומיומיות", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
+
+  // גילה: ברצפה, אבל אף שירות בריאות לא נגיש להליכון
+  { key: "g-club", n: 2, type: "T01", sup: "S-001", fit: G, price: 115, pattern: C, base: 18, status: "אושר", name: "מועדון שכונתי", fp: WALK_AND_AID },
+  { key: "g-interest", n: 2, type: "T03", sup: "S-004", fit: G, price: 60, pattern: C, base: 12, status: "אושר", name: "קבוצות עניין", fp: WALK_AND_AID },
+  { key: "g-culture", n: 2, type: "T11", sup: "S-001", fit: G, price: 60, pattern: C, base: 22, status: "אושר", name: "תרבות מקומית", fp: WALK_AND_AID },
+  { key: "g-yoga", n: 2, type: "T17", sup: "S-004", fit: G, price: 95, pattern: C, base: 12, status: "אושר", copay: "classes", name: "יוגה ופילאטיס", fp: WALK_ONLY },
+  { key: "g-walk", n: 2, type: "T18", sup: "S-004", fit: G, price: 60, pattern: C, base: 12, status: "אושר", name: "קבוצות הליכה", fp: WALK_ONLY },
+  { key: "g-strength", n: 2, type: "T20", sup: "S-003", fit: G, price: 100, pattern: C, base: 13, status: "אושר", name: "כוח ושיווי משקל מתקדם", fp: fp(WALK_ONLY, { intensity: "high" }) },
+  { key: "g-support", n: 2, type: "T32", sup: "S-006", fit: G, price: 250, pattern: C, base: 13, status: "אושר", name: "קבוצת תמיכה נושאית", fp: WALK_AND_AID },
+
+  // רוממה (חרדית): דלה
+  { key: "r-club", n: 3, type: "T01", sup: "S-002", fit: H, price: 120, pattern: C, base: 15, status: "אושר", name: "מועדון שכונתי", fp: WALK_AND_AID },
+  { key: "r-exercise", n: 3, type: "T17", sup: "S-002", fit: H, price: 95, pattern: C, base: 13, status: "אושר", name: "התעמלות מותאמת", fp: WALK_AND_AID },
+
+  // בית חנינא (ערבית)
+  { key: "b-club", n: 4, type: "T01", sup: "S-001", fit: A, price: 115, pattern: C, base: 20, status: "אושר", name: "מועדון שכונתי", fp: WALK_AND_AID },
+  { key: "b-culture", n: 4, type: "T11", sup: "S-001", fit: A, price: 60, pattern: C, base: 25, status: "אושר", name: "תרבות מקומית", fp: WALK_AND_AID },
+  { key: "b-volunteer", n: 4, type: "T12", sup: "S-005", fit: A, price: 55, pattern: C, base: 13, status: "אושר", name: "התנדבות מותאמת", fp: WALK_AND_AID },
+  { key: "b-exercise", n: 4, type: "T17", sup: "S-003", fit: A, price: 90, pattern: C, base: 16, status: "אושר", name: "התעמלות מותאמת", fp: WALK_AND_AID },
+  { key: "b-walk", n: 4, type: "T18", sup: "S-005", fit: A, price: 60, pattern: C, base: 12, status: "אושר", name: "קבוצות הליכה", fp: WALK_ONLY },
+  { key: "b-cooking", n: 4, type: "T27", sup: "S-005", fit: A, price: 120, pattern: C, base: 13, status: "אושר", name: "סדנת בישול בריא קבוצתית", fp: WALK_AND_AID },
+  { key: "b-support", n: 4, type: "T32", sup: "S-005", fit: A, price: 240, pattern: C, base: 13, status: "אושר", name: "קבוצת תמיכה נושאית", fp: WALK_AND_AID },
+  { key: "b-smart", n: 4, type: "T40", sup: "S-007", fit: A, price: 280, pattern: C, base: 12, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
+];
+
 interface Variant {
   authority: string;
   prefix: string;
@@ -105,6 +199,8 @@ interface Variant {
   rngSeed: number;
   /** שמות שכונות. בלי זה: "שכונה א (תווית)". */
   names?: string[];
+  /** רשימת שירותים משלה. בלי זה: SPECS. */
+  specs?: Spec[];
 }
 
 // וריאציה 0 משמשת את משטח השטח. וריאציה 1 היא פיילוט שני להדגמת המטה:
@@ -114,7 +210,7 @@ interface Variant {
 const VARIANTS: Variant[] = [
   { authority: "רשות הדגמה", prefix: "demo", label: "הדגמה", communities: ["general", "haredi", "haredi", "haredi", "arab"], enrolled: [60, 58, 47, 13, 56], priceFactor: 1, rngSeed: 2026 },
   { authority: "רשות הדגמה ב", prefix: "demob", label: "הדגמה ב", communities: ["general", "haredi", "general", "general", "arab"], enrolled: [75, 98, 27, 20, 77], priceFactor: 1.15, rngSeed: 7 },
-  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "קטמון", "גילה", "רוממה", "בית חנינא"] },
+  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "קטמון", "גילה", "רוממה", "בית חנינא"], specs: SPECS_J },
 ];
 
 // הערכות רבעוניות לדוגמה (איכות, תוצאות מניעה, שביעות רצון, עלות-תועלת).
@@ -179,12 +275,12 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
   const services: Service[] = [];
   const activity: MonthlyActivity[] = [];
 
-  SPECS.forEach((spec, i) => {
+  (v.specs ?? SPECS).forEach((spec, i) => {
     const type = serviceTypes.get(spec.type)!;
     const neighborhood = N[spec.n]!;
     // בשכונה שהפרופיל שלה כללי בוריאציה הזו, ההתאמה הקהילתית היא כללית.
     const fit: Community[] = neighborhood.community === "general" ? ["general"] : spec.fit;
-    const id = `${v.prefix}-s${String(i + 1).padStart(2, "0")}`;
+    const id = spec.key ? `${v.prefix}-${spec.key}` : `${v.prefix}-s${String(i + 1).padStart(2, "0")}`;
     const start = spec.start ?? (spec.pattern === "short" ? 7 : Math.floor(rand() * 3));
     const price = Math.round(spec.price * v.priceFactor);
     const market = spec.market === null ? undefined : (spec.market ?? Math.round(price * (0.95 + rand() * 0.1)));
@@ -206,10 +302,13 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
       ...(market !== undefined ? { marketPrice: market } : {}),
       copayTier,
       communityFit: fit,
-      deliveryMode: "community",
+      deliveryMode: spec.delivery ?? "community",
       attendanceMethod: ["operator"],
       ...(spec.legacy ? {} : demoPaymentFields(type, spec)),
-      otherFunder: spec.otherFunder ?? false,
+      ...(spec.mode ? { serviceMode: spec.mode } : {}),
+      ...(spec.fp ? { fitProfile: spec.fp } : {}),
+      ...(spec.funder ?? {}),
+      otherFunder: spec.otherFunder ?? Boolean(spec.funder),
       enforceable: spec.enforceable ?? true,
       ...(spec.program ? { programId: `${v.prefix}-${spec.program}` } : {}),
       ...(spec.reach ? { reach: spec.reach } : {}),
@@ -308,7 +407,7 @@ export function buildDemoNationalChannel(): { suppliers: Supplier[]; services: S
     supplier("N-002", "ספק טכנולוגיה מסייעת ארצי (הדגמה)", [5, 4, 4, 4]),
     supplier("N-003", "ספק ציוד כושר ביתי ארצי (הדגמה)", [3, 3, 4, 4]),
   ];
-  const item = (id: string, typeId: string, name: string, sup: string, price: number): Service => ({
+  const item = (id: string, typeId: string, name: string, sup: string, price: number, extra: Partial<Service> = {}): Service => ({
     id: `nat-${id}`,
     authority: NATIONAL_AUTHORITY,
     neighborhoodId: "",
@@ -331,16 +430,31 @@ export function buildDemoNationalChannel(): { suppliers: Supplier[]; services: S
     reach: "national",
     startMonth: "2026-12",
     status: "אושר",
+    fitProfile: { functionalLevels: ["independent", "partial_help", "homebound"], mobility: ["independent_walking", "walker_wheelchair", "home_remote"], digitalRequired: "none" },
+    ...extra,
+  });
+  // השלמה בלבד (תוספת 3): מממן אחר משלם חלק או הכל. הכיסויים להדגמה [לאמת].
+  const funded = (name: Service["otherFunderName"], coverage: Service["otherFunderCoverage"], prior = false): Partial<Service> => ({
+    otherFunder: true,
+    otherFunderName: name,
+    otherFunderCoverage: coverage,
+    requiresPriorClaim: prior,
   });
   return {
     suppliers,
     services: [
-      item("grab", "T54", "מאחזי יד ומעקות בטיחות, כולל התקנה", "N-001", 380),
-      item("bath", "T54", "ערכת אמבטיה נגד החלקה", "N-001", 220),
-      item("button", "T55", "לחצן מצוקה עם מוקד", "N-002", 450),
-      item("light", "T55", "תאורת לילה אוטומטית", "N-002", 120),
+      // מוצרי מניעה ובטיחות (רשימה ארצית, רבעוני), לפי תוספת 3
       item("amp", "T57", "מגבר קול לטלפון", "N-002", 160),
-      item("fit", "T56", "ערכת כושר ביתית מותאמת", "N-003", 280),
+      item("vision", "T57", "עזרי ראייה פשוטים", "N-002", 140),
+      item("grab", "T54", "מאחזי יד", "N-001", 340),
+      item("bath", "T54", "אביזרי אמבטיה נגד החלקה", "N-001", 220),
+      item("shoes", "T54", "נעליים נגד החלקה", "N-001", 260),
+      item("light", "T54", "תאורת לילה אוטומטית", "N-002", 120),
+      item("fit", "T56", "עזרי התעמלות ביתיים", "N-003", 280),
+      // השלמה בלבד
+      item("hearing", "T57", "מכשיר שמיעה (השלמה)", "N-002", 3000, funded("משרד הבריאות", { kind: "amount", value: 2400 })),
+      item("walker", "T56", "הליכון (השאלה, הפניה)", "N-003", 450, funded("אחר", { kind: "percent", value: 100 })),
+      item("button", "T55", "לחצן מצוקה (השלמה)", "N-002", 450, funded("גמלת סיעוד", { kind: "amount", value: 300 }, true)),
     ],
   };
 }

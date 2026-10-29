@@ -219,9 +219,13 @@ describe("תקן קליטת מפעילים 1.1", () => {
 
   it("שירות מאושר בלי שדות 0.4 לא נכנס, ומדווח כדורש השלמה", async () => {
     const { export: exp, skipped } = await buildOnboardingStandard(source, seed);
-    const legacy = data.services.find((s) => s.status === "אושר" && !s.hoursPerUnit)!;
-    expect(exp.services.some((s) => s.serviceId === legacy.id)).toBe(false);
-    expect(skipped.find((s) => s.serviceId === legacy.id)?.reason).toContain("דורש השלמה");
+    const old = buildDemoAuthority(0);
+    const legacy = old.services.find((s) => s.status === "אושר" && !s.hoursPerUnit)!;
+    const r = await buildOnboardingStandard(old, seed);
+    expect(r.export.services.some((s) => s.serviceId === legacy.id)).toBe(false);
+    expect(r.skipped.find((s) => s.serviceId === legacy.id)?.reason).toContain("דורש השלמה");
+    void exp;
+    void skipped;
   });
 
   it("שינוי qol_mode ו-reference_price_mode מתעדכן מיד בייצוא", async () => {
@@ -305,7 +309,7 @@ describe("דירוג ספקים פנימי", () => {
   it("כיבוי הדירוג מסתיר את הציון בכל מקום, גם בקטלוג לאזרח", () => {
     const supplier = { evaluations: [{ quarter: "2026-Q3", quality: 5, outcomes: 5, satisfaction: 5, value: 5 }] };
     const off = s04({ supplier_rating_enabled: false });
-    expect(supplierScore(supplier, seed.settings)?.score).toBe(5);
+    expect(supplierScore(supplier, s04({ supplier_rating_enabled: true }).settings)?.score).toBe(5);
     expect(supplierScore(supplier, off.settings)).toBeNull();
     const data = buildDemoAuthority(0);
     const { catalog } = buildCitizenCatalog(data, data.neighborhoods[0]!.id, off);

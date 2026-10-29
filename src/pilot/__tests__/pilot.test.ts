@@ -68,7 +68,7 @@ describe("ארנק ומחיר בשקלים", () => {
   });
 
   it("המחיר מתחלק לסל ולאזרח לפי הקטלוג", () => {
-    const art = serviceById("demoj-s02");
+    const art = serviceById("demoj-crafts");
     expect(art).toBeDefined();
     const p = priceOf(art!);
     expect(p.covered + p.copay).toBe(p.total);
@@ -76,18 +76,18 @@ describe("ארנק ומחיר בשקלים", () => {
   });
 
   it("עד שלושה מועדים לשירות קבוצתי, אף אחד למוצר", () => {
-    expect(slotsFor(serviceById("demoj-s05")!).length).toBe(3);
+    expect(slotsFor(serviceById("demoj-balance")!).length).toBe(3);
     expect(slotsFor(serviceById("nat-bath")!).length).toBe(0);
   });
 
   it("ביטול מאוחר מחויב רק בתוך חלון ההודעה ורק בשירות שאי-הגעה בו מחויבת", () => {
-    const s = serviceById("demoj-s05")!;
+    const s = serviceById("demoj-balance")!;
     expect(cancelRuleOf(s)).toMatchObject({ noticeHours: 24, charged: true, proposal: true });
     const now = new Date("2026-11-01T08:00:00Z");
     const b = { id: "b", citizenId: "c1", serviceId: s.id, serviceName: s.name, createdAt: "", createdBy: "citizen" as const, coveredShekel: 1, copayShekel: 0, status: "booked" as const };
     expect(lateCancelCharged({ ...b, slot: "2026-11-01T20:00:00Z" }, s, now)).toBe(true);
     expect(lateCancelCharged({ ...b, slot: "2026-11-03T20:00:00Z" }, s, now)).toBe(false);
-    expect(lateCancelCharged({ ...b, slot: "2026-11-01T20:00:00Z" }, serviceById("demoj-s01")!, now)).toBe(false);
+    expect(lateCancelCharged({ ...b, slot: "2026-11-01T20:00:00Z" }, serviceById("demoj-club")!, now)).toBe(false);
   });
 
   it("ההמלצה מגוונת בין תחומים ומעדיפה את מה שהאזרח בחר", () => {

@@ -14,7 +14,7 @@ const ago = (hours: number) => new Date(Date.now() - hours * 3600000).toISOStrin
 export function seedDemo(): void {
   if (!isDemo() || getPilot().state.seeded) return;
   const events: PilotEvent[] = [];
-  const club = serviceById("demoj-s01");
+  const club = serviceById("demoj-club");
   if (club) {
     const price = priceOf(club);
     events.push({
@@ -24,7 +24,7 @@ export function seedDemo(): void {
     });
   }
   events.push({ id: newId("ev"), at: ago(3), actor: "citizen", citizenId: "p004", synced: true, type: "request.created", requestId: newId("rq"), kind: "callback" });
-  const care = serviceById("demoj-s41");
+  const care = serviceById("demoj-care");
   if (care) {
     events.push({ id: newId("ev"), at: ago(20), actor: "citizen", citizenId: "p017", synced: true, type: "request.created", requestId: newId("rq"), kind: "gated_service", serviceId: care.id, serviceName: care.name });
   }
