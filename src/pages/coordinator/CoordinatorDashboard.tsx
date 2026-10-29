@@ -5,7 +5,6 @@
 import { Users, AlertTriangle, Target, Heart, Sparkles, ChevronLeft, Phone, Home, Activity, Clock, TrendingUp, ArrowUpRight, ArrowDownRight, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LiveAgenticFlow } from "@/components/shared/LiveAgenticFlow";
 import { StatCard } from "@/components/shared/StatCard";
 import { Avatar } from "@/components/shared/Avatar";
 import { Chip } from "@/components/shared/Chip";
@@ -156,7 +155,7 @@ export default function CoordinatorDashboard() {
         <div className="libi-card p-5">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="text-base font-semibold text-foreground">המלצות AI</h3>
+              <h3 className="text-base font-semibold text-foreground">המלצות לפעולה</h3>
               <p className="text-xs text-muted-foreground mt-0.5">{AI_RECOMMENDATIONS.length} פעולות מומלצות</p>
             </div>
             <Sparkles className="w-5 h-5 text-primary" />
@@ -231,7 +230,6 @@ export default function CoordinatorDashboard() {
       </div>
 
       {/* Agentic Flow — interactive Hero */}
-      <LiveAgenticFlow />
     </div>
   );
 }

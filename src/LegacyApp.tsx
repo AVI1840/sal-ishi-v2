@@ -90,10 +90,12 @@ export default function LegacyApp() {
                 <Route path="patients/:id" element={<CoordinatorPatientDetail />} />
                 <Route path="intake" element={<CoordinatorIntake />} />
                 <Route path="deterioration" element={<CoordinatorDeterioration />} />
-                <Route path="ai" element={<CoordinatorAI />} />
+                <Route path="ai" element={SHOW_DEMO_LAYERS ? <CoordinatorAI /> : <Navigate to="/coordinator" replace />} />
                 <Route path="actions" element={<CoordinatorActions />} />
                 <Route path="bookings" element={<CoordinatorBookings />} />
                 <Route path="services-map" element={<CoordinatorServices />} />
+                {/* עמודי ה-AI וה"אייג'נטים" רק בגרסת ההאקתון (תשובות כתובות מראש) */}
+                <Route path="agents" element={<Navigate to="/coordinator" replace />} />
               </Route>
 
               {/* Executive Dashboard */}
@@ -101,7 +103,7 @@ export default function LegacyApp() {
                 <Route index element={<ExecutiveOverview />} />
                 <Route path="catalog" element={<ServicesCatalog />} />
                 <Route path="algorithm" element={<CoordinatorAlgorithm />} />
-                <Route path="agents" element={<CoordinatorAgents />} />
+                <Route path="agents" element={SHOW_DEMO_LAYERS ? <CoordinatorAgents /> : <Navigate to="/executive" replace />} />
               </Route>
 
               {/* Provider Portal */}

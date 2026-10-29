@@ -16,7 +16,6 @@ const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator/patients", label: "אזרחים", icon: Users },
   { to: "/coordinator/services-map", label: "שירותים ממופים", icon: Activity },
   { to: "/coordinator/deterioration", label: "ניטור הידרדרות", icon: Bell, badge: 4 },
-  { to: "/coordinator/ai", label: "עוזר AI", icon: Sparkles },
   { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
   { to: "/coordinator/actions", label: "משימות", icon: FileText },
   { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
@@ -26,7 +25,6 @@ const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
   { to: "/executive/catalog", label: "קטלוג סל", icon: BookOpen },
   { to: "/executive/algorithm", label: "אלגוריתם התאמה", icon: BarChart3 },
-  { to: "/executive/agents", label: "אייג'נטים AI", icon: Bot },
 ];
 
 const PROVIDER_NAV: NavItem[] = [
