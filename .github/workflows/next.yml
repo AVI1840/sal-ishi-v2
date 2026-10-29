@@ -1,0 +1,24 @@
+name: Next build
+
+# בדיקות ובנייה לגרסה הבאה. כשהן עוברות, "Deploy to GitHub Pages" (מ-main) מפרסם אותה ב-/next/.
+
+on:
+  push:
+    branches: [v0.5]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run test:core
+      - run: npm test
+      - run: npm run build:all

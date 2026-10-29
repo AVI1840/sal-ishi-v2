@@ -1,8 +1,19 @@
 name: Deploy to GitHub Pages
 
+# האתר בנוי מכמה גרסאות זו לצד זו. SITES היא רשימת "ref:נתיב":
+#   main:.        הגרסה היציבה בשורש (היום 0.4)
+#   v0.5:next     הגרסה הבאה, בבדיקה, ב-/next/
+# בהחלפה (אחרי שער הבדיקה): "main:. v0.4-stable:v04".
+# הפריסה רצה תמיד בהקשר של main, כי סביבת github-pages מאשרת פריסה רק מ-main.
+# דחיפה ל-v0.5 מריצה את "Next build", ובסיומו הוא מפעיל את הפריסה הזו.
+
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Next build"]
+    types: [completed]
 
 permissions:
   contents: read
@@ -13,23 +24,41 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 
+env:
+  SITES: "main:. v0.5:next"
+
 jobs:
   build-and-deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build:all
+      - name: Build every site
+        run: |
+          set -e
+          mkdir -p site
+          for pair in $SITES; do
+            ref="${pair%%:*}"; dest="${pair##*:}"
+            sha=$(git rev-parse --verify -q "origin/$ref" || git rev-parse --verify -q "refs/tags/$ref" || true)
+            if [ -z "$sha" ]; then echo "skip $ref: not found"; continue; fi
+            dir="$RUNNER_TEMP/src-${dest//\//_}"
+            git worktree add --detach "$dir" "$sha"
+            (cd "$dir" && npm ci && npm run build:all)
+            mkdir -p "site/$dest"
+            cp -r "$dir/dist/." "site/$dest/"
+            echo "$ref -> /$dest ($sha)"
+          done
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
