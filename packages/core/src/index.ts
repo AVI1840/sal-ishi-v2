@@ -26,3 +26,4 @@ export * from "./search";
 export * from "./metrics";
 export * from "./migration";
 export * from "./learning";
+export * from "./pilotEvents";

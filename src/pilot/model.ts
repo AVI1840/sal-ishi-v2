@@ -7,87 +7,12 @@
  * בהדגמה כל האנשים בדויים, ובפיילוט המזהה הוא מזהה בדוי של הספק.
  */
 
-export type Actor = "citizen" | "companion" | "system";
+import type { Booking, PilotEvent, PilotRequest, Visit } from "@sal-ishi/core";
 
-/** הרשאת פעולה: המלווה פועלת בשם האזרח אחרי אישור בעל פה. לא ייפוי כוח. */
-export interface OnBehalf {
-  consent: "verbal";
-  /** מה הוקרא לאזרח לפני האישור. */
-  readBack: string;
-  confirmedAt: string;
-}
-
-interface EventBase {
-  id: string;
-  at: string;
-  actor: Actor;
-  citizenId: string;
-  onBehalf?: OnBehalf;
-  /** נשלח לספק (בהדגמה: לקובץ הסנכרון). */
-  synced?: boolean;
-}
-
-export type PilotEvent =
-  | (EventBase & {
-      type: "booking.created";
-      bookingId: string;
-      serviceId: string;
-      serviceName: string;
-      slot: string | null;
-      coveredShekel: number;
-      copayShekel: number;
-    })
-  | (EventBase & { type: "booking.cancelled"; bookingId: string; charged: boolean; reason: string })
-  | (EventBase & { type: "request.created"; requestId: string; kind: RequestKind; serviceId?: string; serviceName?: string; note?: string })
-  | (EventBase & { type: "request.decided"; requestId: string; decision: "approved" | "rejected" | "done"; reason: string })
-  | (EventBase & { type: "visit.logged"; visitId: string; kind: VisitKind; note?: string })
-  | (EventBase & { type: "hospitalization.started"; note?: string })
-  | (EventBase & { type: "hospitalization.ended" })
-  | (EventBase & { type: "needs.updated"; interests: string[] });
-
-export type PilotEventType = PilotEvent["type"];
-export type RequestKind = "callback" | "gated_service";
-export type VisitKind = "home" | "phone" | "no_answer";
-
-export type BookingStatus = "booked" | "cancelled" | "paused";
-
-export interface Booking {
-  id: string;
-  citizenId: string;
-  serviceId: string;
-  serviceName: string;
-  slot: string | null;
-  createdAt: string;
-  createdBy: Actor;
-  onBehalf?: OnBehalf;
-  coveredShekel: number;
-  copayShekel: number;
-  status: BookingStatus;
-  cancelledAt?: string;
-  charged?: boolean;
-}
-
-export interface Request {
-  id: string;
-  citizenId: string;
-  kind: RequestKind;
-  serviceId?: string;
-  serviceName?: string;
-  note?: string;
-  createdAt: string;
-  createdBy: Actor;
-  status: "open" | "approved" | "rejected" | "done";
-  decidedAt?: string;
-  reason?: string;
-}
-
-export interface Visit {
-  id: string;
-  citizenId: string;
-  at: string;
-  kind: VisitKind;
-  note?: string;
-}
+// הטיפוסים נגזרים מהסכמה בליבה (packages/core/src/pilotEvents.ts), שממנה נגזר גם
+// ה-JSON Schema לספק. כך המסכים, הסנכרון והתקן לא נפרדים.
+export type { Actor, Booking, BookingStatus, OnBehalf, PilotEvent, PilotEventType, RequestKind, Visit, VisitKind } from "@sal-ishi/core";
+export type Request = PilotRequest;
 
 /** מצבי קצה שמציג ההדגמה מפעיל בלחיצה. לא נשמרים כאירועים. */
 export interface Simulation {

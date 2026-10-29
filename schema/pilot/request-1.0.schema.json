@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "citizenId": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "callback",
+        "gated_service"
+      ]
+    },
+    "serviceId": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string",
+      "enum": [
+        "citizen",
+        "companion",
+        "system"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "approved",
+        "rejected",
+        "done"
+      ]
+    },
+    "decidedAt": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "citizenId",
+    "kind",
+    "createdAt",
+    "createdBy",
+    "status"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sal-ishi:request:1.0",
+  "title": "request 1.0",
+  "description": "בקשה למלווה: שיחזרו אליי או שירות מותנה. בלי נתוני תושבים: מזהה האזרח הוא מזהה בדוי של הספק. אין שם, טלפון, כתובת או מספר זהות."
+}

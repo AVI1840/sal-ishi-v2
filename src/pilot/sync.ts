@@ -1,6 +1,6 @@
 /**
  * הממשק לחיבור backend של ספק: PilotSyncAdapter. הכלי שולח אירועים
- * (schema/pilot/pilot-event.schema.json) ולא מנהל שרת. ספק שמחבר מערכת
+ * (schema/pilot/pilot-events-1.0.schema.json) ולא מנהל שרת. ספק שמחבר מערכת
  * מממש push (ואם רוצה גם pull) ומעביר אותו ל-setSyncAdapter, בלי לגעת במסכים.
  *
  * ברירת המחדל בהדגמה ובפיילוט בלי ספק: מתאם מקומי שמסמן את האירועים
@@ -8,10 +8,11 @@
  */
 
 import { useEffect, useState } from "react";
+import { PILOT_EVENTS_SCHEMA_ID } from "@sal-ishi/core";
 import type { PilotEvent } from "./model";
 import { getPilot, markSynced, pendingSync, usePilot } from "./store";
 
-export const PILOT_EVENTS_SCHEMA = "sal-ishi.pilot-events/1.0";
+export const PILOT_EVENTS_SCHEMA = PILOT_EVENTS_SCHEMA_ID;
 
 export interface PilotSyncAdapter {
   name: string;

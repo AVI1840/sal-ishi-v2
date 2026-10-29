@@ -106,7 +106,7 @@ export default function CompanionLog() {
         </div>
         {!online ? <p className="p-muted">אין חיבור. הסנכרון ירוץ לבד כשהחיבור יחזור.</p> : null}
         {msg ? <p role="status">{msg}</p> : null}
-        <p className="p-muted p-small">הקובץ לפי schema/pilot/pilot-event.schema.json. ספק שמחבר מערכת מקבל את אותם אירועים דרך PilotSyncAdapter.</p>
+        <p className="p-muted p-small">הקובץ לפי schema/pilot/pilot-events-1.0.schema.json. ספק שמחבר מערכת מקבל את אותם אירועים דרך PilotSyncAdapter.</p>
       </section>
       <section className="p-stack" aria-labelledby="all-h">
         <h2 id="all-h">כל הרישומים</h2>
