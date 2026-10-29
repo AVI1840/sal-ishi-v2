@@ -2,7 +2,7 @@
  * CitizenServices: הקטלוג המאושר לשכונה (מהאטלס), עם חיפוש חכם והצעות לפי תחום.
  */
 import { useState, useMemo } from "react";
-import { Search, MapPin, Phone, Clock, Filter, ChevronLeft, ChevronDown, ChevronUp, Sparkles, TrendingUp, Award, Globe2 } from "lucide-react";
+import { Search, MapPin, Phone, Clock, Filter, ChevronLeft, ChevronDown, ChevronUp, Sparkles, TrendingUp, Award, Globe2, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -15,6 +15,7 @@ import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import { CITIZENS } from "@/data/mockData";
 import { catalogState } from "@/data/catalogSource";
 import { DEMAND_LABEL, REACH_LABEL, selectionRules, suggestByDomain } from "@/lib/suggestions";
+import { needsCompanion, termLines } from "@/lib/serviceTerms";
 
 // Cost badge is now rendered by SubsidyBadge component
 
@@ -116,6 +117,9 @@ function ServiceRow({ service }: { service: RealService }) {
           {service.notes && (
             <p className="text-xs text-gray-600"><span className="font-medium">הערות:</span> {service.notes}</p>
           )}
+          {termLines(service).map((t) => (
+            <p key={t.term} className="text-xs text-gray-600"><span className="font-medium">{t.term}:</span> {t.text}</p>
+          ))}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs px-2 py-1 rounded-md bg-white border border-gray-200 text-gray-600">
               {service.categoryLabel}
@@ -150,12 +154,18 @@ function ServiceRow({ service }: { service: RealService }) {
 function AtlasBadges({ service }: { service: RealService }) {
   const reach = service.reach && service.reach !== "neighborhood" ? REACH_LABEL[service.reach] : null;
   const demand = service.demand ? DEMAND_LABEL[service.demand] : null;
-  if (!reach && !demand && !service.supplierScore) return null;
+  const gated = needsCompanion(service);
+  if (!reach && !demand && !service.supplierScore && !gated) return null;
   return (
     <div className="flex flex-wrap gap-1.5 mt-1.5">
       {reach && (
         <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-sky-50 border border-sky-300 text-sky-900">
           <Globe2 className="w-3 h-3" aria-hidden="true" /> {reach}
+        </span>
+      )}
+      {gated && (
+        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-violet-50 border border-violet-300 text-violet-900">
+          <UserCheck className="w-3 h-3" aria-hidden="true" /> דרך המלווה
         </span>
       )}
       {demand && (
@@ -207,6 +217,7 @@ function DomainSuggestions({ neighborhood }: { neighborhood: string }) {
                     {service.name}
                   </Link>
                   <p className="text-xs text-gray-600">{plainDash(result.explanations[0] ?? service.subcategory)}</p>
+                  {needsCompanion(service) && <p className="text-xs text-violet-900">נפתח באישור המלווה</p>}
                 </div>
                 <span className="shrink-0 text-xs font-bold text-gray-700" aria-label={`התאמה ${Math.round(result.totalScore)} מתוך 100`}>
                   {Math.round(result.totalScore)}

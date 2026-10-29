@@ -26,7 +26,7 @@ const RISK_LEVEL_MAP = {
 };
 
 export default function CitizenProfile() {
-  // ארנק רמה 2 — 32 יחידות/חודש (775₪ שווי), ניצול פיילוט ממוצע 71%
+  // ארנק רמה 2 — 32 יחידות/חודש (775₪ שווי), מיצוי פיילוט ממוצע 71%
   const total = 32;
   const used = Math.round(total * 0.71); // 23 יחידות נוצלו
   const balance = total - used;          // 9 יחידות נותרו

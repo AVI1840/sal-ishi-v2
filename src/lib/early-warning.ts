@@ -24,7 +24,7 @@ export interface ModelFeature {
 const FEATURES_FOR_CLIENT = (c: Client): ModelFeature[] => [
   { name: "ציון בדידות אחרון", source: "BTL · ביטוח לאומי", weight: 0.18 },
   { name: "ירידה במוביליות", source: "בריאות · קופ\"ח", weight: 0.16 },
-  { name: "ניצול ארנק (12 שבועות)", source: "BTL", weight: 0.12 },
+  { name: "מיצוי ארנק (12 שבועות)", source: "BTL", weight: 0.12 },
   { name: "ימים ללא פעילות", source: "BTL", weight: 0.11 },
   { name: "ביקורי חירום אחרונים", source: "בריאות · אשפוזים", weight: 0.09 },
   { name: "מצב רגשי (PHQ-2)", source: "רווחה", weight: 0.08 },

@@ -91,6 +91,8 @@ const SPECS: Spec[] = [
   { n: 4, type: "T25", sup: "S-005", fit: A, price: 350, pattern: "cont", base: 10, status: "הוגש" },
   { n: 4, type: "T17", sup: "S-005", fit: A, price: 140, pattern: "cont", base: 12, status: "הוגש", name: "התעמלות מותאמת גיל, קבוצה ב" },
   { n: 4, type: "T40", sup: "S-007", fit: A, price: 290, pattern: "cont", base: 12, status: "נדחה" },
+  // איכות חיים שנפתחת באישור המלווה (שער מ-qol_rules). בסוף הרשימה, כדי לא לשנות את המספרים האקראיים של שאר השירותים.
+  { n: 0, type: "T51", sup: "S-008", fit: G, price: 100, pattern: "cont", base: 14, status: "אושר", copay: "qol" },
 ];
 
 interface Variant {

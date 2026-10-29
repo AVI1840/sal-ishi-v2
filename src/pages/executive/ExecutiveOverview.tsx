@@ -49,7 +49,7 @@ export default function ExecutiveOverview() {
         <StatCard icon={Building2} label="רשויות פעילות" value="1/5" sub="ירושלים" tone="primary" />
         <StatCard icon={Users} label="אזרחים בפיילוט" value={286} sub="פסגת זאב" tone="success" />
         <StatCard icon={Heart} label="מלוות חברתיות" value={4} sub="מודל 1:75" tone="info" />
-        <StatCard icon={TrendingUp} label="ניצול ארנק" value="71%" sub="54% למניעה" tone="success" />
+        <StatCard icon={TrendingUp} label="מיצוי ארנק" value="71%" sub="54% למניעה" tone="success" />
         <StatCard icon={TrendingDown} label="דחיית הידרדרות" value="20%" sub="~3 חודשים" tone="success" />
         <StatCard icon={Star} label="חיסכון פוטנציאלי" value="₪2B" sub="בהרחבה לאומית" tone="warning" />
       </div>
@@ -151,7 +151,7 @@ export default function ExecutiveOverview() {
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">אזרחים</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">מלוות</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">ספקים</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">ניצול</th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מיצוי</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">מניעה %</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">תקציב</th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">סטטוס</th>

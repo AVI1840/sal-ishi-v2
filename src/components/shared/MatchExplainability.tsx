@@ -42,7 +42,7 @@ export function MatchExplainability({ result, compact = false }: Props) {
           <p className="text-sm font-semibold text-gray-900">
             ציון התאמה האישי שלך
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-600 mt-0.5">
             מחושב ב-5 שכבות לפי פרופילך האישי
           </p>
           {result.isTopMatch && (
@@ -55,7 +55,7 @@ export function MatchExplainability({ result, compact = false }: Props) {
 
       {/* Layer breakdown */}
       <div className={cn("space-y-2.5", compact && "space-y-2")}>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-600">
           פירוק לפי שכבה
         </p>
         {LAYERS.map((layer) => {
@@ -67,10 +67,10 @@ export function MatchExplainability({ result, compact = false }: Props) {
                 <div className="flex items-center gap-2">
                   <span className={cn("inline-block w-1.5 h-1.5 rounded-full shrink-0", layer.color)} />
                   <span className="text-xs text-gray-700">{layer.label}</span>
-                  <span className="text-[10px] text-gray-400">({layer.weight}%)</span>
+                  <span className="text-[10px] text-gray-600">({layer.weight}%)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gray-400">
+                  <span className="text-[10px] text-gray-600">
                     {contribution} נק'
                   </span>
                   <span className="text-xs font-semibold text-gray-800 w-6 text-center">{score}</span>
@@ -90,7 +90,7 @@ export function MatchExplainability({ result, compact = false }: Props) {
       {/* Explanations */}
       {result.explanations.length > 0 && (
         <div className={cn("rounded-xl border border-[#1B3A5C]/10 bg-[#1B3A5C]/[0.03] p-3.5 space-y-2", compact && "p-3 space-y-1.5")}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1B3A5C]/60 mb-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1B3A5C] mb-1.5">
             למה מומלץ עבורך
           </p>
           {result.explanations.map((exp, i) => (

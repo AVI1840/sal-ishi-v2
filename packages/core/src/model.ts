@@ -249,6 +249,7 @@ export const citizenCatalogItemSchema = catalogItemSchema
     supplierScore: z.number().min(1).max(5).nullable(),
     hoursPerUnit: z.number().positive().nullable().optional(),
     serviceMode: serviceModeSchema.nullable().optional(),
+    capacityLimited: z.boolean().optional(),
     gatedByCompanion: z.boolean().optional(),
     gateReason: z.string().nullable().optional(),
     cancellationNoticeHours: count.nullable().optional(),

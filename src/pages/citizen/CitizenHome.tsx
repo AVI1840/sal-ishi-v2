@@ -32,7 +32,7 @@ const SCHEDULE = [
 
 export default function CitizenHome() {
   const showImages = useShowImages();
-  // ארנק רמה 2 — 32 יחידות/חודש (775₪), ניצול 71%
+  // ארנק רמה 2 — 32 יחידות/חודש (775₪), מיצוי 71%
   const walletTotal = 32;
   const walletUsed = Math.round(walletTotal * 0.71); // 23 נוצלו
   const walletBalance = walletTotal - walletUsed;    // 9 נותרו

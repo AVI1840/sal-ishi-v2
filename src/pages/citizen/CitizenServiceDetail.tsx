@@ -17,6 +17,7 @@ import { MatchExplainability } from "@/components/shared/MatchExplainability";
 import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import ServiceRating from "@/components/shared/ServiceRating";
 import { toast } from "sonner";
+import { needsCompanion, termLines } from "@/lib/serviceTerms";
 
 const COST_MAP: Record<string, { label: string; cls: string }> = {
   free:       { label: "חינם — סבסוד מלא",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -61,9 +62,12 @@ export default function CitizenServiceDetail() {
   const imgInfo = getServiceImageInfo(service);
   const showImages = useShowImages();
 
+  const gated = needsCompanion(service);
+  const terms = termLines(service);
+
   const handleBook = () => {
-    toast.success(`${service.name} — הבקשה נשלחה`, {
-      description: "המלווה שלך תיצור קשר לתיאום",
+    toast.success(`${service.name}: הבקשה נשלחה`, {
+      description: gated ? "המלווה שלך תבדוק את הצורך ותחזור אליך" : "המלווה שלך תיצור קשר לתיאום",
     });
   };
 
@@ -93,7 +97,7 @@ export default function CitizenServiceDetail() {
             <div className="absolute bottom-0 right-0 left-0 p-5 flex items-end justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold text-white drop-shadow leading-tight">{service.name}</h2>
-                <p className="text-sm text-white/75 mt-1">{service.provider}</p>
+                <p className="text-sm text-white/90 mt-1">{service.provider}</p>
               </div>
               <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center shrink-0">
                 <Icon className="w-5 h-5 text-white" />
@@ -114,8 +118,8 @@ export default function CitizenServiceDetail() {
               </div>
               <div>
                 <h2 className="text-lg font-bold">{service.name}</h2>
-                <p className="text-sm text-white/70 mt-0.5">{service.provider}</p>
-                <p className="text-xs text-white/40 mt-1">{service.categoryLabel}</p>
+                <p className="text-sm text-white/90 mt-0.5">{service.provider}</p>
+                <p className="text-xs text-white/80 mt-1">{service.categoryLabel}</p>
               </div>
             </div>
           </div>
@@ -124,33 +128,48 @@ export default function CitizenServiceDetail() {
         {/* Cost */}
         <div className={cn("p-4 rounded-xl border", costInfo.cls)}>
           <p className="text-sm font-semibold">{costInfo.label}</p>
-          {service.cost_note && <p className="text-xs mt-0.5 opacity-70">{service.cost_note}</p>}
+          {service.cost_note && <p className="text-xs mt-0.5">{service.cost_note}</p>}
         </div>
+
+        {/* תנאי השירות לפי מודל התשלום */}
+        {terms.length > 0 && (
+          <section aria-labelledby="terms-h" className="bg-white rounded-xl p-4 border border-gray-100">
+            <h2 id="terms-h" className="text-xs font-semibold text-gray-700 mb-2">תנאי השירות</h2>
+            <dl className="space-y-1.5">
+              {terms.map((t) => (
+                <div key={t.term} className="flex gap-3 text-xs">
+                  <dt className="w-24 shrink-0 font-medium text-gray-700">{t.term}</dt>
+                  <dd className="text-gray-700">{t.text}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
 
         {/* Details */}
         <div className="bg-white rounded-xl p-5 border border-gray-100 space-y-3">
           {service.address && (
             <div className="flex items-start gap-2.5">
-              <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-              <div><p className="text-xs text-gray-400">כתובת</p><p className="text-sm text-gray-800">{service.address}</p></div>
+              <MapPin className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
+              <div><p className="text-xs text-gray-600">כתובת</p><p className="text-sm text-gray-800">{service.address}</p></div>
             </div>
           )}
           {service.days && (
             <div className="flex items-start gap-2.5">
-              <Clock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-              <div><p className="text-xs text-gray-400">ימים ושעות</p><p className="text-sm text-gray-800">{service.days}{service.hours && ` · ${service.hours}`}</p></div>
+              <Clock className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
+              <div><p className="text-xs text-gray-600">ימים ושעות</p><p className="text-sm text-gray-800">{service.days}{service.hours && ` · ${service.hours}`}</p></div>
             </div>
           )}
           {service.phone && (
             <div className="flex items-start gap-2.5">
-              <Phone className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-              <div><p className="text-xs text-gray-400">טלפון</p><a href={`tel:${service.phone}`} className="text-sm text-[#1B3A5C] hover:underline">{service.phone}</a></div>
+              <Phone className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
+              <div><p className="text-xs text-gray-600">טלפון</p><a href={`tel:${service.phone}`} className="text-sm text-[#1B3A5C] hover:underline">{service.phone}</a></div>
             </div>
           )}
           {service.website && (
             <div className="flex items-start gap-2.5">
-              <Globe className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-              <div><p className="text-xs text-gray-400">אתר</p><a href={`https://${service.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[#1B3A5C] hover:underline">{service.website}</a></div>
+              <Globe className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
+              <div><p className="text-xs text-gray-600">אתר</p><a href={`https://${service.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-[#1B3A5C] hover:underline">{service.website}</a></div>
             </div>
           )}
         </div>
@@ -169,7 +188,7 @@ export default function CitizenServiceDetail() {
                 <div className="text-2xl font-bold text-[#1B3A5C]">{service.match_score}</div>
                 <div>
                   <p className="text-sm text-gray-700">{service.match_score >= 80 ? "התאמה גבוהה לפרופיל שלך" : "התאמה טובה"}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
+                  <p className="text-xs text-gray-600 mt-0.5">מבוסס על אלגוריתם 5 שכבות</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -178,7 +197,7 @@ export default function CitizenServiceDetail() {
                   <span>מאושר על ידי מלווה</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Clock className="w-3.5 h-3.5 text-gray-400" />
+                  <Clock className="w-3.5 h-3.5 text-gray-600" />
                   <span>עודכן לפני 7 ימים</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
@@ -225,7 +244,7 @@ export default function CitizenServiceDetail() {
         {/* Notes */}
         {service.notes && (
           <div className="flex items-start gap-2.5 p-4 bg-white rounded-xl border border-gray-100">
-            <AlertCircle className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
             <p className="text-xs text-gray-600">{service.notes}</p>
           </div>
         )}
@@ -239,9 +258,14 @@ export default function CitizenServiceDetail() {
             onClick={handleBook}
             className="w-full h-12 bg-[#1B3A5C] text-white rounded-xl text-sm font-bold hover:bg-[#15304d] transition-colors flex items-center justify-center gap-2"
           >
-            <CheckCircle className="w-4 h-4" />
-            שלח בקשת הצטרפות
+            <CheckCircle className="w-4 h-4" aria-hidden="true" />
+            {gated ? "בקשה לאישור המלווה" : "שלח בקשת הצטרפות"}
           </button>
+          {gated && (
+            <p className="text-xs text-gray-700 text-center">
+              שירות זה נפתח רק באישור המלווה{service.gateReason ? ` (${service.gateReason})` : ""}. אי אפשר להצטרף אליו ישירות.
+            </p>
+          )}
           {service.phone && (
             <a
               href={`tel:${service.phone}`}

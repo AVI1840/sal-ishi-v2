@@ -266,6 +266,7 @@ export function buildCitizenCatalog(
     return {
       ...item,
       ...payment,
+      capacityLimited: s.capacityLimited ?? false,
       demand: demandBand(s, activity, seed.settings, latest),
       supplierScore: sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
     };

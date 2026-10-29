@@ -176,7 +176,7 @@ export const NATIONAL_KPIS: NationalKpi[] = [
     measure: "240,000 × ₪12-18K × 20% דחיית הידרדרות",
   },
   {
-    label: "ניצול סל שירותים",
+    label: "מיצוי סל שירותים",
     target: "+85% מהסל המוקצה",
     measure: "יחידות שנוצלו / שהוקצו",
   },

@@ -24,6 +24,7 @@ import {
   type Seed,
 } from "@sal-ishi/core/citizen";
 import { configureMatching } from "@/domain/matchingEngine";
+import { costNote, costType } from "@/lib/serviceTerms";
 import { setRawServices } from "./realServices";
 import { setServiceCatalogRaw } from "./serviceCatalog";
 
@@ -108,8 +109,8 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
         address: "",
         days: "",
         hours: "",
-        cost: rate === 0 ? "free" : "subsidized",
-        cost_note: `${item.pricePoints} נקודות ל${item.unit}${rate > 0 ? `, השתתפות עצמית ${Math.round(rate * 100)}%` : ", בלי השתתפות עצמית"}`,
+        cost: costType({ copayRate: rate, copayPoints: item.copayPoints }),
+        cost_note: costNote({ pricePoints: item.pricePoints, unit: item.unit, copayRate: rate, coveredPoints: item.coveredPoints, copayPoints: item.copayPoints }),
         target_age: "65+",
         target_mobility: item.deliveryMode === "home" ? "homebound" : "any",
         languages: item.languages.map((l) => LANGUAGE_CODES[l] ?? l),
@@ -134,6 +135,17 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
         coreCategoryName: core?.name ?? "איכות חיים",
         deliveryMode: item.deliveryMode,
         communityFit: item.communityFit,
+        // מודל התשלום (0.4). קטלוג שפורסם בגרסה קודמת לא מכיל אותם, והמסכים מסתדרים בלעדיהם.
+        hoursPerUnit: item.hoursPerUnit ?? null,
+        serviceMode: item.serviceMode ?? null,
+        capacityLimited: item.capacityLimited ?? false,
+        gatedByCompanion: item.gatedByCompanion ?? false,
+        gateReason: item.gateReason ?? null,
+        cancellationNoticeHours: item.cancellationNoticeHours ?? null,
+        noShowCharged: item.noShowCharged ?? null,
+        coveredPoints: item.coveredPoints ?? null,
+        copayPoints: item.copayPoints ?? null,
+        copayBasis: item.copayBasis,
       });
     }
   }

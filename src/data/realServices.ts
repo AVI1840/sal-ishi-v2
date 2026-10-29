@@ -61,6 +61,18 @@ export interface RealService {
   coreCategoryName?: string;
   deliveryMode?: "community" | "home" | "remote";
   communityFit?: ("general" | "haredi" | "arab")[];
+  // מודל התשלום של החשכ"ל (0.4). null: הקטלוג עוד לא קבע.
+  hoursPerUnit?: number | null;
+  serviceMode?: "group" | "individual" | "home" | "remote" | null;
+  capacityLimited?: boolean;
+  /** נפתח רק באישור המלווה, ולא נבחר ישירות. */
+  gatedByCompanion?: boolean;
+  gateReason?: string | null;
+  cancellationNoticeHours?: number | null;
+  noShowCharged?: boolean | null;
+  coveredPoints?: number | null;
+  copayPoints?: number | null;
+  copayBasis?: "tier" | "qol_fixed" | "qol_percent" | "reference_binding";
 }
 
 // ─── maps ───────────────────────────────────────────────────────

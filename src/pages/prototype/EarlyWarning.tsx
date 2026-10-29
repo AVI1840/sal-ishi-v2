@@ -93,7 +93,7 @@ export default function EarlyWarning() {
         <Card>
           <CardHeader
             title="טיים-ליין 60 ימים אחרונים"
-            subtitle={`${client.firstName} ${client.lastName} · ציון בדידות · ניצול ארנק · ביקורים`}
+            subtitle={`${client.firstName} ${client.lastName} · ציון בדידות · מיצוי ארנק · ביקורים`}
           />
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -112,7 +112,7 @@ export default function EarlyWarning() {
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <ReferenceLine yAxisId="left" y={3} stroke="hsl(var(--destructive))" strokeDasharray="3 3" label={{ value: "סף סיכון", fill: "hsl(var(--destructive))", fontSize: 11 }} />
                 <Line yAxisId="left" type="monotone" dataKey="loneliness" name="ציון בדידות (1-10)" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
-                <Line yAxisId="right" type="monotone" dataKey="walletUtilization" name="ניצול ארנק (%)" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="walletUtilization" name="מיצוי ארנק (%)" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                 <Line yAxisId="left" type="monotone" dataKey="visits" name="ביקורים בשבוע" stroke="hsl(var(--success))" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>

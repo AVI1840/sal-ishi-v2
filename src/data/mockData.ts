@@ -294,8 +294,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
 
 // KPIs — נתוני פיילוט אמיתיים (פסגת זאב, 286 אזרחים)
 export const KPIS: KPI[] = [
-  { id: "k1", label: "ניצול ארנק", value: "71%", description: "71% מהיחידות מנוצלות — ממוצע פיילוט", trend: 6, trendLabel: "+6%", icon: "Target", tone: "success" },
-  { id: "k2", label: "שירותי מניעה", value: "54%", description: "מהניצול הולך לשירותי מניעה (לא בית)", trend: 8, trendLabel: "+8%", icon: "Heart", tone: "success" },
+  { id: "k1", label: "מיצוי ארנק", value: "71%", description: "71% מהיחידות מומשו — ממוצע פיילוט", trend: 6, trendLabel: "+6%", icon: "Target", tone: "success" },
+  { id: "k2", label: "שירותי מניעה", value: "54%", description: "מהמיצוי הולך לשירותי מניעה (לא בית)", trend: 8, trendLabel: "+8%", icon: "Heart", tone: "success" },
   { id: "k3", label: "מעורבות", value: "58%", description: "% אזרחים פעילים השבוע", trend: 4, trendLabel: "+4%", icon: "Activity", tone: "info" },
   { id: "k4", label: "בסיכון", value: 8, description: "אזרחים עם ירידה במעורבות", trend: 2, trendLabel: "+2", icon: "AlertTriangle", tone: "destructive" },
   { id: "k5", label: "שביעות רצון", value: "4.7/5", description: "ממוצע דירוג משתתפי הפיילוט", trend: 0.1, trendLabel: "+0.1", icon: "Star", tone: "warning" },
