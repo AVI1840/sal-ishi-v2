@@ -25,3 +25,4 @@ export * from "./rules/terms";
 export * from "./search";
 export * from "./metrics";
 export * from "./migration";
+export * from "./learning";

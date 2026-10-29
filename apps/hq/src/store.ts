@@ -29,11 +29,20 @@ import { EDITION } from "@sal-ishi/ui";
 
 type ServiceType = Seed["service_types"][number];
 
+/** יומן ביקורת: כל שינוי במטה, בקטלוג ובכללים, עם זמן. לא נמחק בפרסום. */
+export interface AuditEntry {
+  at: string;
+  action: "קליטת חבילה" | "נתוני הדגמה" | "איפוס" | "שינוי כלל" | "סוג שירות" | "ערוץ ארצי" | "פרסום גרסת בסיס";
+  detail: string;
+}
+
 interface Persisted {
   state: HqState;
   seed: unknown;
   pending: ChangeLogEntry[];
   isDemo: boolean;
+  /** חדש ב-0.5. נתונים של 0.4 נטענים בלעדיו. */
+  audit?: AuditEntry[];
 }
 
 export interface HqStore {
@@ -45,6 +54,7 @@ export interface HqStore {
   seed: Seed;
   pending: ChangeLogEntry[];
   isDemo: boolean;
+  audit: AuditEntry[];
 
   hydrate(): Promise<void>;
   merge(pkg: PilotPackage): void;
@@ -76,8 +86,12 @@ export const useHq = create<HqStore>()((set, get) => {
   const log = (entry: Omit<ChangeLogEntry, "at">) =>
     set((s) => ({ pending: [...s.pending, { ...entry, at: new Date().toISOString() }] }));
 
+  const audit = (action: AuditEntry["action"], detail: string) =>
+    set((s) => ({ audit: [...s.audit, { at: new Date().toISOString(), action, detail }] }));
+
   return {
     hydrated: false,
+    audit: [],
     state: emptyHqState(),
     seed: defaultSeed,
     pending: [],
@@ -107,23 +121,27 @@ export const useHq = create<HqStore>()((set, get) => {
             /* seed שמור לא תקין: חוזרים לברירת המחדל */
           }
         }
-        set({ state: saved.state, seed, pending, isDemo: saved.isDemo, seedNotice });
+        set({ state: saved.state, seed, pending, isDemo: saved.isDemo, seedNotice, audit: saved.audit ?? [] });
       } else if (EDITION === "preview") {
         set({ state: await demoState(), isDemo: true });
+        audit("נתוני הדגמה", "נטענו נתוני ההדגמה הסינתטיים");
       }
       set({ hydrated: true });
     },
 
     merge(pkg) {
       set((s) => ({ state: mergePackage(s.state, pkg) }));
+      audit("קליטת חבילה", `${pkg.authority}: ${pkg.services.length} שירותים, ${pkg.neighborhoods.length} שכונות`);
     },
 
     async loadDemo() {
       set({ state: await demoState(), isDemo: true });
+      audit("נתוני הדגמה", "נטענו נתוני ההדגמה הסינתטיים");
     },
 
     reset() {
       set({ state: emptyHqState(), seed: defaultSeed, pending: [], isDemo: false });
+      audit("איפוס", "המטה אופס: בלי חבילות, גרסת הבסיס המובנית");
     },
 
     updateSetting(key, value, note) {
@@ -134,6 +152,7 @@ export const useHq = create<HqStore>()((set, get) => {
       if (JSON.stringify(before) === JSON.stringify(value)) return null;
       set({ seed: { ...seed, settings: parsed.data as Settings } });
       log({ kind: "setting", key, before, after: value, ...(note ? { note } : {}) });
+      audit("שינוי כלל", `${key}${note ? `: ${note}` : ""}`);
       return null;
     },
 
@@ -144,17 +163,20 @@ export const useHq = create<HqStore>()((set, get) => {
       const after = { ...before, ...patch };
       set({ seed: { ...seed, service_types: seed.service_types.map((t) => (t.id === id ? after : t)) } });
       log({ kind: "service_type", key: id, before, after });
+      audit("סוג שירות", `עודכן ${id}`);
     },
 
     addServiceType(type) {
       const { seed } = get();
       set({ seed: { ...seed, service_types: [...seed.service_types, type] } });
       log({ kind: "service_type", key: type.id, before: null, after: type });
+      audit("סוג שירות", `נוסף ${type.id}: ${type.name}`);
     },
 
     upsertNationalService(s) {
       const item: Service = { ...s, authority: NATIONAL_AUTHORITY, neighborhoodId: "", reach: "national" };
       set((st) => ({ state: { ...st.state, services: upsertBy(st.state.services, item, (x) => x.id === item.id) } }));
+      audit("ערוץ ארצי", `שירות ${item.id}: ${item.name}`);
     },
 
     upsertNationalSupplier(s) {
@@ -168,6 +190,7 @@ export const useHq = create<HqStore>()((set, get) => {
       const { seed, pending } = get();
       const published = publishSeedVersion(seed, pending);
       set({ seed: published, pending: [] });
+      audit("פרסום גרסת בסיס", `גרסה ${published.meta.version}, ${pending.length} שינויים`);
       return published;
     },
   };
@@ -178,7 +201,7 @@ useHq.subscribe((s) => {
   if (!s.hydrated || !kv) return;
   clearTimeout(timer);
   timer = setTimeout(() => {
-    const persisted: Persisted = { state: s.state, seed: s.seed, pending: s.pending, isDemo: s.isDemo };
+    const persisted: Persisted = { state: s.state, seed: s.seed, pending: s.pending, isDemo: s.isDemo, audit: s.audit };
     void kv?.set(KEY, persisted);
   }, 300);
 });

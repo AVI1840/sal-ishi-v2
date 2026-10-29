@@ -39,7 +39,7 @@ export function FeedbackProvider(props: { surface: string; children: ReactNode }
 
   useEffect(() => {
     // מאגר משותף לשני המשטחים באותו דפדפן, כך שמשוב משני המשטחים מיוצא יחד.
-    void openVersionedStore("sal-ishi-feedback", [KEY]).then(async ({ store: s }) => {
+    void openVersionedStore("sal-ishi-feedback", [KEY, "reviewer"]).then(async ({ store: s }) => {
       setStore(s);
       setNotes((await s.get<FeedbackNote[]>(KEY)) ?? []);
       setReviewerState((await s.get<string>("reviewer")) ?? "");

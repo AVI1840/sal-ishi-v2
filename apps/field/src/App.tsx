@@ -8,10 +8,11 @@ import {
   FeedbackButton,
   FeedbackProvider,
   FeedbackScreen,
+  LearningNotebook,
   PartnerGuide,
   ToastProvider,
 } from "@sal-ishi/ui";
-import { BookOpen, Building2, ClipboardCheck, Compass, Grid3x3, Home, LineChart, MessageSquare, Users } from "lucide-react";
+import { BookOpen, BookOpenCheck, Building2, ClipboardCheck, Compass, Grid3x3, Home, LineChart, MessageSquare, Users } from "lucide-react";
 import { useField } from "./store";
 import HomeScreen from "./screens/HomeScreen";
 import InspirationScreen from "./screens/InspirationScreen";
@@ -32,6 +33,7 @@ const NAV = [
   { to: "/coverage", label: "מבחן כיסוי", icon: <Grid3x3 size={18} /> },
   { to: "/activity", label: "מה הולך", icon: <LineChart size={18} /> },
   { to: "/submit", label: "אישור ושליחה", icon: <ClipboardCheck size={18} /> },
+  { to: "/learning", label: "פנקס למידה", icon: <BookOpenCheck size={18} /> },
   ...(preview ? [{ to: "/feedback", label: "המשוב שלי", icon: <MessageSquare size={18} /> }] : []),
 ];
 
@@ -91,6 +93,7 @@ export default function App() {
                 <Route path="/coverage" element={<CoverageScreen />} />
                 <Route path="/activity" element={<ActivityScreen />} />
                 <Route path="/submit" element={<SubmitScreen />} />
+                <Route path="/learning" element={<LearningNotebook surface="שטח" />} />
                 <Route
                   path="/guide"
                   element={<PartnerGuide surface="field" seed={seed} steps={GUIDE_STEPS} otherSurface={{ href: "../hq/", label: "למשטח המטה" }} />}
