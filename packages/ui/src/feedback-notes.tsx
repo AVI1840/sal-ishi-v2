@@ -3,7 +3,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { MessageSquarePlus } from "lucide-react";
-import { XLSX_MIME, openStore, writeWorkbook, type KeyValueStore } from "@sal-ishi/core";
+import { XLSX_MIME, openVersionedStore, writeWorkbook, type KeyValueStore } from "@sal-ishi/core";
 import { Alert, Button, RadioGroup, TextArea, TextField } from "./controls";
 import { Dialog, useToast } from "./feedback";
 import { downloadBytes, todayStamp } from "./download";
@@ -39,7 +39,7 @@ export function FeedbackProvider(props: { surface: string; children: ReactNode }
 
   useEffect(() => {
     // מאגר משותף לשני המשטחים באותו דפדפן, כך שמשוב משני המשטחים מיוצא יחד.
-    void openStore("sal-ishi-feedback").then(async (s) => {
+    void openVersionedStore("sal-ishi-feedback", [KEY]).then(async ({ store: s }) => {
       setStore(s);
       setNotes((await s.get<FeedbackNote[]>(KEY)) ?? []);
       setReviewerState((await s.get<string>("reviewer")) ?? "");

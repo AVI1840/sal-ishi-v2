@@ -5,7 +5,7 @@ import { create } from "zustand";
 import {
   defaultSeed,
   isOlderSeedBase,
-  openStore,
+  openVersionedStore,
   upgradeSeed,
   upsertActivity,
   type AuthorityData,
@@ -86,7 +86,7 @@ export const useField = create<FieldState>()((set, get) => {
     isDemo: false,
 
     async hydrate() {
-      kv = await openStore("sal-ishi-field");
+      kv = (await openVersionedStore("sal-ishi-field", [KEY])).store;
       const saved = await kv.get<Persisted>(KEY);
       if (saved) {
         let seed = defaultSeed;

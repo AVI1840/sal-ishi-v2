@@ -25,8 +25,7 @@ export default defineConfig({
             "@radix-ui/react-progress",
             "@radix-ui/react-slot",
           ],
-          // Charts
-          "vendor-charts": ["recharts"],
+          // Charts: בלי chunk ידני, כדי שייטענו רק עם המסכים הישנים שמשתמשים בהם
           // Data
           "data-mock": [
             "/src/data/mockData.ts",

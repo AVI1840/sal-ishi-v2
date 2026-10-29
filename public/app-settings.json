@@ -1,0 +1,26 @@
+{
+  "mode": "demo",
+  "version": "0.5",
+  "mode_options": ["demo", "pilot"],
+  "mode_note": "demo: שלוש דמויות בדויות, נתוני דמה וכפתור איפוס. pilot: בלי פס הדגמה, בלי איפוס ובלי נתוני פתיחה בדויים. אין הבדל בקוד.",
+  "citizen": {
+    "persona_id": "c1",
+    "baseline_spent_this_month": 100,
+    "max_choices_per_step": 3,
+    "default_language": "he",
+    "languages": ["he", "ar", "ru"]
+  },
+  "companion": {
+    "name": "רונית",
+    "caseload_size": 76,
+    "cover_name": "יעל",
+    "triage_order": ["hospitalization", "callback", "gated_request", "cognitive_alert", "no_first_service", "low_utilization"],
+    "approval_reasons": {
+      "approve": ["צורך שזוהה בביקור", "בקשת האזרח, מתאים לתוכנית", "המלצת גורם מקצועי"],
+      "reject": ["לא מתאים כרגע לתוכנית", "יש שירות אחר שעונה על הצורך", "חסר מידע, אחזור לאזרח"]
+    }
+  },
+  "demo": {
+    "data_label": "נתוני הדגמה בדויים"
+  }
+}

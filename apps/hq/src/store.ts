@@ -11,7 +11,7 @@ import {
   isOlderSeedBase,
   emptyHqState,
   mergePackage,
-  openStore,
+  openVersionedStore,
   upgradeSeed,
   publishSeedVersion,
   settingsSchema,
@@ -89,7 +89,7 @@ export const useHq = create<HqStore>()((set, get) => {
     },
 
     async hydrate() {
-      kv = await openStore("sal-ishi-hq");
+      kv = (await openVersionedStore("sal-ishi-hq", [KEY])).store;
       const saved = await kv.get<Persisted>(KEY);
       if (saved) {
         let seed = defaultSeed;
