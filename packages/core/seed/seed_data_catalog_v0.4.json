@@ -1,0 +1,1492 @@
+{
+ "meta": {
+  "version": "0.4",
+  "schema": "catalog_core_v1",
+  "source": "אטלס שירותי הסל, פיילוט ירושלים ינואר 2025 עד אוגוסט 2026, נתונים מצטברים בלבד",
+  "status": "מעודכן לפי מפגש 2 (26.10), פגישת החשכ\"ל (28.10) ומסמך מודל התשלום של החשכ\"ל. ערכים עם status=proposal ממתינים להכרעה במפגש 3 (26.11.2026). מוזג 29.10 עם הכרעות 28.10 ו-29.10 (פרטי ספק למטה, משקלות התאמה, כללי בחירה, דירוג פנימי, מדדי תחרות ורוחב)",
+  "open_items": [
+   "קריטריון כניסה לארוחה חמה - הצעות גידור עד 4.11, הכרעה במפגש 3",
+   "צבירת נקודות עד שלושה חודשים - הוצע בפגישת החשכ\"ל, לא הוכרע",
+   "מדיניות ביטול ומכסת היעדרויות - להכרעה במפגש 3",
+   "שדות הספק והשירות - ליישור מול מודל ההתקשרות של החשכ\"ל (פגישת המשך 3.11)",
+   "הבחירה במלווה אחרי חצי שנה - מפגש 3, לא משפיע על הכלי בגרסה 1",
+   "תקורה 59 ש\"ח - פירוט במפגש 3",
+   "מצב איכות חיים: סכום קבוע מהנקודות (הצעת החשכ\"ל) או אחוז השתתפות (החלטת מפגש 2)",
+   "שווי יחידת שירות בסף הצריכה של מודל החשכ\"ל",
+   "פרטי ספק יחיד בחבילה למטה - הוכרע 28.10 (supplier_contact_to_hq), לעדכן את הקווים האדומים באיפיון ולהציג לאבטחת מידע ב-20.11",
+   "כללי בחירה לאזרח (שירות מכל תחום, עד 8 פעילים, החלפה חודשית) ומשקלות ההתאמה - ממסמך הקטלוג, להכרעה במפגש 3",
+   "דירוג ספקים (40% איכות, 30% תוצאות מניעה, 20% שביעות רצון, 10% עלות-תועלת) ותקרת ספקים לסוג שירות - להכרעה במפגש 3",
+   "מחיר ייחוס מחייב - באילו קטגוריות ורשויות (reference_price_binding_scope)",
+   "שעות הודעה מראש לביטול בשירות פרטני ובשירות מרחוק - לא הוגדרו",
+   "חדירה וזמן לשירות ראשון - הנתונים המצטברים (פעילים, זכאים, ימים) מגיעים מדוח ספק העל"
+  ]
+ },
+ "settings": {
+  "min_participants": 10,
+  "min_active_months": 3,
+  "core_floor": 3,
+  "floor_applies_to_regular": false,
+  "personal_wallet": 500,
+  "companion": 181,
+  "community": 20,
+  "overhead": 59,
+  "total": 760,
+  "utilization_target": 0.7,
+  "red_flag_avg": 0.35,
+  "qol_cap_month": 100,
+  "qol_counts_in_target": false,
+  "small_cell_threshold": 5,
+  "floor_scope": "core_category",
+  "subarea_alerts": [
+   "2.2"
+  ],
+  "red_flag_period": "quarter",
+  "red_flag_scope": "neighborhood",
+  "qol_copay": 0.5,
+  "qol_cap_is_paid_by_basket": true,
+  "copay_tiers": {
+   "core_and_prevention": 0,
+   "classes": 0.2,
+   "qol": 0.5,
+   "status": "סופי במפגש 2. נוהל הנחות במפגש 3"
+  },
+  "hot_meals_per_week_max": 3,
+  "hot_meals_months_max": 3,
+  "hot_meal_price_assumption": 25,
+  "companion_escort_counts_in_wallet": false,
+  "points_per_shekel": 1,
+  "points_rollover_months": 3,
+  "points_rollover_status": "proposal",
+  "utilization_window": "rolling_3_months",
+  "price_policy": "no_government_cap",
+  "price_outlier_threshold": 0.2,
+  "reference_price_method": "median_by_service_type_and_unit",
+  "reference_price_min_samples": 3,
+  "hot_meal_entry_criteria": [
+   "companion_identified_need",
+   "assessment_nutrition_flag"
+  ],
+  "hot_meal_entry_status": "proposal - הכרעה במפגש 3",
+  "publish_to_citizen_statuses": [
+   "אושר"
+  ],
+  "cancellation_notice_hours": {
+   "group": 24,
+   "home": 48,
+   "individual": null,
+   "remote": null,
+   "status": "proposal - מודל החשכ\"ל"
+  },
+  "no_show_charge_rule": {
+   "value": "individual_or_capacity_limited_only",
+   "status": "proposal - הערות ביטוח לאומי"
+  },
+  "hospitalization_refund": {
+   "group": "full_to_participant",
+   "individual": "by_contract",
+   "notify_companion": true,
+   "status": "proposal"
+  },
+  "products_quarterly_cap_share": {
+   "value": 0.25,
+   "status": "proposal - מודל החשכ\"ל",
+   "interpretation": "שיעור מהארנק הרבעוני: 0.25 כפול 500 כפול 3 = 375 נקודות ברבעון (אושר 29.10)"
+  },
+  "products_count_in_floor": false,
+  "qol_mode": {
+   "value": "fixed_amount",
+   "options": [
+    "fixed_amount",
+    "percent"
+   ],
+   "status": "proposal - הכרעה במפגש 3"
+  },
+  "active_participant_min_sessions_month": {
+   "value": 2,
+   "status": "proposal"
+  },
+  "reference_price_mode": {
+   "value": "monitor",
+   "options": [
+    "monitor",
+    "binding",
+    "preactivated_low_competition"
+   ],
+   "status": "proposal"
+  },
+  "low_competition_operator_threshold": 3,
+  "price_index_period": "quarter",
+  "first_service_max_days": 14,
+  "supplier_contact_to_hq": true,
+  "supplier_contact_to_hq_status": "הוכרע 28.10.2026 - פרטי ספק יחיד עוברים למטה, לא לייצוא. לבדיקת אבטחת מידע 20.11",
+  "matching_weights": {
+   "prevention": 0.3,
+   "motivation": 0.25,
+   "profileFit": 0.2,
+   "socialProof": 0.15,
+   "proximity": 0.1
+  },
+  "matching_weights_status": "proposal - ועדת הסל קובעת אחת לחציון (מסמך הקטלוג, מפגש 2). ערכי ברירת המחדל מהכלי הקיים",
+  "selection_min_per_domain": 1,
+  "selection_max_active": 8,
+  "selection_change_months": 1,
+  "selection_status": "proposal - מסמך הקטלוג (מפגש 2), להכרעה במפגש 3",
+  "suggestions_per_domain": 3,
+  "supplier_rating_weights": {
+   "quality": 0.4,
+   "outcomes": 0.3,
+   "satisfaction": 0.2,
+   "value": 0.1
+  },
+  "supplier_rating_status": "proposal - דירוג פנימי של הרשות והמטה, לא בייצוא. ניתן לכיבוי (supplier_rating_enabled). הדירוג המחייב אצל ספק העל",
+  "competition_max_suppliers_local": 3,
+  "competition_max_suppliers_national": 5,
+  "competition_status": "proposal - מסמך הקטלוג (מפגש 2), מדד בלבד ולא חוסם",
+  "subcategory_breadth_min": 2,
+  "subcategory_status": "proposal - רצפה של 3 לכל קטגוריית ליבה נשארת. נוסף מדד רוחב: לפחות 2 תתי-קטגוריות שונות",
+  "subarea_alert_min": 1,
+  "subarea_status": "proposal - התראה קוגניטיבית כשאין אף שירות רציף בתת-התחום",
+  "supplier_rating_enabled": true,
+  "reference_price_binding_scope": [],
+  "reference_price_binding_scope_status": "proposal - רשימת קטגוריה ורשות שבהן מחיר הייחוס מחייב. אזור = רשות"
+ },
+ "categories": [
+  {
+   "code": "1.1",
+   "domain": "שייכות",
+   "name": "חיבור חברתי וקהילה",
+   "inside": "מועדון חברתי מועשר, קבוצות עניין, פעילות בין-דורית, קבוצות הליכה",
+   "outside": "מרכז יום (ממומן בגמלה), פעילות קהילתית בסיסית",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "belonging"
+  },
+  {
+   "code": "1.2",
+   "domain": "שייכות",
+   "name": "תרבות והעשרה",
+   "inside": "קורסים, הרצאות, סדנאות, כרטיס תרבות קבוצתי",
+   "outside": "כרטיס בודד, מעבר לשניים בחודש, אלא באישור ועדה",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "belonging"
+  },
+  {
+   "code": "1.3",
+   "domain": "שייכות",
+   "name": "התנדבות ותעסוקה",
+   "inside": "התנדבות מונחית ותעסוקה לוותיקים",
+   "outside": null,
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "belonging"
+  },
+  {
+   "code": "2.1",
+   "domain": "תפקוד ובריאות",
+   "name": "פעילות גופנית",
+   "inside": "פעילות גופנית קבוצתית מותאמת גיל",
+   "outside": "שירותי סל הבריאות",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "health_function"
+  },
+  {
+   "code": "2.2",
+   "domain": "תפקוד ובריאות",
+   "name": "גירוי קוגניטיבי",
+   "inside": "אימון זיכרון וחשיבה, משחקי חשיבה מונחים, לימוד מובנה רציף (שפות, נגינה) לאישור בסוגיה 3",
+   "outside": "הרצאה בודדת",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "health_function"
+  },
+  {
+   "code": "2.3",
+   "domain": "תפקוד ובריאות",
+   "name": "תזונה",
+   "inside": "ייעוץ תזונתי, סדנאות בישול",
+   "outside": "מזון שוטף",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "health_function"
+  },
+  {
+   "code": "2.4",
+   "domain": "תפקוד ובריאות",
+   "name": "בריאות מונעת משלימה",
+   "inside": "השלמות מונעות שאין להן מממן",
+   "outside": "שירותי סל הבריאות, שב\"ן, הרצאות קופות חולים",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "health_function"
+  },
+  {
+   "code": "3.1",
+   "domain": "חוסן",
+   "name": "תמיכה רגשית",
+   "inside": "תמיכה רגשית פרטנית או קבוצתית",
+   "outside": "טיפול שבסל הבריאות",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "resilience"
+  },
+  {
+   "code": "3.2",
+   "domain": "חוסן",
+   "name": "ייעוץ מקצועי",
+   "inside": "ייעוץ משפטי ופיננסי",
+   "outside": "מימוש זכויות וביורוקרטיה, באחריות המלווה",
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "resilience"
+  },
+  {
+   "code": "3.3",
+   "domain": "חוסן",
+   "name": "עזרה יומיומית קלה",
+   "inside": "עזרה יומיומית קלה",
+   "outside": "שעות טיפול אישי של הגמלה",
+   "layer": "בחוץ",
+   "core": false,
+   "core_category": null
+  },
+  {
+   "code": "4.1",
+   "domain": "דיגיטציה",
+   "name": "אוריינות דיגיטלית",
+   "inside": "הדרכה דיגיטלית בשפות הקהילה",
+   "outside": null,
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "digital"
+  },
+  {
+   "code": "4.2",
+   "domain": "דיגיטציה",
+   "name": "תמיכה טכנית",
+   "inside": "תמיכה טכנית פרטנית",
+   "outside": null,
+   "layer": "ליבה",
+   "core": true,
+   "core_category": "digital"
+  },
+  {
+   "code": "5.1",
+   "domain": "איכות חיים",
+   "name": "בית קפה וגלידה",
+   "inside": "שוברי קפה וגלידה, תדירות קבועה",
+   "outside": null,
+   "layer": "איכות חיים",
+   "core": false,
+   "core_category": null
+  },
+  {
+   "code": "5.2",
+   "domain": "איכות חיים",
+   "name": "פרחים",
+   "inside": "זר ליום הולדת",
+   "outside": null,
+   "layer": "איכות חיים",
+   "core": false,
+   "core_category": null
+  },
+  {
+   "code": "5.3",
+   "domain": "איכות חיים",
+   "name": "טיפוח",
+   "inside": "סל טיפוח, בתקרה, לפי צורך מתועד",
+   "outside": null,
+   "layer": "איכות חיים",
+   "core": false,
+   "core_category": null
+  },
+  {
+   "code": "5.4",
+   "domain": "איכות חיים",
+   "name": "ארוחה חמה",
+   "inside": "הזמנת מזון זמנית, עד שלושה חודשים, לפי צורך מתועד",
+   "outside": "מזון שוטף",
+   "layer": "בתנאים",
+   "core": false,
+   "core_category": null
+  },
+  {
+   "code": "5.5",
+   "domain": "איכות חיים",
+   "name": "ליווי לפעילות (חלק מתפקיד המלווה, לא על הארנק)",
+   "inside": "ליווי לפעילות שבסל, לפי צורך מתועד",
+   "outside": "ליווי רפואי, שעות טיפול אישי, הסעות",
+   "layer": "תפקיד המלווה",
+   "core": false,
+   "core_category": null
+  },
+  {
+   "code": "6",
+   "domain": "ערוץ מוצרים",
+   "name": "רשימה ארצית",
+   "inside": "בטיחות ומניעת נפילות, טכנולוגיה מסייעת, כושר ביתי, עזרים חושיים (השלמה)",
+   "outside": "מה שיש לו מממן אחר",
+   "layer": "ערוץ מוצרים",
+   "core": true,
+   "core_category": "prevention_products"
+  }
+ ],
+ "service_types": [
+  {
+   "id": "T01",
+   "category": "1.1",
+   "name": "מועדון חברתי שכונתי",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 13,
+    "participants": 76
+   },
+   "note": "בשפת הקהילה. עוגן הליבה"
+  },
+  {
+   "id": "T02",
+   "category": "1.1",
+   "name": "קבוצת מעורבות ויוזמה (פרלמנט)",
+   "format": "קבוצתי",
+   "unit": "סבב",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 12,
+    "participants": 154
+   },
+   "note": "סבבים של אותה תוכנית נספרים כשירות אחד"
+  },
+  {
+   "id": "T03",
+   "category": "1.1",
+   "name": "מפגש חברתי חודשי קבוע",
+   "format": "קבוצתי",
+   "unit": "מפגש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 5,
+    "participants": 159
+   },
+   "note": null
+  },
+  {
+   "id": "T04",
+   "category": "1.1",
+   "name": "פעילות בין-דורית",
+   "format": "קבוצתי",
+   "unit": "מפגש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 1,
+    "participants": 5
+   },
+   "note": null
+  },
+  {
+   "id": "T05",
+   "category": "1.1",
+   "name": "מפגש חברים מרחוק",
+   "format": "דיגיטלי",
+   "unit": "מפגש",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "לבית מרותק"
+  },
+  {
+   "id": "T06",
+   "category": "1.1",
+   "name": "אירוע קהילתי (חג, טקס)",
+   "format": "קבוצתי",
+   "unit": "אירוע",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 10,
+    "participants": 226
+   },
+   "note": "לא נספר כשירות רציף"
+  },
+  {
+   "id": "T07",
+   "category": "1.2",
+   "name": "חוגי אמנות ויצירה",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 10,
+    "participants": 82
+   },
+   "note": null
+  },
+  {
+   "id": "T08",
+   "category": "1.2",
+   "name": "מוזיקה ושירה",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 3,
+    "participants": 28
+   },
+   "note": null
+  },
+  {
+   "id": "T09",
+   "category": "1.2",
+   "name": "טיולים וסיורים",
+   "format": "קבוצתי",
+   "unit": "סיור",
+   "scope": "מקומי ואזורי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 6,
+    "participants": 204
+   },
+   "note": null
+  },
+  {
+   "id": "T10",
+   "category": "1.2",
+   "name": "הרצאות והעשרה",
+   "format": "קבוצתי",
+   "unit": "מפגש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 5,
+    "participants": 45
+   },
+   "note": null
+  },
+  {
+   "id": "T11",
+   "category": "1.2",
+   "name": "כרטיס תרבות קבוצתי",
+   "format": "קבוצתי",
+   "unit": "כרטיס",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 24,
+    "participants": 114
+   },
+   "note": "עד שניים בחודש"
+  },
+  {
+   "id": "T12",
+   "category": "1.3",
+   "name": "התנדבות מונחית",
+   "format": "קבוצתי או פרטני",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 4,
+    "participants": 97
+   },
+   "note": "כנס חד-פעמי לא נספר"
+  },
+  {
+   "id": "T13",
+   "category": "1.3",
+   "name": "חונכות ומנטורינג",
+   "format": "פרטני",
+   "unit": "חודש",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T14",
+   "category": "1.3",
+   "name": "תעסוקה חלקית לוותיקים",
+   "format": "פרטני",
+   "unit": "חודש",
+   "scope": "אזורי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T15",
+   "category": "2.1",
+   "name": "פעילות במים",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 8,
+    "participants": 164
+   },
+   "note": "מנוי בריכה: רק עם מסגרת מונחית"
+  },
+  {
+   "id": "T16",
+   "category": "2.1",
+   "name": "שיווי משקל ומניעת נפילות",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 7,
+    "participants": 141
+   },
+   "note": "עדיפות במניעת הידרדרות"
+  },
+  {
+   "id": "T17",
+   "category": "2.1",
+   "name": "התעמלות מותאמת גיל",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 7,
+    "participants": 88
+   },
+   "note": null
+  },
+  {
+   "id": "T18",
+   "category": "2.1",
+   "name": "קבוצת הליכה",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 5,
+    "participants": 82
+   },
+   "note": null
+  },
+  {
+   "id": "T19",
+   "category": "2.1",
+   "name": "ריקוד",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 4,
+    "participants": 14
+   },
+   "note": null
+  },
+  {
+   "id": "T20",
+   "category": "2.1",
+   "name": "אימון כוח",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T21",
+   "category": "2.2",
+   "name": "משחקי חשיבה",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 3,
+    "participants": 37
+   },
+   "note": null
+  },
+  {
+   "id": "T22",
+   "category": "2.2",
+   "name": "אימון זיכרון",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 2,
+    "participants": 32
+   },
+   "note": null
+  },
+  {
+   "id": "T23",
+   "category": "2.2",
+   "name": "לימוד מובנה רציף (שפות, נגינה)",
+   "format": "קבוצתי",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 8,
+    "participants": 44
+   },
+   "note": "בירושלים סווג בתרבות. הכללה כאן לאישור בסוגיה 3"
+  },
+  {
+   "id": "T24",
+   "category": "2.2",
+   "name": "אימון קוגניטיבי דיגיטלי",
+   "format": "דיגיטלי",
+   "unit": "מנוי",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T25",
+   "category": "2.3",
+   "name": "קורס תזונה",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 4,
+    "participants": 86
+   },
+   "note": "הרצאת קופה: בחוץ"
+  },
+  {
+   "id": "T26",
+   "category": "2.3",
+   "name": "ייעוץ תזונתי פרטני",
+   "format": "פרטני",
+   "unit": "מפגש",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T27",
+   "category": "2.3",
+   "name": "סדנת בישול בריא",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T28",
+   "category": "2.4",
+   "name": "הרצאות קופות חולים",
+   "format": "קבוצתי",
+   "unit": "-",
+   "scope": "-",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 10,
+    "participants": 106
+   },
+   "note": "בחוץ: מממן אחר"
+  },
+  {
+   "id": "T29",
+   "category": "2.4",
+   "name": "התאמת בית למניעת נפילות",
+   "format": "פרטני",
+   "unit": "ביקור",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "בירושלים רק כהרצאה"
+  },
+  {
+   "id": "T30",
+   "category": "2.4",
+   "name": "סדנאות שינה ואורח חיים",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 1,
+    "participants": 29
+   },
+   "note": null
+  },
+  {
+   "id": "T31",
+   "category": "2.4",
+   "name": "בריאות כף הרגל",
+   "format": "פרטני",
+   "unit": "טיפול",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 1,
+    "participants": 26
+   },
+   "note": "לבדוק מממן אחר"
+  },
+  {
+   "id": "T32",
+   "category": "3.1",
+   "name": "קבוצת תמיכה ומשמעות",
+   "format": "קבוצתי",
+   "unit": "סבב",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 4,
+    "participants": 46
+   },
+   "note": null
+  },
+  {
+   "id": "T33",
+   "category": "3.1",
+   "name": "תמיכה רגשית פרטנית",
+   "format": "פרטני",
+   "unit": "מפגש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "רק מה שלא בסל הבריאות"
+  },
+  {
+   "id": "T34",
+   "category": "3.1",
+   "name": "ליווי באבל ואובדן",
+   "format": "קבוצתי או פרטני",
+   "unit": "סבב",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T35",
+   "category": "3.2",
+   "name": "ייעוץ משפטי בסיסי",
+   "format": "פרטני",
+   "unit": "מפגש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T36",
+   "category": "3.2",
+   "name": "ייעוץ פיננסי וניהול תקציב",
+   "format": "פרטני",
+   "unit": "מפגש",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T37",
+   "category": "3.2",
+   "name": "ייעוץ מיצוי זכויות",
+   "format": "פרטני",
+   "unit": "מפגש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 1,
+    "participants": 14
+   },
+   "note": "להכריע: בסל או באחריות המלווה"
+  },
+  {
+   "id": "T38",
+   "category": "3.3",
+   "name": "עזרה יומיומית קלה",
+   "format": "פרטני",
+   "unit": "שעה",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "לא שעות טיפול אישי"
+  },
+  {
+   "id": "T39",
+   "category": "3.3",
+   "name": "הכנה למעברי חיים",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T40",
+   "category": "4.1",
+   "name": "קורס סמארטפון ואפליקציות",
+   "format": "קבוצתי",
+   "unit": "סבב",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 6,
+    "participants": 63
+   },
+   "note": "חובה בעברית ובשפות הקהילה"
+  },
+  {
+   "id": "T41",
+   "category": "4.1",
+   "name": "שירותים ממשלתיים ומיצוי זכויות דיגיטלי",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 2,
+    "participants": 26
+   },
+   "note": null
+  },
+  {
+   "id": "T42",
+   "category": "4.1",
+   "name": "בינה מלאכותית לוותיקים",
+   "format": "קבוצתי",
+   "unit": "סבב",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 3,
+    "participants": 38
+   },
+   "note": null
+  },
+  {
+   "id": "T43",
+   "category": "4.1",
+   "name": "בנקאות ובטיחות ברשת",
+   "format": "קבוצתי",
+   "unit": "סדנה",
+   "scope": "מקומי וארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T44",
+   "category": "4.1",
+   "name": "שיחות וידאו ורשתות חברתיות",
+   "format": "קבוצתי או פרטני",
+   "unit": "סדנה",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T45",
+   "category": "4.2",
+   "name": "תמיכה טכנית בבית",
+   "format": "פרטני",
+   "unit": "ביקור",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T46",
+   "category": "4.2",
+   "name": "מוקד תמיכה טלפוני",
+   "format": "מרחוק",
+   "unit": "חודש",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T47",
+   "category": "4.2",
+   "name": "התקנת ציוד",
+   "format": "פרטני",
+   "unit": "ביקור",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T48",
+   "category": "5.1",
+   "name": "שובר בית קפה זוגי",
+   "format": "שובר",
+   "unit": "שובר",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 2,
+    "participants": 246
+   },
+   "note": "50 ש\"ח, פעם בחודשיים"
+  },
+  {
+   "id": "T49",
+   "category": "5.1",
+   "name": "שובר גלידה זוגי",
+   "format": "שובר",
+   "unit": "שובר",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 3,
+    "participants": 219
+   },
+   "note": "25 ש\"ח, פעם בחודשיים"
+  },
+  {
+   "id": "T50",
+   "category": "5.2",
+   "name": "זר פרחים ביום הולדת",
+   "format": "שובר",
+   "unit": "שובר",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 1,
+    "participants": 22
+   },
+   "note": "60 ש\"ח, בחודש יום ההולדת"
+  },
+  {
+   "id": "T51",
+   "category": "5.3",
+   "name": "סל טיפוח",
+   "format": "פרטני",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "כן",
+    "services": 1,
+    "participants": 74
+   },
+   "note": "עד 50%, עד 100 ש\"ח בחודש, לפי צורך"
+  },
+  {
+   "id": "T52",
+   "category": "5.4",
+   "name": "הזמנת מזון זמנית",
+   "format": "משלוח",
+   "unit": "חודש",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "קיים, לא בקובץ",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "קיים בירושלים, חסר בקובץ"
+  },
+  {
+   "id": "T53",
+   "category": "5.5",
+   "name": "ליווי לפעילות שבסל",
+   "format": "פרטני",
+   "unit": "שעה",
+   "scope": "מקומי",
+   "jerusalem": {
+    "tried": "קיים, לא בקובץ",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "קיים בירושלים, חסר בקובץ"
+  },
+  {
+   "id": "T54",
+   "category": "6",
+   "name": "מוצרי בטיחות ומניעת נפילות",
+   "format": "מוצר",
+   "unit": "מוצר",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "מממן אחרון"
+  },
+  {
+   "id": "T55",
+   "category": "6",
+   "name": "טכנולוגיה מסייעת",
+   "format": "מוצר",
+   "unit": "מוצר",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "לחצן מצוקה, תאורת לילה"
+  },
+  {
+   "id": "T56",
+   "category": "6",
+   "name": "ציוד כושר ביתי",
+   "format": "מוצר",
+   "unit": "מוצר",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": null
+  },
+  {
+   "id": "T57",
+   "category": "6",
+   "name": "עזרים חושיים (שמיעה, ראייה)",
+   "format": "מוצר",
+   "unit": "מוצר",
+   "scope": "ארצי",
+   "jerusalem": {
+    "tried": "לא",
+    "services": 0,
+    "participants": 0
+   },
+   "note": "השלמה בלבד"
+  }
+ ],
+ "entry_test": [
+  {
+   "order": 1,
+   "question": "האם השירות ברשימה הסגורה של הסל?",
+   "if_no": "לא ממומן"
+  },
+  {
+   "order": 2,
+   "question": "האם אין לו מממן אחר (סל הבריאות, שב\"ן, רווחה, גמלה)?",
+   "if_no": "בחוץ: מממן אחר"
+  },
+  {
+   "order": 3,
+   "question": "האם הוא משתייך לקטגוריה מוגדרת?",
+   "if_no": "מוחזר למיפוי"
+  },
+  {
+   "order": 4,
+   "question": "האם יש לו מחיר ליחידה ומחיר שוק לייחוס?",
+   "if_no": "חסרים נתונים"
+  },
+  {
+   "order": 5,
+   "question": "בקטגוריית ליבה: האם יש לפחות שלושה שירותים רציפים בשכונה?",
+   "if_no": "חסר: מגייסים ספקים"
+  },
+  {
+   "order": 6,
+   "question": "האם ניתן לממש ולאמת אותו (שובר או נקודות, וסימון נוכחות)?",
+   "if_no": "לא נכנס עד שיש מנגנון"
+  }
+ ],
+ "qol_rules": [
+  {
+   "category": "5.1",
+   "item": "שובר בית קפה זוגי",
+   "value": 50,
+   "frequency": "פעם בחודשיים",
+   "eligibility": "רק למי שמעוניין"
+  },
+  {
+   "category": "5.1",
+   "item": "שובר גלידה זוגי",
+   "value": 25,
+   "frequency": "פעם בחודשיים",
+   "eligibility": "רק למי שמעוניין"
+  },
+  {
+   "category": "5.2",
+   "item": "זר פרחים",
+   "value": 60,
+   "frequency": "בחודש יום ההולדת",
+   "eligibility": "רק למי שמעוניין"
+  },
+  {
+   "category": "5.3",
+   "item": "סל טיפוח",
+   "value": 100,
+   "frequency": "חודשי, עד 50% מהעלות",
+   "eligibility": "צורך מתועד על ידי המלווה"
+  },
+  {
+   "category": "5.4",
+   "item": "ארוחה חמה",
+   "value": null,
+   "frequency": "לפי הכרעת מפגש 3 (ההצעה הקודמת: עד 3 מנות בשבוע, עד 3 חודשים)",
+   "eligibility": "הצעה: צורך שזוהה על ידי המלווה, או אבחון זכאות שמצביע על בעיות תזונה. בלי כפל עם הרווחה"
+  }
+ ],
+ "data_standard": [
+  "service_name",
+  "category_code",
+  "service_type_id",
+  "authority",
+  "neighborhood",
+  "supplier_code",
+  "language",
+  "format",
+  "unit",
+  "unit_price",
+  "other_funder",
+  "start_month",
+  "status",
+  "market_price",
+  "price_points",
+  "community_fit",
+  "delivery_mode",
+  "attendance_method",
+  "cancellation_policy"
+ ],
+ "core_categories": [
+  {
+   "id": "belonging",
+   "name": "שייכות חברתית",
+   "codes": [
+    "1.1",
+    "1.2",
+    "1.3"
+   ],
+   "subareas": []
+  },
+  {
+   "id": "health_function",
+   "name": "קידום בריאות ותפקוד",
+   "codes": [
+    "2.1",
+    "2.2",
+    "2.3",
+    "2.4"
+   ],
+   "subareas": [
+    {
+     "code": "2.1",
+     "name": "פעילות גופנית"
+    },
+    {
+     "code": "2.2",
+     "name": "גירוי קוגניטיבי",
+     "alert_if_below_floor": true
+    }
+   ]
+  },
+  {
+   "id": "resilience",
+   "name": "חוסן",
+   "codes": [
+    "3.1",
+    "3.2"
+   ],
+   "subareas": []
+  },
+  {
+   "id": "digital",
+   "name": "אוריינות דיגיטלית",
+   "codes": [
+    "4.1",
+    "4.2"
+   ],
+   "subareas": [],
+   "future_expansion": "אוריינות בריאותית ופיננסית"
+  },
+  {
+   "id": "prevention_products",
+   "name": "מוצרי מניעה ובטיחות",
+   "codes": [
+    "6"
+   ],
+   "subareas": [],
+   "national_list_only": true,
+   "spend_cycle": "רבעוני"
+  }
+ ],
+ "copay_note": "0% שירותי ליבה ומניעה, 20% חוגים, עד 50% איכות חיים. הנחות וסבסוד בוועדת חריגים (מפגש 2, סופי)",
+ "mandatory_fields": [
+  {
+   "field": "unit_price",
+   "label": "עלות ליחידה"
+  },
+  {
+   "field": "supplier_code",
+   "label": "ספק"
+  },
+  {
+   "field": "neighborhood",
+   "label": "שכונה"
+  },
+  {
+   "field": "languages",
+   "label": "שפה"
+  },
+  {
+   "field": "service_type_id",
+   "label": "סוג שירות"
+  },
+  {
+   "field": "attendance",
+   "label": "הגעה (נוכחות חודשית מצטברת)"
+  },
+  {
+   "field": "hours_per_unit",
+   "label": "שעות שירות ליחידה"
+  },
+  {
+   "field": "service_mode",
+   "label": "אופן מתן השירות"
+  }
+ ],
+ "community_profiles": [
+  {
+   "id": "general",
+   "name": "כללי"
+  },
+  {
+   "id": "haredi",
+   "name": "חרדי",
+   "service_requirements": [
+    "הפרדה מגדרית לפי הצורך",
+    "כשרות במזון",
+    "תוכן דיגיטלי מותאם",
+    "שפה: עברית או יידיש"
+   ]
+  },
+  {
+   "id": "arab",
+   "name": "ערבי",
+   "service_requirements": [
+    "שפה: ערבית"
+   ]
+  }
+ ],
+ "supplier_types": [
+  {
+   "id": "exempt",
+   "name": "עוסק פטור",
+   "personal_data": true
+  },
+  {
+   "id": "licensed",
+   "name": "עוסק מורשה",
+   "personal_data": true
+  },
+  {
+   "id": "company",
+   "name": "חברה",
+   "personal_data": false
+  },
+  {
+   "id": "npo",
+   "name": "עמותה",
+   "personal_data": false
+  },
+  {
+   "id": "authority",
+   "name": "רשות מקומית או גוף ציבורי",
+   "personal_data": false
+  }
+ ],
+ "delivery_modes": [
+  {
+   "id": "community",
+   "name": "במרחב קהילתי"
+  },
+  {
+   "id": "home",
+   "name": "בבית"
+  },
+  {
+   "id": "remote",
+   "name": "מרחוק"
+  }
+ ],
+ "attendance_methods": [
+  {
+   "id": "operator",
+   "name": "סימון המפעיל"
+  },
+  {
+   "id": "companion",
+   "name": "סימון המלווה"
+  },
+  {
+   "id": "bot",
+   "name": "אימות בבוט"
+  }
+ ],
+ "neighborhoods_example": [
+  {
+   "authority": "ירושלים",
+   "name": "פסגת זאב",
+   "community": "general"
+  },
+  {
+   "authority": "ירושלים",
+   "name": "תלפיות מזרח",
+   "community": "general"
+  },
+  {
+   "authority": "ירושלים",
+   "name": "רוממה",
+   "community": "haredi"
+  },
+  {
+   "authority": "ירושלים",
+   "name": "הר נוף",
+   "community": "haredi"
+  },
+  {
+   "authority": "ירושלים",
+   "name": "בית וגן",
+   "community": "haredi"
+  },
+  {
+   "authority": "ירושלים",
+   "name": "בית חנינא",
+   "community": "arab"
+  }
+ ],
+ "export_contract": {
+  "name": "operator_onboarding_standard",
+  "version": "1.1",
+  "owner": "המוסד לביטוח לאומי",
+  "includes": [
+   "approved services",
+   "supplier code and type",
+   "category and service type",
+   "price_points",
+   "copay tier",
+   "delivery mode",
+   "community fit",
+   "attendance method",
+   "cancellation policy",
+   "reach (neighborhood, authority, regional, national)",
+   "cancellation notice hours, no-show and hospitalization rules",
+   "hours_per_unit",
+   "service_mode (group/individual/home/remote)",
+   "capacity_limited",
+   "gated_by_companion",
+   "product quarterly cap flag"
+  ],
+  "excludes": [
+   "any resident data",
+   "contact details of individual suppliers",
+   "internal notes",
+   "raw activity below small-cell threshold"
+  ]
+ },
+ "metrics_definitions": [
+  {
+   "id": "utilization",
+   "name": "מיצוי",
+   "definition": "סכום שנוצל מהארנק האישי חלקי ערך הארנק, בחלון של שלושה חודשים",
+   "target": 0.7,
+   "red_flag": 0.35
+  },
+  {
+   "id": "penetration",
+   "name": "חדירה",
+   "definition": "משתתפים פעילים (לפי active_participant_min_sessions_month) חלקי הזכאים ברמות 1-3 באזור הפיילוט"
+  },
+  {
+   "id": "spread",
+   "name": "פריסה",
+   "definition": "שכונות שבהן 3 שירותים רציפים לפחות בכל אחת מחמש קטגוריות הליבה, חלקי כל השכונות",
+   "interpretation": "אושר 29.10: מוצרים לא נספרים ברצפה (products_count_in_floor), ולכן הפריסה נבדקת בארבע הקטגוריות המקומיות, ובנפרד שיש לפחות מוצר ארצי מאושר אחד"
+  },
+  {
+   "id": "hourly_price_index",
+   "name": "מדד מחיר לשעה",
+   "definition": "מחיר ממוצע לשעת שירות לפי קטגוריה ואזור, רבעוני"
+  },
+  {
+   "id": "time_to_first_service",
+   "name": "זמן לשירות ראשון",
+   "definition": "ימים מרישום ועד השתתפות ראשונה",
+   "target_max": 14
+  }
+ ]
+}

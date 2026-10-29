@@ -33,12 +33,12 @@ describe("סריקת שדות אסורים", () => {
 
 describe("seed", () => {
   it("נטען עם המבנה הצפוי", () => {
-    expect(seed.meta.version).toBe("0.3");
+    expect(seed.meta.version).toBe("0.4");
     expect(seed.core_categories).toHaveLength(5);
     expect(seed.categories).toHaveLength(18);
     expect(seed.service_types).toHaveLength(57);
     expect(seed.entry_test).toHaveLength(6);
-    expect(seed.mandatory_fields).toHaveLength(6);
+    expect(seed.mandatory_fields).toHaveLength(8);
     expect(seed.settings.supplier_contact_to_hq).toBe(true);
   });
 
@@ -49,7 +49,7 @@ describe("seed", () => {
   it("ערכים בסטטוס הצעה מזוהים", () => {
     const keys = proposalKeys(seed.settings);
     expect(keys).toEqual(
-      expect.arrayContaining(["points_rollover_months", "cancellation_notice_hours", "no_show_free_per_quarter", "hot_meal_entry_criteria"]),
+      expect.arrayContaining(["points_rollover_months", "cancellation_notice_hours", "no_show_charge_rule", "qol_mode", "reference_price_mode", "active_participant_min_sessions_month", "hot_meal_entry_criteria"]),
     );
     expect(keys).not.toContain("min_participants");
     expect(keys).not.toContain("supplier_contact_to_hq");

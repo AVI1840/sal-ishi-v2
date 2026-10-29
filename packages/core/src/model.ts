@@ -15,6 +15,10 @@ export const WORKFLOW_STATUSES = ["טיוטה", "הוגש", "אושר", "נדח�
 /** היקף שירות: שכונה, כל הרשות, אזורי (כמה רשויות) או ארצי (בעיקר מוצרים). */
 export const REACHES = ["neighborhood", "authority", "regional", "national"] as const;
 export const DEMAND_BANDS = ["high", "medium", "low"] as const;
+/** אופן מתן השירות (גרסה 0.4): קובע שעות ביטול, חיוב באי-הגעה והחזר באשפוז. */
+export const SERVICE_MODES = ["group", "individual", "home", "remote"] as const;
+/** על מה מבוסס החלק שהקשיש משלם בייצוא. */
+export const COPAY_BASES = ["tier", "qol_fixed", "qol_percent", "reference_binding"] as const;
 
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "חודש בפורמט YYYY-MM");
 const nonNegative = z.number().finite().nonnegative();
@@ -27,6 +31,8 @@ export const attendanceMethodSchema = z.enum(ATTENDANCE_METHODS);
 export const copayTierSchema = z.enum(COPAY_TIERS);
 export const workflowStatusSchema = z.enum(WORKFLOW_STATUSES);
 export const reachSchema = z.enum(REACHES);
+export const serviceModeSchema = z.enum(SERVICE_MODES);
+export const copayBasisSchema = z.enum(COPAY_BASES);
 
 const score = z.number().int().min(1).max(5);
 
@@ -103,6 +109,16 @@ export const serviceSchema = z
     reach: reachSchema.optional(),
     /** שכונות נוספות ברשות שהשירות משרת, ונספר בכיסוי שלהן. */
     servesNeighborhoods: z.array(z.string()).optional(),
+    // גרסה 0.4. אופציונליים בסכמה כדי שנתונים וחבילות מ-0.3 ייקלטו, ונבדקים
+    // במבחן הכניסה וברשימת ההשלמות.
+    /** שעות שירות ביחידת תשלום. מחיר לשעה = unitPrice / hoursPerUnit. */
+    hoursPerUnit: z.number().finite().positive().optional(),
+    serviceMode: serviceModeSchema.optional(),
+    /** קבוצה מוגבלת מקום עם רשימת המתנה. */
+    capacityLimited: z.boolean().optional(),
+    /** נפתח רק באישור מלווה (ארוחה חמה, הטבות איכות חיים לפי צורך). */
+    gatedByCompanion: z.boolean().optional(),
+    gateReason: z.string().optional(),
     startMonth: z.string(),
     status: workflowStatusSchema,
     committeeNote: z.string().optional(),
@@ -121,11 +137,20 @@ export const monthlyActivitySchema = z
 
 // תוספת למודל שבפרומפט: מספר מחזיקי הסל בשכונה בחודש. מספר מצטבר בלבד,
 // נדרש כמכנה של המיצוי (ארנק אישי כפול מחזיקים).
+// גרסה 0.4: שדות מצטברים מדוח ספק העל, לחדירה ולזמן לשירות ראשון. כולם
+// אופציונליים, וספירה של אנשים לעולם לא מפורטת לפי אדם.
 export const neighborhoodMonthSchema = z
   .object({
     neighborhoodId: z.string().min(1),
     month,
     enrolled: count,
+    /** משתתפים פעילים (לפי active_participant_min_sessions_month). */
+    activeParticipants: count.optional(),
+    /** זכאים ברמות 1 עד 3 בשכונה. */
+    eligible: count.optional(),
+    /** ממוצע ימים מרישום להשתתפות ראשונה, ומספר הנרשמים שהממוצע מחושב עליהם. */
+    firstServiceDaysAvg: nonNegative.optional(),
+    firstServiceCount: count.optional(),
   })
   .strict();
 
@@ -156,7 +181,7 @@ export const pilotPackageSchema = z
   })
   .strict();
 
-// פריט בקטלוג המאושר. משותף ל-catalog_export ולקטלוג שמתפרסם לאזרח.
+// פריט בקטלוג המאושר. בסיס משותף לתקן קליטת המפעילים ולקטלוג שמתפרסם לאזרח.
 // לפי export_contract: ספק כקוד וסוג בלבד, בלי מחיר בשקלים ובלי הערות פנימיות.
 export const catalogItemSchema = z
   .object({
@@ -186,24 +211,73 @@ export const catalogItemSchema = z
   })
   .strict();
 
+// תנאי השירות מגרסה 0.4: נגזרים מההגדרות לפי אופן מתן השירות. משותפים לייצוא
+// ולקטלוג לאזרח.
+const pointsSplit = {
+  /** כמה נקודות מכוסות מהארנק, ו-null כשהסכום עוד לא נקבע (ארוחה חמה). */
+  coveredPoints: nonNegative.nullable(),
+  copayPoints: nonNegative.nullable(),
+  copayBasis: copayBasisSchema,
+};
+
+// פריט בתקן קליטת מפעילים: פריט הקטלוג ועוד השדות של מודל התשלום. שירות
+// שחסר לו נתון לא נכנס לייצוא ומופיע ברשימת ההשלמות. null רק במוצר בערוץ
+// הארצי (אין לו שעות ואופן מתן), או בערך שההגדרות עוד לא קבעו.
+export const onboardingItemSchema = catalogItemSchema
+  .extend({
+    hoursPerUnit: z.number().positive().nullable(),
+    pointsPerHour: nonNegative.nullable(),
+    serviceMode: serviceModeSchema.nullable(),
+    capacityLimited: z.boolean(),
+    gatedByCompanion: z.boolean(),
+    gateReason: z.string().nullable(),
+    cancellationNoticeHours: count.nullable(),
+    noShowCharged: z.boolean().nullable(),
+    hospitalizationRefund: z.string().nullable(),
+    productQuarterlyCap: z.boolean(),
+    countsInFloor: z.boolean(),
+    ...pointsSplit,
+  })
+  .strict();
+
 // פריט בקטלוג לאזרח: פריט הקטלוג, ועוד שני אותות מצטברים לשכבת "המלצות וניסיון"
 // במנוע ההתאמה: רמת ביקוש בשכונה (בלי מספרים מתחת לסף תא קטן), וציון ספק.
+// שדות 0.4 אופציונליים, כדי שקטלוג שפורסם בגרסה קודמת עדיין ייקרא.
 export const citizenCatalogItemSchema = catalogItemSchema
   .extend({
     demand: z.enum(DEMAND_BANDS).nullable(),
     supplierScore: z.number().min(1).max(5).nullable(),
+    hoursPerUnit: z.number().positive().nullable().optional(),
+    serviceMode: serviceModeSchema.nullable().optional(),
+    gatedByCompanion: z.boolean().optional(),
+    gateReason: z.string().nullable().optional(),
+    cancellationNoticeHours: count.nullable().optional(),
+    noShowCharged: z.boolean().nullable().optional(),
+    coveredPoints: nonNegative.nullable().optional(),
+    copayPoints: nonNegative.nullable().optional(),
+    copayBasis: copayBasisSchema.optional(),
   })
   .strict();
 
-export const catalogExportSchema = z
+export const onboardingStandardSchema = z
   .object({
-    schema: z.literal("catalog_export"),
-    version: z.literal("1.0"),
+    schema: z.literal("operator_onboarding_standard"),
+    version: z.literal("1.1"),
     owner: z.string(),
     generatedAt: z.string(),
     seedVersion: z.string(),
     contentHash: z.string().regex(/^[0-9a-f]{64}$/),
-    services: z.array(catalogItemSchema),
+    /** הגדרות שהייצוא חושב לפיהן, כדי שספק העל יידע באיזה מצב מדובר. */
+    rules: z
+      .object({
+        qolMode: z.string(),
+        referencePriceMode: z.string(),
+        pointsPerShekel: z.number().positive(),
+        productsQuarterlyCapPoints: nonNegative,
+        activeParticipantMinSessionsMonth: z.number().int().positive(),
+      })
+      .strict(),
+    services: z.array(onboardingItemSchema),
   })
   .strict();
 
@@ -262,7 +336,10 @@ export type UnmetDemandFile = z.infer<typeof unmetDemandFileSchema>;
 export type SupplierEvaluation = z.infer<typeof supplierEvaluationSchema>;
 export type Reach = z.infer<typeof reachSchema>;
 export type DemandBand = (typeof DEMAND_BANDS)[number];
-export type CatalogExport = z.infer<typeof catalogExportSchema>;
+export type ServiceMode = z.infer<typeof serviceModeSchema>;
+export type CopayBasis = z.infer<typeof copayBasisSchema>;
+export type OnboardingItem = z.infer<typeof onboardingItemSchema>;
+export type OnboardingStandard = z.infer<typeof onboardingStandardSchema>;
 export type CitizenCatalog = z.infer<typeof citizenCatalogSchema>;
 
 /** כל הנתונים של רשות אחת, כפי שהם נשמרים במשטח השטח. */

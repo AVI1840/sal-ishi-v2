@@ -17,7 +17,7 @@ import {
   buildDemoNationalChannel,
   createBrowserFileIO,
   defaultSeed,
-  parseSeed,
+  upgradeSeed,
   seedIndex,
   type CitizenCatalog,
   type CitizenCatalogItem,
@@ -160,7 +160,7 @@ async function loadPublishedSeed(): Promise<Seed | null> {
   try {
     const res = await fetch("./catalog/seed.json", { cache: "no-store" });
     if (!res.ok) return null;
-    return parseSeed(await res.json());
+    return upgradeSeed(await res.json());
   } catch {
     return null;
   }

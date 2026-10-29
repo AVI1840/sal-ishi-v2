@@ -5,7 +5,6 @@ import { create } from "zustand";
 import {
   defaultSeed,
   openStore,
-  parseSeed,
   upgradeSeed,
   upsertActivity,
   type AuthorityData,
@@ -85,7 +84,7 @@ export const useField = create<FieldState>()((set, get) => {
         let seedFromHq = false;
         if (saved.seed) {
           try {
-            seed = upgradeSeed(parseSeed(saved.seed));
+            seed = upgradeSeed(saved.seed);
             seedFromHq = true;
           } catch {
             /* seed שמור לא תקין: חוזרים לברירת המחדל */

@@ -4,6 +4,7 @@
 import type { MonthlyActivity, Service } from "../model";
 import type { Seed } from "../seed";
 import { OUTSIDE_LAYER, QOL_LAYERS, seedIndex } from "../seed";
+import { isProduct } from "./terms";
 
 export const ENTRY_STATUS = {
   outside: "בחוץ",
@@ -23,10 +24,8 @@ export interface EntryResult {
   reason: string;
 }
 
-type EntryInput = Pick<
-  Service,
-  "categoryCode" | "serviceTypeId" | "otherFunder" | "unitPrice" | "marketPrice" | "enforceable"
->;
+type EntryInput = Pick<Service, "categoryCode" | "serviceTypeId" | "otherFunder" | "unitPrice" | "marketPrice" | "enforceable"> &
+  Partial<Pick<Service, "hoursPerUnit" | "gatedByCompanion" | "gateReason">>;
 
 export function entryTest(service: EntryInput, seed: Seed): EntryResult {
   const { categories, serviceTypes } = seedIndex(seed);
@@ -62,13 +61,16 @@ export function entryTest(service: EntryInput, seed: Seed): EntryResult {
     return fail(ENTRY_STATUS.remap, 3, `סוג השירות ${type.id} שייך לקטגוריה ${type.category} ולא ל-${category.code}`);
   }
 
-  // 4. מחיר ליחידה ומחיר שוק לייחוס
-  if (service.unitPrice === undefined || service.marketPrice === undefined) {
-    const missing = [
-      service.unitPrice === undefined ? "מחיר ליחידה" : null,
-      service.marketPrice === undefined ? "מחיר שוק לייחוס" : null,
-    ].filter(Boolean);
-    return fail(ENTRY_STATUS.missingData, 4, `חסר ${missing.join(" ו")}`);
+  // 4. מחיר ליחידה ומחיר שוק לייחוס, ומגרסה 0.4 גם שעות שירות ליחידה (לא
+  //    במוצר), וסיבה לשירות שנפתח באישור מלווה.
+  const missing = [
+    service.unitPrice === undefined ? "מחיר ליחידה" : null,
+    service.marketPrice === undefined ? "מחיר שוק לייחוס" : null,
+    !service.hoursPerUnit && !isProduct(seed, category.code) ? "שעות שירות ליחידה" : null,
+    service.gatedByCompanion && !service.gateReason?.trim() ? "סיבה לפתיחה באישור מלווה" : null,
+  ].filter(Boolean);
+  if (missing.length) {
+    return fail(ENTRY_STATUS.missingData, 4, `חסר ${missing.join(", ")}`);
   }
 
   // 6. מנגנון מימוש ואימות
@@ -90,15 +92,18 @@ export function countsTowardCoverage(service: Service, seed: Seed): boolean {
 
 // מיפוי משדות החובה שב-seed לשדות במודל. "attendance" הוא נוכחות חודשית
 // מצטברת, ולכן נבדק מול רשומות הפעילות של השירות.
-type FieldCheck = (service: Service, activity: readonly MonthlyActivity[]) => boolean;
+type FieldCheck = (service: Service, activity: readonly MonthlyActivity[], seed: Seed) => boolean;
 
 const MANDATORY_CHECKS: Record<string, FieldCheck> = {
   unit_price: (s) => s.unitPrice !== undefined,
   supplier_code: (s) => s.supplierCode.trim() !== "",
-  neighborhood: (s) => s.neighborhoodId.trim() !== "",
+  neighborhood: (s) => s.neighborhoodId.trim() !== "" || s.reach === "national",
   languages: (s) => s.languages.length > 0,
   service_type_id: (s) => s.serviceTypeId.trim() !== "",
   attendance: (s, activity) => activity.some((a) => a.serviceId === s.id),
+  // מוצר בערוץ הארצי פטור משעות ומאופן מתן.
+  hours_per_unit: (s, _a, seed) => Boolean(s.hoursPerUnit) || isProduct(seed, s.categoryCode),
+  service_mode: (s, _a, seed) => Boolean(s.serviceMode) || isProduct(seed, s.categoryCode),
 };
 
 export interface MissingField {
@@ -115,6 +120,6 @@ export function missingMandatoryFields(
   return seed.mandatory_fields.filter((f) => {
     const check = MANDATORY_CHECKS[f.field];
     // שדה חובה חדש ב-seed בלי בדיקה מתאימה: מסמנים כחסר כדי שלא ייפול בשקט.
-    return check ? !check(service, activity) : true;
+    return check ? !check(service, activity, seed) : true;
   });
 }

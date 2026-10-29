@@ -67,10 +67,10 @@ describe("גרסאות seed", () => {
     const changed = withSettings(seed, { core_floor: 4 });
     const entry = { at: "2026-11-01T00:00:00.000Z", kind: "setting" as const, key: "core_floor", before: 3, after: 4 };
     const published = publishSeedVersion(changed, [entry], new Date("2026-11-02T00:00:00Z"));
-    expect(published.meta.version).toBe("0.3.1");
+    expect(published.meta.version).toBe("0.4.1");
     expect(published.settings.core_floor).toBe(4);
     expect((published.meta as { changelog?: unknown[] }).changelog).toEqual([
-      { version: "0.3.1", published_at: "2026-11-02T00:00:00.000Z", changes: [entry] },
+      { version: "0.4.1", published_at: "2026-11-02T00:00:00.000Z", changes: [entry] },
     ]);
   });
 });

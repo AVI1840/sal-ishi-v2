@@ -5,7 +5,7 @@ import {
   citizenCatalogIndexSchema,
   citizenCatalogSchema,
   unmetDemandFileSchema,
-  type CatalogExport,
+  type OnboardingStandard,
   type CitizenCatalog,
   type CitizenCatalogIndex,
   type PilotPackage,
@@ -107,7 +107,7 @@ export class FileSyncAdapter implements SyncAdapter {
     return file ? parseSeed(JSON.parse(file.text)) : null;
   }
 
-  async sendIntegratorExport(exp: CatalogExport): Promise<void> {
-    await this.io.save(`catalog_export_v${exp.version}_${stamp(exp.generatedAt)}.json`, JSON.stringify(exp, null, 2), JSON_MIME);
+  async sendIntegratorExport(exp: OnboardingStandard): Promise<void> {
+    await this.io.save(`operator_onboarding_standard_v${exp.version}_${stamp(exp.generatedAt)}.json`, JSON.stringify(exp, null, 2), JSON_MIME);
   }
 }

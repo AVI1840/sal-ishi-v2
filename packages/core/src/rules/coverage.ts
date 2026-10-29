@@ -1,5 +1,6 @@
 // מבחן כיסוי: לכל שכונה ולכל קטגוריית ליבה, כמה שירותים רציפים שנכנסו או
-// אושרו, מול core_floor. מוצרי מניעה הם ערוץ ארצי ולא נבדקים ברצפה.
+// אושרו, מול core_floor. מוצרי מניעה הם ערוץ ארצי, ונבדקים ברצפה רק כש-
+// products_count_in_floor = true (ואז נספרים המוצרים הארציים שנכנסו או אושרו).
 // ההתראות (תת-תחום והתאמה קהילתית) לא חוסמות.
 
 import type { Community, MonthlyActivity, Neighborhood, Service, UnmetDemand } from "../model";
@@ -52,6 +53,7 @@ export function coverage(
   const floor = settings.core_floor;
   // ערוץ ארצי לא נבדק ברצפה של שכונה.
   const local = input.services.filter((s) => s.reach !== "national");
+  const nationalProducts = input.services.filter((s) => s.reach === "national" && countsTowardCoverage(s, seed));
   const units = continuityUnits(local, input.activity, settings);
   const serviceById = new Map(local.map((s) => [s.id, s]));
   const authorityNeighborhoods = new Map<string, string[]>();
@@ -92,7 +94,13 @@ export function coverage(
 
     for (const cc of seed.core_categories) {
       if (cc.national_list_only) {
-        cells.push({ neighborhoodId: n.id, coreCategoryId: cc.id, count: 0, floor, missing: 0, level: "not_checked", unitKeys: [] });
+        if (!settings.products_count_in_floor) {
+          cells.push({ neighborhoodId: n.id, coreCategoryId: cc.id, count: 0, floor, missing: 0, level: "not_checked", unitKeys: [] });
+        } else {
+          const products = nationalProducts.filter((s) => cc.codes.includes(s.categoryCode));
+          const missing = Math.max(0, floor - products.length);
+          cells.push({ neighborhoodId: n.id, coreCategoryId: cc.id, count: products.length, floor, missing, level: levelForMissing(missing), unitKeys: products.map((s) => s.id) });
+        }
         continue;
       }
       const inCategory = inNeighborhood.filter((u) => cc.codes.includes(u.categoryCode));

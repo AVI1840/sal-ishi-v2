@@ -21,4 +21,7 @@ export * from "./excel";
 export * from "./demo";
 export * from "./hq";
 export * from "./rules/suppliers";
+export * from "./rules/terms";
 export * from "./search";
+export * from "./metrics";
+export * from "./migration";

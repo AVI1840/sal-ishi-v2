@@ -3,8 +3,17 @@
 // מעל החציון. מסומנת ולא חוסמת. ההיקף (רשות אחת או כל הפיילוטים) נקבע לפי
 // השירותים שמעבירים לפונקציה.
 
+//
+// גרסה 0.4, reference_price_mode:
+// - monitor: חציון והתראה על חריגה, בלי חסימה (ההתנהגות עד עכשיו).
+// - binding: בקטגוריה וברשות שב-reference_price_binding_scope הארנק מכסה עד
+//   מחיר הייחוס, וההפרש על הקשיש.
+// - preactivated_low_competition: כמו binding, אוטומטית בקטגוריה ושכונה שבהן
+//   פחות מ-low_competition_operator_threshold ספקים.
+
 import type { Service } from "../model";
-import type { Settings } from "../seed";
+import type { Seed, Settings } from "../seed";
+import { referencePriceMode } from "../settings";
 
 export interface ReferencePrice {
   serviceTypeId: string;
@@ -73,4 +82,43 @@ export function priceOutliers(services: readonly Service[], settings: PriceSetti
     }
   }
   return outliers;
+}
+
+export interface ReferenceBinding {
+  /** האם הארנק מכסה רק עד מחיר הייחוס בשירות הזה. */
+  binding: boolean;
+  /** מחיר הייחוס בנקודות, או null כשאין מספיק דגימות. */
+  referencePoints: number | null;
+  reason: "scope" | "low_competition" | null;
+  /** ספקים שונים באותה קטגוריה ושכונה (בערוץ הארצי: בכל הערוץ). */
+  operators: number;
+}
+
+const competitionKey = (s: Pick<Service, "authority" | "neighborhoodId" | "categoryCode" | "reach">) =>
+  s.reach === "national" ? `national|${s.categoryCode}` : `${s.authority}|${s.neighborhoodId}|${s.categoryCode}`;
+
+/**
+ * לכל שירות: האם מחיר הייחוס מחייב בו, ומה המחיר בנקודות. החציון והספירה
+ * מחושבים על השירותים שמועברים (במטה: כל הפיילוטים).
+ */
+export function referenceBindings(services: readonly Service[], seed: Seed): (s: Service) => ReferenceBinding {
+  const { settings } = seed;
+  const mode = referencePriceMode(settings);
+  const refs = new Map(referencePrices(services, settings).map((r) => [`${r.serviceTypeId}|${r.unit}`, r.median]));
+  const operators = new Map<string, Set<string>>();
+  for (const s of services) {
+    const k = competitionKey(s);
+    operators.set(k, (operators.get(k) ?? new Set()).add(`${s.authority}|${s.supplierCode}`));
+  }
+  const scope = new Set(settings.reference_price_binding_scope.map((b) => `${b.categoryCode}|${b.authority}`));
+
+  return (s) => {
+    const median = refs.get(keyOf(s)) ?? null;
+    const referencePoints = median === null ? null : median * settings.points_per_shekel;
+    const count = operators.get(competitionKey(s))?.size ?? 0;
+    let reason: ReferenceBinding["reason"] = null;
+    if (mode === "binding" && scope.has(`${s.categoryCode}|${s.authority}`)) reason = "scope";
+    if (mode === "preactivated_low_competition" && count < settings.low_competition_operator_threshold) reason = "low_competition";
+    return { binding: reason !== null, referencePoints, reason, operators: count };
+  };
 }

@@ -2,10 +2,19 @@
 // אף אחד מהם לא מקודד במנוע הכללים.
 
 import { z } from "zod";
-import rawSeed from "../seed/seed_data_catalog_v0.3.json";
+import rawSeed from "../seed/seed_data_catalog_v0.4.json";
 import { communitySchema, supplierTypeSchema, deliveryModeSchema, attendanceMethodSchema } from "./model";
 
 const ratio = z.number().min(0).max(1);
+const hours = z.number().int().nonnegative().nullable();
+
+/** הגדרה בפורמט של 0.4: ערך וסטטוס באותו אובייקט. */
+const withStatus = <T extends z.ZodTypeAny>(value: T) =>
+  z.object({ value, status: z.string().optional(), options: z.array(z.string()).optional() }).passthrough();
+
+export const QOL_MODES = ["fixed_amount", "percent"] as const;
+export const REFERENCE_PRICE_MODES = ["monitor", "binding", "preactivated_low_competition"] as const;
+export const NO_SHOW_RULES = ["individual_or_capacity_limited_only", "always", "never"] as const;
 
 export const settingsSchema = z
   .object({
@@ -47,7 +56,31 @@ export const settingsSchema = z
     competition_max_suppliers_national: z.number().int().positive().optional(),
     subcategory_breadth_min: z.number().int().nonnegative().optional(),
     subarea_alert_min: z.number().int().nonnegative().optional(),
+    supplier_rating_enabled: z.boolean().optional(),
+    // גרסה 0.4: מודל התשלום של החשכ"ל.
+    qol_copay: ratio,
+    qol_cap_month: z.number().nonnegative(),
+    cancellation_notice_hours: z
+      .object({ group: hours, home: hours, individual: hours.optional(), remote: hours.optional(), status: z.string().optional() })
+      .passthrough(),
+    no_show_charge_rule: withStatus(z.enum(NO_SHOW_RULES)),
+    hospitalization_refund: z
+      .object({ group: z.string(), individual: z.string(), notify_companion: z.boolean(), status: z.string().optional() })
+      .passthrough(),
+    products_quarterly_cap_share: withStatus(ratio),
+    products_count_in_floor: z.boolean(),
+    qol_mode: withStatus(z.enum(QOL_MODES)),
+    active_participant_min_sessions_month: withStatus(z.number().int().positive()),
+    reference_price_mode: withStatus(z.enum(REFERENCE_PRICE_MODES)),
+    reference_price_binding_scope: z.array(z.object({ categoryCode: z.string(), authority: z.string() }).strict()).default([]),
+    low_competition_operator_threshold: z.number().int().positive(),
+    price_index_period: z.enum(["quarter", "month"]),
+    first_service_max_days: z.number().int().positive(),
   })
+  .passthrough();
+
+const metricDefinitionSchema = z
+  .object({ id: z.string(), name: z.string(), definition: z.string() })
   .passthrough();
 
 const categorySchema = z
@@ -105,9 +138,10 @@ export const seedSchema = z
     delivery_modes: z.array(z.object({ id: deliveryModeSchema, name: z.string() })),
     attendance_methods: z.array(z.object({ id: attendanceMethodSchema, name: z.string() })),
     copay_note: z.string().optional(),
+    metrics_definitions: z.array(metricDefinitionSchema),
     export_contract: z
       .object({
-        name: z.literal("catalog_export"),
+        name: z.literal("operator_onboarding_standard"),
         version: z.string(),
         owner: z.string(),
         includes: z.array(z.string()),
@@ -133,19 +167,42 @@ export function parseSeed(raw: unknown): Seed {
   return result.data;
 }
 
-/** ה-seed שמגיע עם הקוד (גרסה 0.3). */
+/** ה-seed שמגיע עם הקוד (גרסה 0.4). */
 export const defaultSeed: Seed = parseSeed(rawSeed);
 
+/** גרסת הבסיס: 0.4.2 שייכת ל-0.4. */
+export function seedBaseVersion(version: string): string {
+  return version.split(".").slice(0, 2).join(".");
+}
+
+function compareVersions(a: string, b: string): number {
+  const pa = a.split(".").map(Number);
+  const pb = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+/** האם seed שמור שייך לגרסת בסיס ישנה מזו שבקוד (למשל 0.3 מול 0.4). */
+export function isOlderSeedBase(saved: unknown, bundled: Seed = defaultSeed): boolean {
+  const version = (saved as { meta?: { version?: unknown } } | null)?.meta?.version;
+  return typeof version !== "string" || compareVersions(seedBaseVersion(version), seedBaseVersion(bundled.meta.version)) < 0;
+}
+
 /**
- * seed שנשמר בדפדפן לפני שנוספו הגדרות חדשות: משלימים רק את המפתחות החסרים
- * מה-seed המובנה, בלי לדרוס ערכים שהמטה קבע.
+ * seed שנשמר בדפדפן או שהגיע מהמטה. באותה גרסת בסיס משלימים רק את המפתחות
+ * החסרים מה-seed המובנה, בלי לדרוס ערכים שהמטה קבע. בגרסת בסיס ישנה (0.3 מול
+ * 0.4) מבנה ההגדרות השתנה, ולכן עוברים ל-seed המובנה, והמסך מודיע על כך.
  */
-export function upgradeSeed(saved: Seed, bundled: Seed = defaultSeed): Seed {
-  const missing = Object.fromEntries(
-    Object.entries(bundled.settings).filter(([k]) => !(k in (saved.settings as Record<string, unknown>))),
-  );
-  if (!Object.keys(missing).length) return saved;
-  return parseSeed({ ...saved, settings: { ...missing, ...saved.settings } });
+export function upgradeSeed(saved: unknown, bundled: Seed = defaultSeed): Seed {
+  if (saved === bundled) return bundled;
+  if (isOlderSeedBase(saved, bundled)) return bundled;
+  const raw = saved as { settings?: Record<string, unknown> };
+  const current = raw.settings ?? {};
+  const missing = Object.fromEntries(Object.entries(bundled.settings).filter(([k]) => !(k in current)));
+  return parseSeed({ ...raw, settings: { ...missing, ...current } });
 }
 
 /** עותק של ה-seed עם הגדרות מעודכנות. משמש את מסך ההגדרות במטה ואת הבדיקות. */

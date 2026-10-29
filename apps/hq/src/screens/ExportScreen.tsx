@@ -1,4 +1,4 @@
-// ייצוא: catalog_export לאינטגרטור לפי export_contract, עם בדיקת סכמה, וקטלוג
+// ייצוא: תקן קליטת מפעילים (operator_onboarding_standard) לספק העל לפי export_contract, עם בדיקת סכמה, וקטלוג
 // מאושר לכל שכונה עבור הכלי לאזרח.
 
 import { useEffect, useState } from "react";
@@ -6,13 +6,13 @@ import { Download, ShieldCheck } from "lucide-react";
 import {
   EXPORT_FORBIDDEN_KEYS,
   FileSyncAdapter,
-  buildCatalogExport,
+  buildOnboardingStandard,
   buildCitizenCatalog,
   buildCitizenCatalogIndex,
   createBrowserFileIO,
   findForbiddenKeys,
-  validateCatalogExport,
-  type CatalogExport,
+  validateOnboardingStandard,
+  type OnboardingStandard,
   type SkippedService,
 } from "@sal-ishi/core";
 import { Alert, Badge, Button, PageHeader, TableWrap, useToast } from "@sal-ishi/ui";
@@ -21,13 +21,13 @@ import { useHqAnalysis } from "../analysis";
 export default function ExportScreen() {
   const { state, seed, labels } = useHqAnalysis();
   const toast = useToast();
-  const [exp, setExp] = useState<CatalogExport | null>(null);
+  const [exp, setExp] = useState<OnboardingStandard | null>(null);
   const [skipped, setSkipped] = useState<SkippedService[]>([]);
   const [error, setError] = useState<string | null>(null);
   const contract = seed.export_contract;
 
   useEffect(() => {
-    buildCatalogExport(state, seed)
+    buildOnboardingStandard(state, seed)
       .then((r) => {
         setExp(r.export);
         setSkipped(r.skipped);
@@ -39,7 +39,7 @@ export default function ExportScreen() {
   const check = exp
     ? (() => {
         try {
-          validateCatalogExport(exp);
+          validateOnboardingStandard(exp);
           return { ok: true, forbidden: findForbiddenKeys(exp, EXPORT_FORBIDDEN_KEYS) };
         } catch (e) {
           return { ok: false, forbidden: [], message: e instanceof Error ? e.message : String(e) };
@@ -50,7 +50,7 @@ export default function ExportScreen() {
   const download = async () => {
     if (!exp) return;
     await new FileSyncAdapter(createBrowserFileIO()).sendIntegratorExport(exp);
-    toast("success", `catalog_export ירד: ${exp.services.length} שירותים`);
+    toast("success", `תקן קליטת המפעילים ירד: ${exp.services.length} שירותים`);
   };
 
   const sync = new FileSyncAdapter(createBrowserFileIO());
@@ -72,7 +72,7 @@ export default function ExportScreen() {
       <section className="card" aria-labelledby="int-h">
         <div className="card__header">
           <h2 id="int-h">לאינטגרטור</h2>
-          <Button icon={<Download size={18} />} disabled={!exp || !check?.ok} onClick={download}>הורדת catalog_export</Button>
+          <Button icon={<Download size={18} />} disabled={!exp || !check?.ok} onClick={download}>הורדת תקן קליטת מפעילים</Button>
         </div>
         {exp && check ? (
           <>

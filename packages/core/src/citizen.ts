@@ -11,4 +11,5 @@ export * from "./sync/SyncAdapter";
 export * from "./sync/FileSyncAdapter";
 export * from "./sync/fileIO";
 export * from "./rules/suppliers";
+export * from "./rules/terms";
 export { formatCount } from "./privacy";

@@ -1,7 +1,7 @@
 // הממשק היחיד לתנועת נתונים בין המשטחים. בשלב א' המימוש הוא קבצים
 // (FileSyncAdapter). בשלב ב' יבוא מימוש API עם אותו ממשק, בלי לשנות את שאר הקוד.
 
-import type { CatalogExport, CitizenCatalog, CitizenCatalogIndex, PilotPackage, UnmetDemandFile } from "../model";
+import type { OnboardingStandard, CitizenCatalog, CitizenCatalogIndex, PilotPackage, UnmetDemandFile } from "../model";
 import type { Seed } from "../seed";
 
 export interface SyncAdapter {
@@ -29,8 +29,8 @@ export interface SyncAdapter {
   /** שטח: קבלת גרסת seed מהמטה. */
   receiveSeed(): Promise<Seed | null>;
 
-  /** מטה לאינטגרטור: catalog_export. */
-  sendIntegratorExport(exp: CatalogExport): Promise<void>;
+  /** מטה לספק העל: תקן קליטת המפעילים (operator_onboarding_standard). */
+  sendIntegratorExport(exp: OnboardingStandard): Promise<void>;
 }
 
 /** תוצאה של קבלת קובץ: חבילה תקינה, או שגיאה עם שם הקובץ. */

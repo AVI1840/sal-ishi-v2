@@ -1,12 +1,12 @@
-// catalog_export לאינטגרטור והקטלוג שמתפרסם לאזרח, לפי export_contract.
-// נכנסים רק שירותים מאושרים. ספק עובר כקוד וסוג בלבד, בלי שם ובלי פרטי קשר,
-// גם כשפרטי הספק עוברים למטה. אין נתוני תושבים ואין פעילות גולמית.
+// תקן קליטת מפעילים (operator_onboarding_standard 1.1) לספק העל, והקטלוג
+// שמתפרסם לאזרח, לפי export_contract. נכנסים רק שירותים מאושרים. ספק עובר כקוד
+// וסוג בלבד, בלי שם ובלי פרטי קשר, גם כשפרטי הספק עוברים למטה. אין נתוני
+// תושבים, אין פעילות גולמית ואין מחיר בשקלים (המחיר בנקודות).
 
 import {
-  catalogExportSchema,
   citizenCatalogIndexSchema,
   citizenCatalogSchema,
-  type CatalogExport,
+  onboardingStandardSchema,
   type CatalogItem,
   type CitizenCatalog,
   type CitizenCatalogIndex,
@@ -14,16 +14,28 @@ import {
   type DemandBand,
   type MonthlyActivity,
   type Neighborhood,
+  type OnboardingItem,
+  type OnboardingStandard,
   type Service,
   type Supplier,
 } from "./model";
 import { contentHash } from "./hash";
 import { EXPORT_FORBIDDEN_KEYS, findForbiddenKeys } from "./privacy";
 import { isPublishable } from "./rules/publish";
+import { referenceBindings } from "./rules/referencePrice";
 import { supplierScore } from "./rules/suppliers";
+import { countsInFloor, isProduct, pointsSplit, serviceTerms } from "./rules/terms";
 import type { Seed, Settings } from "./seed";
 import { seedIndex } from "./seed";
-import { copayRate, windowMonths } from "./settings";
+import {
+  activeMinSessions,
+  copayRate,
+  productsQuarterlyCapPoints,
+  qolMode,
+  referencePriceMode,
+  supplierRatingEnabled,
+  windowMonths,
+} from "./settings";
 
 export interface SkippedService {
   serviceId: string;
@@ -103,38 +115,95 @@ function toCatalogItems(source: CatalogSource, seed: Seed): { items: CatalogItem
   return { items, skipped };
 }
 
+/** תנאי מודל התשלום לשירות: תנאים, שעות, מחיר לשעה וחלוקת הנקודות. */
+function paymentFields(s: Service, pricePoints: number, seed: Seed, bindingOf: ReturnType<typeof referenceBindings>) {
+  const terms = serviceTerms(s, seed);
+  const hours = s.hoursPerUnit ?? null;
+  return {
+    hoursPerUnit: hours,
+    pointsPerHour: hours ? Math.round((pricePoints / hours) * 100) / 100 : null,
+    serviceMode: s.serviceMode ?? null,
+    gatedByCompanion: s.gatedByCompanion ?? false,
+    gateReason: s.gatedByCompanion ? (s.gateReason?.trim() ?? null) : null,
+    cancellationNoticeHours: terms?.cancellationNoticeHours ?? null,
+    noShowCharged: terms?.noShowCharged ?? null,
+    hospitalizationRefund: terms?.hospitalizationRefund ?? null,
+    ...pointsSplit(s, pricePoints, seed, bindingOf(s)),
+  };
+}
+
+/** מה חסר לשירות כדי להיכנס לתקן קליטת המפעילים (שדות 0.4). */
+export function onboardingGaps(s: Service, seed: Seed): string[] {
+  const product = isProduct(seed, s.categoryCode);
+  return [
+    !product && !s.hoursPerUnit ? "שעות שירות ליחידה" : null,
+    !product && !s.serviceMode ? "אופן מתן השירות" : null,
+    s.gatedByCompanion && !s.gateReason?.trim() ? "סיבה לפתיחה באישור מלווה" : null,
+  ].filter((x): x is string => x !== null);
+}
+
 /** בדיקת הסכמה והשדות האסורים. זורקת שגיאה עם הפירוט. */
-export function validateCatalogExport(value: unknown): CatalogExport {
-  const parsed = catalogExportSchema.safeParse(value);
+export function validateOnboardingStandard(value: unknown): OnboardingStandard {
+  const parsed = onboardingStandardSchema.safeParse(value);
   if (!parsed.success) {
     const issues = parsed.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`);
-    throw new Error(`catalog_export לא עובר בדיקת סכמה: ${issues.join("; ")}`);
+    throw new Error(`תקן קליטת המפעילים לא עובר בדיקת סכמה: ${issues.join("; ")}`);
   }
   const forbidden = findForbiddenKeys(value, EXPORT_FORBIDDEN_KEYS);
-  if (forbidden.length) throw new Error(`ב-catalog_export יש שדות אסורים: ${forbidden.join(", ")}`);
+  if (forbidden.length) throw new Error(`בתקן קליטת המפעילים יש שדות אסורים: ${forbidden.join(", ")}`);
   return parsed.data;
 }
 
-export async function buildCatalogExport(
+/**
+ * operator_onboarding_standard 1.1. שירות מאושר שחסרים לו שדות 0.4 לא נכנס,
+ * ומופיע ב-skipped עם מה שחסר, כדי שיושלם ולא יימחק.
+ */
+export async function buildOnboardingStandard(
   source: CatalogSource,
   seed: Seed,
   now = new Date(),
-): Promise<{ export: CatalogExport; skipped: SkippedService[] }> {
-  const { items, skipped } = toCatalogItems(source, seed);
+): Promise<{ export: OnboardingStandard; skipped: SkippedService[] }> {
+  const { items: base, skipped } = toCatalogItems(source, seed);
+  const byId = new Map(source.services.map((s) => [s.id, s]));
+  const bindingOf = referenceBindings(source.services, seed);
+  const items: OnboardingItem[] = [];
+  for (const item of base) {
+    const s = byId.get(item.serviceId)!;
+    const gaps = onboardingGaps(s, seed);
+    if (gaps.length) {
+      skipped.push({ serviceId: s.id, reason: `דורש השלמה: ${gaps.join(", ")}` });
+      continue;
+    }
+    items.push({
+      ...item,
+      ...paymentFields(s, item.pricePoints, seed, bindingOf),
+      capacityLimited: s.capacityLimited ?? false,
+      productQuarterlyCap: isProduct(seed, s.categoryCode),
+      countsInFloor: countsInFloor(seed, s.categoryCode),
+    });
+  }
   const contract = seed.export_contract;
-  const result: CatalogExport = {
-    schema: "catalog_export",
-    version: "1.0",
+  const { settings } = seed;
+  const result: OnboardingStandard = {
+    schema: "operator_onboarding_standard",
+    version: "1.1",
     owner: contract.owner,
     generatedAt: now.toISOString(),
     seedVersion: seed.meta.version,
     contentHash: await contentHash(items),
+    rules: {
+      qolMode: qolMode(settings),
+      referencePriceMode: referencePriceMode(settings),
+      pointsPerShekel: settings.points_per_shekel,
+      productsQuarterlyCapPoints: productsQuarterlyCapPoints(settings),
+      activeParticipantMinSessionsMonth: activeMinSessions(settings),
+    },
     services: items,
   };
   if (contract.version !== result.version) {
     throw new Error(`גרסת החוזה ב-seed (${contract.version}) שונה מהגרסה שהקוד מייצר (${result.version})`);
   }
-  return { export: validateCatalogExport(result), skipped };
+  return { export: validateOnboardingStandard(result), skipped };
 }
 
 /**
@@ -187,13 +256,18 @@ export function buildCitizenCatalog(
   const sortedMonths = activity.map((a) => a.month).sort();
   const latest = sortedMonths[sortedMonths.length - 1];
 
+  const rating = supplierRatingEnabled(seed.settings);
+  const bindingOf = referenceBindings(source.services, seed);
+  // בקטלוג לאזרח שירות שחסרים לו שדות 0.4 נשאר, עם null, עד שיושלם.
   const services: CitizenCatalogItem[] = items.map((item) => {
     const s = byId.get(item.serviceId)!;
     const sup = suppliers.get(`${s.authority}|${s.supplierCode}`);
+    const { pointsPerHour: _pph, hospitalizationRefund: _hr, ...payment } = paymentFields(s, item.pricePoints, seed, bindingOf);
     return {
       ...item,
+      ...payment,
       demand: demandBand(s, activity, seed.settings, latest),
-      supplierScore: sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
+      supplierScore: rating && sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
     };
   });
 

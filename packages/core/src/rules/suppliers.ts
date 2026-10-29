@@ -1,5 +1,5 @@
 // דירוג ספקים ומדד תחרות. הדירוג מוצג ונכנס לשכבת "המלצות וניסיון" במנוע
-// ההתאמה. הוא לא חוסם שירות ולא נכנס ל-catalog_export (חוזה האינטגרטור).
+// ההתאמה. הוא לא חוסם שירות ולא נכנס לתקן קליטת המפעילים. ניתן לכיבוי (supplier_rating_enabled).
 
 import type { Service, Supplier } from "../model";
 import type { Settings } from "../seed";

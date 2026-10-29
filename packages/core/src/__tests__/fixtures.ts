@@ -52,6 +52,8 @@ export function svc(id: string, o: Partial<Service> = {}): Service {
     attendanceMethod: ["operator"],
     otherFunder: false,
     enforceable: true,
+    hoursPerUnit: 6,
+    serviceMode: "group",
     startMonth: "2026-01",
     status: "טיוטה",
     ...o,

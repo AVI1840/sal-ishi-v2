@@ -6,6 +6,7 @@ import type { AuthorityData, Community, MonthlyActivity, Neighborhood, Service, 
 import { NATIONAL_AUTHORITY } from "./catalogExport";
 import { defaultSeed, seedIndex } from "./seed";
 import { defaultCopayTier } from "./settings";
+import { suggestedGate, suggestedServiceMode } from "./rules/terms";
 
 const MONTHS = ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"];
 
@@ -28,7 +29,13 @@ interface Spec {
   name?: string;
   copay?: Service["copayTier"];
   reach?: Service["reach"];
+  /** שירות מגרסה קודמת, בלי שדות 0.4: מופיע ברשימת ההשלמות. */
+  legacy?: boolean;
+  capacityLimited?: boolean;
 }
+
+// שעות שירות ליחידת תשלום, לפי היחידה בספריית סוגי השירות. מספרי הדגמה.
+const HOURS_PER_UNIT: Record<string, number> = { "חודש": 6, "סבב": 12, "מפגש": 1.5, "סדנה": 6, "כרטיס": 2.5, "סיור": 4, "אירוע": 3, "שובר": 1, "ביקור": 1.5, "מנוי": 4, "טיפול": 1, "שעה": 1 };
 
 const G: Community[] = ["general"];
 const H: Community[] = ["haredi"];
@@ -40,8 +47,8 @@ const SPECS: Spec[] = [
   { n: 0, type: "T07", sup: "S-004", fit: G, price: 100, pattern: "cont", base: 14, status: "אושר", copay: "classes" },
   { n: 0, type: "T11", sup: "S-001", fit: G, price: 60, pattern: "cont", base: 30, status: "אושר" },
   { n: 0, type: "T17", sup: "S-003", fit: G, price: 90, pattern: "cont", base: 18, status: "אושר" },
-  { n: 0, type: "T16", sup: "S-003", fit: G, price: 110, pattern: "cont", base: 15, status: "אושר" },
-  { n: 0, type: "T21", sup: "S-004", fit: G, price: 80, pattern: "cont", base: 11, status: "הוגש" },
+  { n: 0, type: "T16", sup: "S-003", fit: G, price: 110, pattern: "cont", base: 15, status: "אושר", capacityLimited: true },
+  { n: 0, type: "T21", sup: "S-004", fit: G, price: 80, pattern: "cont", base: 11, status: "הוגש", legacy: true },
   { n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: "cont", base: 12, status: "אושר", program: "p-support", start: 0 },
   { n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: "cont", base: 12, status: "אושר", program: "p-support", start: 5, name: "קבוצת תמיכה ומשמעות, סבב ב" },
   { n: 0, type: "T35", sup: "S-006", fit: G, price: 200, pattern: "cont", base: 10, status: "הוגש" },
@@ -54,9 +61,9 @@ const SPECS: Spec[] = [
   // שכונה ב (חרדית): שייכות טובה, חוסן חסר
   { n: 1, type: "T01", sup: "S-002", fit: H, price: 130, pattern: "cont", base: 20, status: "אושר" },
   { n: 1, type: "T02", sup: "S-002", fit: H, price: 140, pattern: "cont", base: 16, status: "אושר" },
-  { n: 1, type: "T12", sup: "S-002", fit: H, price: 50, pattern: "cont", base: 12, status: "אושר" },
+  { n: 1, type: "T12", sup: "S-002", fit: H, price: 50, pattern: "cont", base: 12, status: "אושר", legacy: true },
   { n: 1, type: "T17", sup: "S-002", fit: H, price: 95, pattern: "cont", base: 14, status: "אושר" },
-  { n: 1, type: "T15", sup: "S-002", fit: H, price: 160, pattern: "cont", base: 10, status: "הוגש" },
+  { n: 1, type: "T15", sup: "S-002", fit: H, price: 160, pattern: "cont", base: 10, status: "הוגש", capacityLimited: true },
   { n: 1, type: "T36", sup: "S-006", fit: ["general", "haredi"], price: 180, pattern: "short", base: 10, status: "הוגש" },
   { n: 1, type: "T40", sup: "S-007", fit: H, price: 280, pattern: "cont", base: 11, status: "אושר" },
   { n: 1, type: "T41", sup: "S-007", fit: H, price: 260, pattern: "cont", base: 10, status: "הוגש", market: null },
@@ -199,6 +206,7 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
       communityFit: fit,
       deliveryMode: "community",
       attendanceMethod: ["operator"],
+      ...(spec.legacy ? {} : demoPaymentFields(type, spec)),
       otherFunder: spec.otherFunder ?? false,
       enforceable: spec.enforceable ?? true,
       ...(spec.program ? { programId: `${v.prefix}-${spec.program}` } : {}),
@@ -237,7 +245,23 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
     suppliers,
     services,
     activity,
-    enrollment: N.flatMap((n, i) => MONTHS.map((month) => ({ neighborhoodId: n.id, month, enrolled: v.enrolled[i]! }))),
+    enrollment: N.flatMap((n, i) =>
+      MONTHS.map((month) => {
+        const enrolled = v.enrolled[i]!;
+        // נתונים מצטברים מדוח ספק העל (חדירה וזמן לשירות ראשון). השכונה הקטנה
+        // מתחת לסף התא הקטן, כדי שההסתרה תופיע בהדגמה.
+        const fresh = Math.round(enrolled * 0.08);
+        return {
+          neighborhoodId: n.id,
+          month,
+          enrolled,
+          activeParticipants: Math.round(enrolled * (0.45 + rand() * 0.3)),
+          eligible: Math.round(enrolled * 1.7),
+          firstServiceDaysAvg: Math.round((7 + rand() * 12) * 10) / 10,
+          firstServiceCount: fresh,
+        };
+      }),
+    ),
     // כל פיילוט עם ביקוש קצת שונה, כדי שההשוואה במטה תהיה אמינה.
     unmetDemand: UNMET.map(([n, serviceTypeId, requests]): UnmetDemand => ({
       neighborhoodId: nid(n),
@@ -245,6 +269,18 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
       month: "2026-10",
       requests: Math.max(1, requests + Math.round((rand() - 0.5) * 6) - variant),
     })),
+  };
+}
+
+/** שדות מודל התשלום (0.4) לשירות הדגמה: שעות לפי היחידה, אופן מתן ושער מלווה. */
+function demoPaymentFields(type: { category: string; unit: string; format: string }, spec: Spec): Partial<Service> {
+  const gate = suggestedGate(defaultSeed, type.category);
+  return {
+    hoursPerUnit: HOURS_PER_UNIT[type.unit] ?? 1,
+    serviceMode: suggestedServiceMode({ format: type.format, deliveryMode: "community" }),
+    capacityLimited: spec.capacityLimited ?? false,
+    gatedByCompanion: gate !== null,
+    ...(gate ? { gateReason: gate } : {}),
   };
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCatalogExport, buildCitizenCatalog, demandBand, servesNeighborhood } from "../catalogExport";
+import { buildOnboardingStandard, buildCitizenCatalog, demandBand, servesNeighborhood } from "../catalogExport";
 import { buildDemoAuthority, buildDemoNationalChannel } from "../demo";
 import { buildPilotPackage, emptyHqState, mergePackage, parsePilotPackage } from "../pilotPackage";
 import { coverage, suggestServiceTypes, unmetByCell } from "../rules/coverage";
@@ -113,11 +113,11 @@ describe("קטלוג לאזרח עם ערוץ ארצי, ביקוש וציון ס
     expect(demandBand({ id: "a" }, act3(3), seed.settings)).toBeNull();
   });
 
-  it("ציון ספק בקטלוג לאזרח, ולא ב-catalog_export", async () => {
+  it("ציון ספק בקטלוג לאזרח, ולא בתקן קליטת המפעילים", async () => {
     const n = data.neighborhoods[0]!;
     const { catalog } = buildCitizenCatalog(source, n.id, seed);
     expect(catalog.services.some((s) => s.supplierScore !== null)).toBe(true);
-    const { export: exp } = await buildCatalogExport(source, seed);
+    const { export: exp } = await buildOnboardingStandard(source, seed);
     expect(JSON.stringify(exp)).not.toContain("supplierScore");
     expect(exp.services.filter((s) => s.reach === "national")).toHaveLength(6);
   });

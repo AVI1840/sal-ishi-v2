@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCatalogExport, buildCitizenCatalog } from "../catalogExport";
+import { buildOnboardingStandard, buildCitizenCatalog } from "../catalogExport";
 import { buildPilotPackage } from "../pilotPackage";
 import { defaultSeed as seed } from "../seed";
 import { FileSyncAdapter, citizenCatalogPath } from "../sync/FileSyncAdapter";
@@ -55,9 +55,9 @@ describe("FileSyncAdapter", () => {
 
   it("ייצוא לאינטגרטור נשמר כקובץ", async () => {
     const { io, adapter } = setup();
-    const { export: exp } = await buildCatalogExport(demoAuthority(), seed, NOW);
+    const { export: exp } = await buildOnboardingStandard(demoAuthority(), seed, NOW);
     await adapter.sendIntegratorExport(exp);
-    expect([...io.saved.keys()]).toEqual(["catalog_export_v1.0_2026-11-20.json"]);
+    expect([...io.saved.keys()]).toEqual(["operator_onboarding_standard_v1.1_2026-11-20.json"]);
   });
 
   it("הפצת seed מהמטה וקבלתו בשטח", async () => {
@@ -67,7 +67,7 @@ describe("FileSyncAdapter", () => {
     const field = setup();
     field.io.toPick = [{ name: name!, text: text! }];
     const received = await field.adapter.receiveSeed();
-    expect(received?.meta.version).toBe("0.3");
+    expect(received?.meta.version).toBe("0.4");
     expect(received?.service_types).toHaveLength(57);
   });
 });

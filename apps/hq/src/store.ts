@@ -11,7 +11,6 @@ import {
   emptyHqState,
   mergePackage,
   openStore,
-  parseSeed,
   upgradeSeed,
   publishSeedVersion,
   settingsSchema,
@@ -86,7 +85,7 @@ export const useHq = create<HqStore>()((set, get) => {
       if (saved) {
         let seed = defaultSeed;
         try {
-          seed = upgradeSeed(parseSeed(saved.seed));
+          seed = upgradeSeed(saved.seed);
         } catch {
           /* seed שמור לא תקין: חוזרים לברירת המחדל */
         }
