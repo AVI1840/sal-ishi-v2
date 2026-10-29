@@ -173,7 +173,7 @@ export default function CoordinatorDashboard() {
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{rec.whyRecommended}</p>
                 <div className="flex items-center gap-1 mt-2">
                   {rec.motivationMatch.slice(0, 2).map((m) => (
-                    <span key={m} className="text-xs px-1.5 py-0.5 rounded bg-pink-50 text-pink-600">{MOTIVATION_LABELS[m]}</span>
+                    <span key={m} className="text-xs px-1.5 py-0.5 rounded bg-pink-50 text-pink-800">{MOTIVATION_LABELS[m]}</span>
                   ))}
                 </div>
                 <Link to={`/coordinator/patients/${rec.citizenId}`} className="mt-2 text-xs text-primary font-medium hover:underline block">{rec.nextAction} →</Link>

@@ -193,8 +193,8 @@ export default function CoordinatorDeterioration() {
                 <tr key={p.name} className="border-b border-border/30">
                   <td className="py-2.5 font-medium text-foreground">{p.name}</td>
                   <td className="py-2.5 text-muted-foreground">{p.age}</td>
-                  <td className={cn("py-2.5 font-bold", p.rdi > 1.3 ? "text-red-600" : p.rdi >= 1.2 ? "text-amber-600" : "text-emerald-600")}>{p.rdi.toFixed(2)}</td>
-                  <td className={cn("py-2.5 font-bold", p.sdi === 0 ? "text-red-600" : p.sdi < 17 ? "text-amber-600" : "text-emerald-600")}>{p.sdi}</td>
+                  <td className={cn("py-2.5 font-bold", p.rdi > 1.3 ? "text-red-600" : p.rdi >= 1.2 ? "text-amber-800" : "text-emerald-700")}>{p.rdi.toFixed(2)}</td>
+                  <td className={cn("py-2.5 font-bold", p.sdi === 0 ? "text-red-600" : p.sdi < 17 ? "text-amber-800" : "text-emerald-700")}>{p.sdi}</td>
                   <td className="py-2.5"><span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", p.cls)}>{p.status}</span></td>
                 </tr>
               ))}

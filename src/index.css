@@ -29,16 +29,16 @@
     --muted-foreground: 215 12% 45%;
     --accent: 212 55% 95%;
     --accent-foreground: 212 55% 23%;
-    --destructive: 0 78% 55%;
+    --destructive: 0 72% 42%;
     --destructive-foreground: 0 0% 100%;
     --destructive-soft: 0 80% 96%;
     --warning: 38 92% 50%;
     --warning-foreground: 30 50% 15%;
     --warning-soft: 45 95% 95%;
-    --success: 152 60% 38%;
+    --success: 152 65% 26%;
     --success-foreground: 0 0% 100%;
     --success-soft: 152 50% 94%;
-    --info: 212 80% 50%;
+    --info: 212 80% 38%;
     --info-soft: 212 80% 95%;
     --border: 215 18% 92%;
     --input: 215 18% 92%;
@@ -123,5 +123,17 @@
   @keyframes grow {
     from { width: 0%; }
     to { width: 100%; }
+  }
+}
+
+/* מי שביקש פחות תנועה במכשיר: בלי אנימציות ומעברים. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

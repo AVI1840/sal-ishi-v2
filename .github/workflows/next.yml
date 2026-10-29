@@ -22,8 +22,9 @@ jobs:
       - run: npm run test:core
       - run: npm test
       - run: npm run build:all
-      # בדיקות הקצה לקצה כתובות למסכי /next/. בענף המאוחד הן יוחלפו בבדיקות למסכים הקיימים.
+      - run: npx playwright install --with-deps chromium
+      # /next/: הבדיקות של מסכי 0.5. הענף המאוחד: הבדיקות של המסכים הקיימים עם המנוע של 0.5.
       - if: github.ref_name == 'v0.5'
-        run: npx playwright install --with-deps chromium
-      - if: github.ref_name == 'v0.5'
-        run: npx playwright test
+        run: npx playwright test e2e/pilot.spec.ts
+      - if: github.ref_name == 'v0.5-merge'
+        run: npx playwright test e2e/merge.spec.ts

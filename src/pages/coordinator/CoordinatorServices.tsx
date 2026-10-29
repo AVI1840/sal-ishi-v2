@@ -54,7 +54,7 @@ function DimensionBar({ label, value }: { label: string; value: number }) {
           <div key={n} className={cn("h-2 flex-1 rounded-sm", n <= value ? colors[value] : "bg-gray-100")} />
         ))}
       </div>
-      <span className="text-[10px] text-gray-400 w-4 text-center">{value}</span>
+      <span className="text-[10px] text-gray-600 w-4 text-center">{value}</span>
     </div>
   );
 }
@@ -88,7 +88,7 @@ function ServiceRow({ service, isSelected, onSelect }: { service: CatalogService
             </div>
             <p className="text-xs text-gray-500 mt-0.5">{service.provider}</p>
             <div className="flex items-center gap-3 mt-1.5">
-              <span className="flex items-center gap-1 text-[11px] text-gray-400">
+              <span className="flex items-center gap-1 text-[11px] text-gray-600">
                 <MapPin className="w-3 h-3" /> {service.neighborhood}
               </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-50 text-gray-500 border border-gray-100">
@@ -99,7 +99,7 @@ function ServiceRow({ service, isSelected, onSelect }: { service: CatalogService
             </div>
           </div>
 
-          <ChevronDown className={cn("w-4 h-4 text-gray-400 shrink-0 mt-1 transition-transform", isSelected && "rotate-180")} />
+          <ChevronDown className={cn("w-4 h-4 text-gray-600 shrink-0 mt-1 transition-transform", isSelected && "rotate-180")} />
         </div>
       </button>
 
@@ -110,25 +110,25 @@ function ServiceRow({ service, isSelected, onSelect }: { service: CatalogService
           <div className="grid grid-cols-2 gap-3 text-sm">
             {service.address && (
               <div className="flex items-start gap-2 text-gray-600">
-                <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-gray-600 mt-0.5 shrink-0" />
                 <span className="text-xs">{service.address}</span>
               </div>
             )}
             {service.days && (
               <div className="flex items-start gap-2 text-gray-600">
-                <Clock className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <Clock className="w-3.5 h-3.5 text-gray-600 mt-0.5 shrink-0" />
                 <span className="text-xs">{service.days} {service.hours && `· ${service.hours}`}</span>
               </div>
             )}
             {service.phone && (
               <div className="flex items-center gap-2 text-gray-600">
-                <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <Phone className="w-3.5 h-3.5 text-gray-600 shrink-0" />
                 <a href={`tel:${service.phone}`} className="text-xs text-[#1B3A5C] hover:underline">{service.phone}</a>
               </div>
             )}
             {service.website && (
               <div className="flex items-center gap-2 text-gray-600">
-                <ExternalLink className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <ExternalLink className="w-3.5 h-3.5 text-gray-600 shrink-0" />
                 <a href={`https://${service.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1B3A5C] hover:underline truncate">{service.website}</a>
               </div>
             )}
@@ -252,7 +252,7 @@ export default function CoordinatorServices() {
       <div className="space-y-3">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
             <input
               type="text"
               value={query}
@@ -296,7 +296,7 @@ export default function CoordinatorServices() {
           </div>
         )}
 
-        <p className="text-xs text-gray-400">{results.length} תוצאות</p>
+        <p className="text-xs text-gray-600">{results.length} תוצאות</p>
       </div>
 
       {/* Results */}

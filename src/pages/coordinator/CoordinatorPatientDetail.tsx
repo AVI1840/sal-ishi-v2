@@ -118,7 +118,7 @@ export default function CoordinatorPatientDetail() {
                 ))}
               </div>
               <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                <p className="text-xs text-amber-600 font-medium mb-0.5">החלום</p>
+                <p className="text-xs text-amber-800 font-medium mb-0.5">החלום</p>
                 <p className="text-sm text-amber-900 italic">"{citizen.dream}"</p>
               </div>
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">

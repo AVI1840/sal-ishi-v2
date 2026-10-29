@@ -145,7 +145,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                       {fb.severity && <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sevColor(fb.severity as Severity)}`}>{fb.severity}</span>}
                       {!fb.sent && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">⏳</span>}
                       {fb.sent && <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">✅</span>}
-                      <span className="text-xs text-gray-400">{fb.name} · {new Date(fb.timestamp).toLocaleString("he-IL")}</span>
+                      <span className="text-xs text-gray-600">{fb.name} · {new Date(fb.timestamp).toLocaleString("he-IL")}</span>
                     </div>
                     <p className="text-sm text-gray-800">{fb.text}</p>
                   </div>

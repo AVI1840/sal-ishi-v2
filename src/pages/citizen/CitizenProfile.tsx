@@ -36,15 +36,15 @@ export default function CitizenProfile() {
   return (
     <div className="min-h-screen bg-gray-50 pb-6" dir="rtl">
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 h-14 flex items-center justify-between">
-        <h1 className="text-sm font-bold text-gray-900">הפרופיל שלי</h1>
-        <Link to="/citizen" className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
-          <ChevronLeft className="w-4 h-4 text-gray-500 rotate-180" />
+      {/* Header: חזרה מימין, כי כלי הנגישות יושבים בפינה השמאלית העליונה */}
+      <header className="sticky top-10 z-30 bg-white border-b border-gray-200 px-5 h-14 flex items-center gap-3">
+        <Link to="/citizen" aria-label="חזרה לבית" className="w-11 h-11 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
+          <ChevronLeft className="w-5 h-5 text-gray-700 rotate-180" aria-hidden="true" />
         </Link>
+        <h1 className="text-base font-bold text-gray-900">הפרופיל שלי</h1>
       </header>
 
-      <main className="px-5 pt-5 space-y-4">
+      <main id="main" tabIndex={-1} className="px-5 pt-5 space-y-4" data-read>
 
         {/* Identity card */}
         <div className="bg-[#1B3A5C] rounded-xl p-5 text-white">
@@ -57,21 +57,21 @@ export default function CitizenProfile() {
               <p className="text-sm text-white/70 mt-0.5 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" /> {citizen.city} · בת {citizen.age}
               </p>
-              <p className="text-xs text-white/50 mt-1">{citizen.familyStatus} · {citizen.language}</p>
+              <p className="text-xs text-white/80 mt-1">{citizen.familyStatus} · {citizen.language}</p>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
             <div className="text-center">
               <p className="text-lg font-bold">{citizen.weeklyActivities}</p>
-              <p className="text-xs text-white/50">פעילויות/שבוע</p>
+              <p className="text-xs text-white/80">פעילויות/שבוע</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold">{citizen.persistenceRate}%</p>
-              <p className="text-xs text-white/50">התמדה</p>
+              <p className="text-xs text-white/80">התמדה</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold">{citizen.engagementScore}%</p>
-              <p className="text-xs text-white/50">מעורבות</p>
+              <p className="text-xs text-white/80">מעורבות</p>
             </div>
           </div>
         </div>
@@ -79,13 +79,13 @@ export default function CitizenProfile() {
         {/* Risk + Readiness */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">רמת סיכון</p>
+            <p className="text-xs text-gray-600 uppercase tracking-wider mb-2">רמת סיכון</p>
             <span className={cn("text-xs px-3 py-1.5 rounded-md font-semibold border", risk.cls)}>
               {risk.label}
             </span>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">מוכנות לשינוי</p>
+            <p className="text-xs text-gray-600 uppercase tracking-wider mb-2">מוכנות לשינוי</p>
             <span className="text-xs px-3 py-1.5 rounded-md font-semibold bg-[#1B3A5C]/5 text-[#1B3A5C] border border-[#1B3A5C]/10">
               {READINESS_LABELS[citizen.readiness]}
             </span>
@@ -123,7 +123,7 @@ export default function CitizenProfile() {
           </div>
           {citizen.dream && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-xs text-gray-400 mb-1">המטרה האישית</p>
+              <p className="text-xs text-gray-600 mb-1">המטרה האישית</p>
               <p className="text-sm text-gray-700">{citizen.dream}</p>
             </div>
           )}
@@ -193,7 +193,7 @@ export default function CitizenProfile() {
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
             <div>
               <p className="text-sm font-medium text-gray-900">אורי רוזנברג</p>
-              <p className="text-xs text-gray-400">בן · 054-9876543</p>
+              <p className="text-xs text-gray-600">בן · 054-9876543</p>
             </div>
             <a href="tel:054-9876543"
               className="flex items-center gap-1.5 px-3 py-2 bg-[#1B3A5C] text-white rounded-lg text-xs font-medium hover:bg-[#15304d] transition-colors">

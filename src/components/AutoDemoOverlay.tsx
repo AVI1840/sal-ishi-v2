@@ -221,27 +221,27 @@ export function AutoDemoOverlay() {
           <p className="text-xl text-white/70 mb-2">
             מערכת AI להתאמת שירותי מניעה לאזרחים ותיקים
           </p>
-          <p className="text-sm text-white/40 mb-6">
+          <p className="text-sm text-white/80 mb-6">
             פיילוט חי · ירושלים · ביטוח לאומי + משרד האוצר
           </p>
 
           <div className="grid grid-cols-3 gap-6 mb-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-400">286</div>
-              <div className="text-xs text-white/40 mt-1">אזרחים בפיילוט</div>
+              <div className="text-xs text-white/80 mt-1">אזרחים בפיילוט</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-emerald-400">102</div>
-              <div className="text-xs text-white/40 mt-1">שירותי מניעה</div>
+              <div className="text-xs text-white/80 mt-1">שירותי מניעה</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-amber-400">5</div>
-              <div className="text-xs text-white/40 mt-1">אייג'נטים AI</div>
+              <div className="text-xs text-white/80 mt-1">אייג'נטים AI</div>
             </div>
           </div>
 
           <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10 text-right">
-            <p className="text-sm text-white/60 leading-relaxed">
+            <p className="text-sm text-white/80 leading-relaxed">
               <span className="text-white/80 font-medium">מה תראו בסיור (65 שניות):</span> ממשק האזרח הוותיק, 
               ציוני התאמה AI מוסברים, דשבורד המלווה עם CRM חכם, 5 אייג'נטים אוטונומיים,
               אינטייק קולי, אלגוריתם 5 שכבות, ניטור הידרדרות, ודשבורד ניהולי עם ROI.
@@ -250,7 +250,7 @@ export function AutoDemoOverlay() {
 
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-sm text-white/50">הסיור מתחיל אוטומטית...</span>
+            <span className="text-sm text-white/80">הסיור מתחיל אוטומטית...</span>
           </div>
 
           {/* Progress bar for intro countdown */}
@@ -260,7 +260,7 @@ export function AutoDemoOverlay() {
 
           <button
             onClick={() => { setPhase("running"); setCurrentStop(0); setElapsed(0); navigate(STOPS[0].route); }}
-            className="mt-5 text-xs text-white/30 hover:text-white/60 transition-colors"
+            className="mt-5 text-xs text-white/30 hover:text-white/80 transition-colors"
           >
             דלג ← התחל עכשיו
           </button>
@@ -278,7 +278,7 @@ export function AutoDemoOverlay() {
             <span className="text-3xl">✅</span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">הסיור הסתיים</h1>
-          <p className="text-white/50 text-sm mb-2">65 שניות · 9 תחנות · מערכת חיה</p>
+          <p className="text-white/80 text-sm mb-2">65 שניות · 9 תחנות · מערכת חיה</p>
           <p className="text-white/35 text-xs mb-8">פיילוט ירושלים · ביטוח לאומי + משרד האוצר</p>
           <div className="flex flex-col gap-3 items-center">
             <button
@@ -320,7 +320,7 @@ export function AutoDemoOverlay() {
               <div className="w-8 h-8 rounded-lg bg-[#1B3A5C] flex items-center justify-center">
                 <span className="text-white font-bold text-xs">{currentStop + 1}/{STOPS.length}</span>
               </div>
-              <span className="text-xs text-white/40 font-mono tabular-nums">{secondsLeft}s</span>
+              <span className="text-xs text-white/80 font-mono tabular-nums">{secondsLeft}s</span>
             </div>
 
             {/* Title + subtitle */}
@@ -329,7 +329,7 @@ export function AutoDemoOverlay() {
                 <p className="text-white font-bold text-sm truncate">{current.title}</p>
                 {paused && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-medium">⏸ עצור</span>}
               </div>
-              <p className="text-white/40 text-[11px] mt-0.5 truncate">{current.subtitle}</p>
+              <p className="text-white/80 text-[11px] mt-0.5 truncate">{current.subtitle}</p>
             </div>
 
             {/* Live */}
@@ -361,7 +361,7 @@ export function AutoDemoOverlay() {
               </button>
               <button
                 onClick={endDemo}
-                className="w-7 h-7 rounded bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-400 mr-1"
+                className="w-7 h-7 rounded bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-700 mr-1"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

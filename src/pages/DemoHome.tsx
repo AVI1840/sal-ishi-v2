@@ -139,7 +139,7 @@ export default function DemoHome() {
             <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
               הזדקנות מיטבית
               <br />
-              <span className="text-white/60">מתחילה בהתאמה אישית</span>
+              <span className="text-white/80">מתחילה בהתאמה אישית</span>
             </h1>
             <p className="mt-4 text-base text-white/65 leading-relaxed max-w-lg">
               מנוע התאמה שמציע לכל אזרח ותיק שירותי מניעה לפי מה שחשוב לו, ומסביר
@@ -174,7 +174,7 @@ export default function DemoHome() {
             </div>
 
             <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/12">
-              <MapPin className="w-3.5 h-3.5 text-white/50" />
+              <MapPin className="w-3.5 h-3.5 text-white/80" />
               <span className="text-xs text-white/70">פיילוט פסגת זאב, ירושלים</span>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function DemoHome() {
             {STATS().map((s) => (
               <div key={s.num} className="px-6 text-center first:pr-0 last:pl-0">
                 <div className="text-2xl font-bold text-white">{s.num}</div>
-                <div className="text-xs text-white/60 mt-0.5">{s.label}</div>
+                <div className="text-xs text-white/80 mt-0.5">{s.label}</div>
                 <div className="text-[10px] text-white/30">{s.sub}</div>
               </div>
             ))}
@@ -198,7 +198,7 @@ export default function DemoHome() {
       <section className="bg-gray-50 border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-red-400 mb-3 block">הבעיה</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-red-700 mb-3 block">הבעיה</span>
             <h2 className="text-2xl font-bold text-gray-900 leading-tight">
               הכסף מנוצל - אבל ל-בית ולניקיון, לא למניעת הידרדרות
             </h2>
@@ -212,7 +212,7 @@ export default function DemoHome() {
                 "לא היה ליווי אישי ולא התאמה למה שחשוב לאדם",
               ].map((p) => (
                 <div key={p} className="flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-red-700 mt-0.5 shrink-0" />
                   <span className="text-sm text-gray-600">{p}</span>
                 </div>
               ))}
@@ -228,7 +228,7 @@ export default function DemoHome() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-4 right-4">
               <p className="text-white text-sm font-bold">יחד בקהילה</p>
-              <p className="text-white/60 text-xs">מתנדבים עזרה לתקווה</p>
+              <p className="text-white/80 text-xs">מתנדבים עזרה לתקווה</p>
             </div>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function DemoHome() {
       {/* ── SERVICE IMAGE GRID ── */}
       <section className="max-w-5xl mx-auto px-6 py-12">
         <div className="text-center mb-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/50 mb-2 block">הפתרון</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/80 mb-2 block">הפתרון</span>
           <h2 className="text-2xl font-bold text-gray-900">{realServices.length} שירותי מניעה, מותאמים אישית</h2>
           <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
             כל שירות מדורג לפי 5 שכבות: מניעה · מוטיבציה · פרופיל · קרבה · הוכחה חברתית
@@ -287,7 +287,7 @@ export default function DemoHome() {
       <section className="bg-gray-50 border-t border-gray-100">
         <div className="max-w-5xl mx-auto px-6 py-12">
           <div className="mb-6">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/50 mb-2 block">הממשקים</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/80 mb-2 block">הממשקים</span>
             <h2 className="text-xl font-bold text-gray-900">{MODULES().length} ממשקים, לכל שחקן במערכת</h2>
           </div>
 
@@ -305,7 +305,7 @@ export default function DemoHome() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] text-gray-400 font-bold">{mod.num}</span>
+                          <span className="text-[10px] text-gray-600 font-bold">{mod.num}</span>
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${mod.badgeCls}`}>{mod.badge}</span>
                         </div>
                         <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1B3A5C] transition-colors">
@@ -351,7 +351,7 @@ export default function DemoHome() {
             </div>
             <div>
               <p className="text-sm font-bold">סל אישי</p>
-              <p className="text-[10px] text-white/40">להזדקנות מיטבית</p>
+              <p className="text-[10px] text-white/80">להזדקנות מיטבית</p>
             </div>
           </div>
           <p className="text-xs text-white/70">פיילוט ירושלים · {catalogState.neighborhoods} שכונות · {realServices.length} שירותים</p>
@@ -371,7 +371,7 @@ export default function DemoHome() {
           >
             <Play className="w-4 h-4 fill-current" /> דף האקתון AWS
           </Link>
-          <button onClick={() => setShowHackathon(false)} className="block mx-auto mt-2 text-[10px] text-gray-400">
+          <button onClick={() => setShowHackathon(false)} className="block mx-auto mt-2 text-[10px] text-gray-600">
             סגור
           </button>
         </div>

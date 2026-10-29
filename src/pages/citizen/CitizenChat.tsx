@@ -114,7 +114,7 @@ export default function CitizenChat() {
                   : "bg-white text-foreground rounded-bl-sm shadow-sm border border-border/50"
               }`}>
                 <p className="text-sm whitespace-pre-line leading-relaxed">{msg.text}</p>
-                <p className={`text-xs mt-1.5 ${msg.sender === "citizen" ? "text-white/50" : "text-muted-foreground"}`}>{msg.time}</p>
+                <p className={`text-xs mt-1.5 ${msg.sender === "citizen" ? "text-white/80" : "text-muted-foreground"}`}>{msg.time}</p>
               </div>
             </div>
           </div>

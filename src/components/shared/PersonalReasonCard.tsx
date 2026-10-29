@@ -96,7 +96,7 @@ export function PersonalReasonCard({
           {/* 5-layer breakdown - compact */}
           {showLayers && (
             <div className="pt-1 border-t border-[#1B3A5C]/10">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#1B3A5C]/50 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#1B3A5C]/80 mb-2">
                 פירוט ציון ההתאמה
               </p>
               <MatchExplainability result={result} compact />

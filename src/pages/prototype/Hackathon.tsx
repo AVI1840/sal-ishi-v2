@@ -49,7 +49,7 @@ const PITCH_CARDS = [
     label: "הערך",
     icon: TrendingUp,
     color: "border-emerald-200 bg-emerald-50",
-    iconColor: "text-emerald-600",
+    iconColor: "text-emerald-700",
     points: [
       "54% מהתקציב → שירותי מניעה (לא בית) - מ-20%",
       "71% מיצוי ארנק · 4.7/5 שביעות רצון",
@@ -75,7 +75,7 @@ const PITCH_CARDS = [
     label: "ישימות",
     icon: CheckCircle,
     color: "border-amber-200 bg-amber-50",
-    iconColor: "text-amber-600",
+    iconColor: "text-amber-800",
     points: [
       "פיילוט חי: 286 אזרחים, פסגת זאב, ירושלים",
       "מבוסס החלטות ממשלה 127 ו-150",
@@ -118,7 +118,7 @@ export default function Hackathon() {
               <div key={s.num} className="bg-white/10 rounded-xl p-4 text-center border border-white/10">
                 <div className="text-2xl font-bold text-white">{s.num}</div>
                 <div className="text-xs text-white/70 mt-0.5">{s.label}</div>
-                <div className="text-[10px] text-white/40">{s.sub}</div>
+                <div className="text-[10px] text-white/80">{s.sub}</div>
               </div>
             ))}
           </div>
@@ -145,7 +145,7 @@ export default function Hackathon() {
               return (
                 <div key={card.num} className={`rounded-xl border p-4 ${card.color}`}>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold text-gray-400">{card.num}</span>
+                    <span className="text-[10px] font-bold text-gray-600">{card.num}</span>
                     <Icon className={`w-4 h-4 ${card.iconColor}`} />
                     <span className="text-xs font-bold text-gray-900">{card.label}</span>
                   </div>
@@ -217,7 +217,7 @@ export default function Hackathon() {
             <div key={s.num} className="bg-[#1B3A5C] text-white rounded-xl p-4 text-center">
               <div className="text-2xl font-bold">{s.num}</div>
               <div className="text-xs text-white/70 mt-0.5">{s.label}</div>
-              <div className="text-[10px] text-white/40">{s.sub}</div>
+              <div className="text-[10px] text-white/80">{s.sub}</div>
             </div>
           ))}
         </div>
@@ -256,7 +256,7 @@ export default function Hackathon() {
             <div key={s.num} className="bg-[#1B3A5C] text-white rounded-xl p-5 text-center">
               <div className="text-xl font-bold">{s.num}</div>
               <div className="text-xs text-white/70 mt-0.5">{s.label}</div>
-              <div className="text-[10px] text-white/40">{s.sub}</div>
+              <div className="text-[10px] text-white/80">{s.sub}</div>
             </div>
           ))}
         </div>
@@ -287,7 +287,7 @@ export default function Hackathon() {
               <ExternalLink className="w-3.5 h-3.5" /> דשבורד מלווה
             </a>
           </div>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-gray-600">
             Powered by Amazon Bedrock · Transcribe · Personalize · Lambda · S3 · DynamoDB
           </p>
         </div>

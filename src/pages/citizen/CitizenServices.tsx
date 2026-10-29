@@ -334,7 +334,7 @@ export default function CitizenServices() {
             <div className="absolute inset-0 flex items-center justify-end pr-5">
               <div>
                 <p className="text-white font-bold text-base">{catLabel}</p>
-                <p className="text-white/60 text-xs mt-0.5">
+                <p className="text-white/80 text-xs mt-0.5">
                   {results.length} שירותים · {results.filter(s => s.cost === "free").length} חינם
                 </p>
               </div>

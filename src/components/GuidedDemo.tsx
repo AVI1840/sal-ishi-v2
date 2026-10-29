@@ -147,7 +147,7 @@ export function GuidedDemo() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-bold text-gray-900">{current.title}</span>
-              <span className="hidden sm:inline text-[10px] text-gray-400">·</span>
+              <span className="hidden sm:inline text-[10px] text-gray-600">·</span>
               <span className="hidden sm:inline text-xs text-gray-600 truncate">{current.callout}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -189,7 +189,7 @@ export function GuidedDemo() {
 
             <button
               onClick={close}
-              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
               aria-label="סגור הדגמה"
             >
               <X className="w-4 h-4" />
