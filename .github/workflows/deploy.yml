@@ -2,7 +2,8 @@ name: Deploy to GitHub Pages
 
 # האתר בנוי מכמה גרסאות זו לצד זו. SITES היא רשימת "ref:נתיב":
 #   main:.        הגרסה היציבה בשורש (היום 0.4)
-#   v0.5:next     הגרסה הבאה, בבדיקה, ב-/next/
+#   v0.5:next     גרסת 0.5 הנפרדת, לעיון בלבד, ב-/next/
+#   v0.5-merge:merge  הכלי הקיים עם מה שעבר מ-0.5, ב-/merge/
 # בהחלפה (אחרי שער הבדיקה): "main:. v0.4-stable:v04".
 # הפריסה רצה תמיד בהקשר של main, כי סביבת github-pages מאשרת פריסה רק מ-main.
 # דחיפה ל-v0.5 מריצה את "Next build", ובסיומו הוא מפעיל את הפריסה הזו.
@@ -25,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SITES: "main:. v0.5:next"
+  SITES: "main:. v0.5:next v0.5-merge:merge"
 
 jobs:
   build-and-deploy:
