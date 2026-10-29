@@ -1,21 +1,24 @@
 /**
  * CitizenHome — ממשק אזרח ותיק
- * עיצוב חם, ברור, טקסט גדול, נגיש
- * מותאם ל-65+ — פשוט, ללא עומס, מזמין
+ * עיצוב חם, ברור, טקסט גדול, נגיש. מותאם ל-65+: פשוט, בלי עומס, מזמין.
+ *
+ * 0.5 מאוחד: הארנק בשקלים מההגדרות (500 לחודש), ההשתתפות לפי המדרגות, עד 3
+ * המלצות עם "למה", הפעילויות מההזמנות, ודרך למלווה בכל מסך.
  */
-import { Bell, ChevronLeft, MapPin, Phone, Wallet, CheckCircle, Clock, Heart } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
+import { ChevronLeft, MapPin, Phone, PhoneCall, Search, Heart, CalendarCheck, Clock, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
 import { PersonalReasonCard } from "@/components/shared/PersonalReasonCard";
-import { CITIZENS } from "@/data/mockData";
-import { realServices } from "@/data/realServices";
-import { matchServicesForCitizen } from "@/lib/matchingEngine";
-import { useMemo } from "react";
-
-const citizen = CITIZENS[0];
+import { catalogState } from "@/data/catalogSource";
+import { matchServicesForCitizen, type MatchResult } from "@/lib/matchingEngine";
+import { appSettings } from "@/pilot/settings";
+import { createRequest, usePilot } from "@/pilot/store";
+import { formatSlot } from "@/pilot/i18n";
+import { he } from "@/pilot/i18n/he";
+import { useCitizen, useWallet } from "@/pilot/citizen/common";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -24,88 +27,93 @@ const getGreeting = () => {
   return "ערב טוב";
 };
 
-const SCHEDULE = [
-  { day: "ג׳", date: "10.06", time: "10:00", name: "התעמלות קבוצתית", place: "מרכז ספורט מינהל קהילתי" },
-  { day: "ה׳", date: "12.06", time: "11:30", name: "מועדון חברתי", place: "המועדון השכונתי" },
-  { day: "א׳", date: "15.06", time: "09:00", name: "ביקור רונית (מלווה)", place: "ביתך" },
-];
+/** תווית ההשתתפות לפי המדרגות שבהגדרות (0, 20, 50), במקום "חינם 100%". */
+export function copayBadge(result: MatchResult): { text: string; tone: "free" | "part" } {
+  const s = result.service as MatchResult["service"] & { copayRate?: number; complementState?: string };
+  if (s.complementState && s.complementState !== "none") return { text: "השלמה למממן אחר", tone: "part" };
+  const rate = s.copayRate ?? 0;
+  return rate === 0 ? { text: "בלי השתתפות", tone: "free" } : { text: `השתתפות ${Math.round(rate * 100)}%`, tone: "part" };
+}
 
 export default function CitizenHome() {
   const showImages = useShowImages();
-  // ארנק רמה 2 — 32 יחידות/חודש (775₪), מיצוי 71%
-  const walletTotal = 32;
-  const walletUsed = Math.round(walletTotal * 0.71); // 23 נוצלו
-  const walletBalance = walletTotal - walletUsed;    // 9 נותרו
+  const { derived } = usePilot();
+  const { profile: citizen, firstName } = useCitizen();
+  const wallet = useWallet();
+  const [callback, setCallback] = useState(false);
+  const month = he.monthNames[new Date().getMonth()];
+  const usedPct = wallet.total ? Math.round((wallet.used / wallet.total) * 100) : 0;
+  const tiers = catalogState.seed.settings.copay_tiers;
 
   const recommended = useMemo(
-    () => matchServicesForCitizen(citizen, { topN: 4 }),
-    []
+    () => matchServicesForCitizen(citizen, { topN: 3, walletLeft: wallet.left * (catalogState.seed.settings.points_per_shekel || 1) }),
+    [citizen, wallet.left],
   );
+  const activities = derived.bookings
+    .filter((b) => b.citizenId === citizen.id && b.status !== "cancelled")
+    .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt))
+    .slice(0, 3);
+  const callbackOpen = callback || derived.requests.some((r) => r.citizenId === citizen.id && r.kind === "callback" && r.status === "open");
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
 
-      {/* Welcome */}
-      <div className="bg-[#1B3A5C] text-white px-6 pt-8 pb-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-white/70" />
-            <span className="text-sm font-bold text-white/90">סל אישי</span>
-          </div>
-          <button className="relative w-10 h-10 rounded-full bg-white/10 flex items-center justify-center" aria-label="התראות">
-            <Bell className="w-5 h-5 text-white/80" />
-          </button>
+      {/* Welcome + wallet */}
+      <div className="bg-[#1B3A5C] text-white px-6 pt-6 pb-10">
+        <div className="flex items-center gap-2 mb-5">
+          <Wallet className="w-5 h-5 text-white/80" aria-hidden="true" />
+          <span className="text-base font-bold text-white">סל אישי</span>
         </div>
-        <h1 className="text-2xl font-bold">{getGreeting()}, {citizen.name.split(" ")[0]}</h1>
-        <p className="text-base text-white/60 mt-1">{citizen.neighborhood} · בת {citizen.age}</p>
+        <h1 className="text-3xl font-bold" tabIndex={-1}>{getGreeting()}, {firstName}</h1>
+        <p className="text-lg text-white/85 mt-1">{citizen.neighborhood} · בת {citizen.age}</p>
 
-        {/* Wallet summary */}
-        <div className="mt-6 bg-white/10 rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white/50">יחידות נותרו החודש</p>
-              <p className="text-3xl font-bold">{walletBalance} <span className="text-base font-normal text-white/50">מתוך {walletTotal}</span></p>
-            </div>
-            <div className="text-left">
-              <p className="text-sm text-white/50">שווי חודשי</p>
-              <p className="text-lg font-bold text-emerald-300">775₪</p>
-              <p className="text-[10px] text-white/30 mt-0.5">רמה 2</p>
-            </div>
+        <div className="mt-6 bg-white/10 rounded-xl p-4" aria-labelledby="wallet-title">
+          <p id="wallet-title" className="text-base text-white/90">הסל שלך לחודש {month}</p>
+          <p className="text-4xl font-bold mt-1">
+            נשארו ₪{wallet.left} <span className="text-lg font-normal text-white/85">מתוך ₪{wallet.total}</span>
+          </p>
+          <div className="mt-3 h-3 bg-white/25 rounded-full overflow-hidden" role="img" aria-label={`השתמשת ב-₪${wallet.used} מתוך ₪${wallet.total}`}>
+            <div className="h-full bg-white rounded-full" style={{ width: `${usedPct}%` }} />
           </div>
-          <div className="mt-3 h-2 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-white rounded-full" style={{ width: `${Math.round((walletUsed / walletTotal) * 100)}%` }} />
-          </div>
-          <p className="text-xs text-white/40 mt-2">שירותי מניעה חינם 100% · חוסן ומוצרים מסובסדים 50%</p>
+          <p className="text-sm text-white/85 mt-2">
+            השתתפות עצמית: {Math.round(tiers.core_and_prevention * 100)}% בשירותי ליבה ומניעה, {Math.round(tiers.classes * 100)}% בחוגים, {Math.round(tiers.qol * 100)}% באיכות חיים
+          </p>
         </div>
       </div>
 
-      <main className="px-6 -mt-4 space-y-6 pb-28">
+      <main id="main" tabIndex={-1} className="px-6 -mt-4 space-y-6 pb-28" data-read>
 
-        {/* Quick actions */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/citizen/services" className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center">
-            <Heart className="w-6 h-6 text-[#1B3A5C] mx-auto mb-2" />
-            <p className="text-sm font-bold text-gray-900">שירותים זמינים</p>
-            <p className="text-xs text-gray-500 mt-0.5">{realServices.length} שירותים</p>
+        {/* One primary action, two secondary */}
+        <div className="space-y-3">
+          <Link to="/citizen/services" className="flex items-center justify-center gap-3 min-h-[56px] bg-[#1B3A5C] text-white rounded-xl px-5 text-lg font-bold shadow-md hover:bg-[#15304b] transition-colors">
+            <Search className="w-6 h-6" aria-hidden="true" />
+            למצוא חוג או שירות
           </Link>
-          {CITIZEN_CHAT_ENABLED && <Link to="/citizen/chat" className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all text-center">
-            <Phone className="w-6 h-6 text-[#1B3A5C] mx-auto mb-2" />
-            <p className="text-sm font-bold text-gray-900">שיחה עם רונית</p>
-            <p className="text-xs text-gray-500 mt-0.5">מלווה אישית</p>
-          </Link>}
+          <div className="grid grid-cols-2 gap-3">
+            <Link to="/citizen/profile" className="flex flex-col items-center justify-center gap-1 min-h-[72px] bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all text-center">
+              <Heart className="w-6 h-6 text-[#1B3A5C]" aria-hidden="true" />
+              <span className="text-base font-bold text-gray-900">לספר מה חשוב לי</span>
+            </Link>
+            <a href="#help" className="flex flex-col items-center justify-center gap-1 min-h-[72px] bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all text-center"
+              onClick={(e) => { e.preventDefault(); document.getElementById("help")?.scrollIntoView({ behavior: "smooth" }); }}>
+              <Phone className="w-6 h-6 text-[#1B3A5C]" aria-hidden="true" />
+              <span className="text-base font-bold text-gray-900">לדבר עם המלווה</span>
+            </a>
+          </div>
         </div>
 
-        {/* Recommended services — card with image */}
-        <div>
+        {/* Recommended services: card with image, up to 3 */}
+        <section aria-labelledby="rec-title">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-gray-900">מומלץ עבורך</h2>
-            <Link to="/citizen/services" className="text-xs text-[#1B3A5C] font-medium flex items-center gap-0.5">
-              הכל <ChevronLeft className="w-3 h-3" />
+            <h2 id="rec-title" className="text-xl font-bold text-gray-900">מומלץ עבורך</h2>
+            <Link to="/citizen/services" className="min-h-[48px] inline-flex items-center text-base text-[#1B3A5C] font-semibold gap-0.5 px-2">
+              עוד <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
           <div className="space-y-3">
             {recommended.map((result, idx) => {
               const isHero = idx === 0;
+              const badge = copayBadge(result);
               const { image, gradient, gradientDark } = showImages
                 ? getServiceImageInfo(result.service)
                 : { image: undefined, gradient: "", gradientDark: "" };
@@ -116,91 +124,48 @@ export default function CitizenHome() {
                   to={`/citizen/services/${result.service.id}`}
                   className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
                 >
-                  {/* ── Image mode: hero card (idx=0) or thumbnail (idx>0) ── */}
                   {showImages && isHero ? (
                     <>
-                      <div className="relative h-36 w-full">
+                      <div className="relative h-40 w-full">
                         {image ? (
-                          <img src={image} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={image} alt="" className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <div className={cn("w-full h-full", gradientDark)} />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                        <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center border-2 border-emerald-400 shadow-sm">
-                          <span className="text-xs font-bold text-gray-900">{result.totalScore}</span>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/95 flex items-center justify-center border-2 border-emerald-500 shadow-sm" aria-label={`התאמה ${result.totalScore} מתוך 100`}>
+                          <span className="text-sm font-bold text-gray-900">{result.totalScore}</span>
                         </div>
                         <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between gap-2">
-                          <h3 className="text-white font-bold text-base leading-tight drop-shadow line-clamp-1">{result.service.name}</h3>
-                          <span className={cn("shrink-0 text-xs px-2.5 py-1 rounded-lg font-semibold",
-                            result.service.cost === "free" ? "bg-emerald-500 text-white" : "bg-blue-500 text-white"
-                          )}>
-                            {result.service.cost === "free" ? "חינם 100%" : "מסובסד 50%"}
+                          <h3 className="text-white font-bold text-lg leading-tight drop-shadow line-clamp-2">{result.service.name}</h3>
+                          <span className={cn("shrink-0 text-sm px-2.5 py-1 rounded-lg font-semibold", badge.tone === "free" ? "bg-emerald-700 text-white" : "bg-[#1B3A5C] text-white")}>
+                            {badge.text}
                           </span>
                         </div>
                       </div>
-                      {/* Personal explanation — always show hook, expand for details */}
                       <div className="px-4 pb-3 pt-1">
-                        <PersonalReasonCard
-                          result={result}
-                          firstName={citizen.name.split(" ")[0]}
-                          showLayers={false}
-                        />
+                        <PersonalReasonCard result={result} firstName={firstName} showLayers={false} />
                       </div>
                     </>
                   ) : (
-                    /* ── Clean mode OR thumbnail (idx>0 in image mode) ── */
                     <div className="flex items-start gap-3 p-4">
-                      {/* Thumbnail — image or gradient (only in image mode) */}
                       {showImages && (
                         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                          {image ? (
-                            <img src={image} alt={result.service.name} className="w-full h-full object-cover" loading="lazy" />
-                          ) : (
-                            <div className={cn("w-full h-full", gradient)} />
-                          )}
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/55 text-center py-0.5">
-                            <span className="text-[9px] text-white font-bold">{result.totalScore}</span>
-                          </div>
+                          {image ? <img src={image} alt="" className="w-full h-full object-cover" loading="lazy" /> : <div className={cn("w-full h-full", gradient)} />}
                         </div>
                       )}
-                      {/* Score circle — clean mode only */}
-                      {!showImages && (
-                        <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
-                          style={{
-                            borderColor: result.totalScore >= 80 ? "#22c55e" : result.totalScore >= 60 ? "#f59e0b" : "#d1d5db",
-                            color: result.totalScore >= 80 ? "#16a34a" : result.totalScore >= 60 ? "#d97706" : "#6b7280",
-                          }}>
-                          {result.totalScore}
-                        </div>
-                      )}
-                      {/* Text */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-1">{result.service.name}</h3>
-                          <span className={cn("shrink-0 text-xs px-2 py-0.5 rounded font-semibold",
-                            result.service.cost === "free" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
-                          )}>
-                            {result.service.cost === "free" ? "חינם 100%" : "מסובסד 50%"}
+                          <h3 className="text-base font-bold text-gray-900 leading-tight">{result.service.name}</h3>
+                          <span className={cn("shrink-0 text-sm px-2 py-0.5 rounded font-semibold", badge.tone === "free" ? "bg-emerald-50 text-emerald-800" : "bg-blue-50 text-[#1B3A5C]")}>
+                            {badge.text}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{result.service.provider}</p>
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="flex items-center gap-1 text-xs text-gray-400">
-                            <MapPin className="w-3 h-3" />{result.service.neighborhood}
-                          </span>
-                          {result.service.days && (
-                            <span className="flex items-center gap-1 text-xs text-gray-400">
-                              <Clock className="w-3 h-3" />{result.service.days}
-                            </span>
-                          )}
-                        </div>
-                        {/* Personal explanation — hook + expandable details */}
-                        <div className="mt-2.5">
-                          <PersonalReasonCard
-                            result={result}
-                            firstName={citizen.name.split(" ")[0]}
-                            showLayers={false}
-                          />
+                        <p className="flex items-center gap-1 text-sm text-gray-600 mt-1">
+                          <MapPin className="w-4 h-4" aria-hidden="true" />{result.service.neighborhood}
+                        </p>
+                        <div className="mt-2">
+                          <PersonalReasonCard result={result} firstName={firstName} showLayers={false} />
                         </div>
                       </div>
                     </div>
@@ -209,53 +174,58 @@ export default function CitizenHome() {
               );
             })}
           </div>
-        </div>
+        </section>
 
-        {/* Schedule */}
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">לוח הפעילויות שלך</h2>
-          <div className="space-y-2">
-            {SCHEDULE.map((item, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4">
-                <div className="shrink-0 w-14 text-center bg-gray-50 rounded-lg py-2">
-                  <p className="text-xs text-gray-500">יום {item.day}</p>
-                  <p className="text-sm font-bold text-[#1B3A5C]">{item.date}</p>
+        {/* Schedule from bookings */}
+        <section aria-labelledby="sched-title">
+          <h2 id="sched-title" className="text-xl font-bold text-gray-900 mb-3">לוח הפעילויות שלך</h2>
+          {activities.length === 0 ? (
+            <p className="text-base text-gray-700">עוד אין לך פעילויות. אפשר למצוא חוג או שירות.</p>
+          ) : (
+            <div className="space-y-2">
+              {activities.map((b) => (
+                <div key={b.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4">
+                  <CalendarCheck className="w-6 h-6 text-[#1B3A5C] shrink-0" aria-hidden="true" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold text-gray-900">{b.serviceName}</p>
+                    <p className="text-sm text-gray-600 mt-0.5 flex items-center gap-1">
+                      <Clock className="w-4 h-4" aria-hidden="true" /> {b.slot ? formatSlot(he, b.slot) : he.coordinated}
+                    </p>
+                  </div>
+                  {b.status === "paused" ? <span className="text-sm font-semibold text-amber-800 bg-amber-50 px-2 py-1 rounded">מוקפא</span> : null}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {item.time} · {item.place}
-                  </p>
-                </div>
-                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          )}
+        </section>
 
-        {/* Contact */}
-        {CITIZEN_CHAT_ENABLED && <Link
-          to="/citizen/chat"
-          className="block bg-[#1B3A5C] rounded-xl p-5 text-white"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-              <Phone className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-base font-bold">צריכה עזרה? דברי איתנו</p>
-              <p className="text-sm text-white/60 mt-0.5">רונית, המלווה שלך, זמינה עכשיו</p>
-            </div>
-          </div>
-        </Link>}
+        {/* Help: always a way out of digital */}
+        <section id="help" className="bg-[#1B3A5C] rounded-xl p-5 text-white scroll-mt-16" aria-labelledby="help-title">
+          <h2 id="help-title" className="text-xl font-bold">צריכה עזרה?</h2>
+          <p className="text-base text-white/90 mt-1">
+            {callbackOpen ? `${appSettings.companion.name}, המלווה שלך, קיבלה את הבקשה ותתקשר אלייך.` : `${appSettings.companion.name}, המלווה שלך, תתקשר אלייך.`}
+          </p>
+          {!callbackOpen ? (
+            <button
+              type="button"
+              className="mt-3 w-full min-h-[52px] bg-white text-[#1B3A5C] rounded-xl text-lg font-bold flex items-center justify-center gap-2"
+              onClick={() => {
+                createRequest({ citizenId: citizen.id, kind: "callback", actor: "citizen" });
+                setCallback(true);
+              }}
+            >
+              <PhoneCall className="w-5 h-5" aria-hidden="true" /> שיחזרו אליי
+            </button>
+          ) : null}
+        </section>
 
         {/* Emergency */}
         <div className="flex items-center justify-center gap-4 pt-2">
-          <a href="tel:*6050" className="flex items-center gap-1.5 px-4 py-2.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-            <Phone className="w-4 h-4" /> *6050
+          <a href="tel:*6050" className="flex items-center gap-1.5 px-4 min-h-[48px] bg-gray-100 rounded-lg text-base font-medium text-gray-800">
+            <Phone className="w-4 h-4" aria-hidden="true" /> מוקד ביטוח לאומי *6050
           </a>
-          <a href="tel:106" className="flex items-center gap-1.5 px-4 py-2.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-            <Phone className="w-4 h-4" /> עירייה 106
+          <a href="tel:106" className="flex items-center gap-1.5 px-4 min-h-[48px] bg-gray-100 rounded-lg text-base font-medium text-gray-800">
+            <Phone className="w-4 h-4" aria-hidden="true" /> עירייה 106
           </a>
         </div>
       </main>

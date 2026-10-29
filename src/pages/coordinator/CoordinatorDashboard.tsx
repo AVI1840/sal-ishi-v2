@@ -12,6 +12,9 @@ import { Chip } from "@/components/shared/Chip";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { CITIZENS, AI_RECOMMENDATIONS, RISK_ALERTS, NUDGES, KPIS } from "@/data/mockData";
 import { MOTIVATION_LABELS } from "@/data/types";
+import { TodayTriage } from "@/components/companion/TodayTriage";
+import { buildCaseload } from "@/pilot/caseload";
+import { appSettings } from "@/pilot/settings";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 // Mock trend data
@@ -47,9 +50,12 @@ export default function CoordinatorDashboard() {
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">בוקר טוב, רונית</h1>
-          <p className="text-sm text-muted-foreground mt-1">התיק שלי: 75 · פיילוט: 286 · סלים עודכנו היום · {unresolvedAlerts.length} בסיכון</p>
+          <p className="text-sm text-muted-foreground mt-1">התיק שלי: {buildCaseload().length} · פיילוט: {appSettings.program.pilot_participants} · {unresolvedAlerts.length} בסיכון</p>
         </div>
       </div>
+
+      {/* 0.5: מי דורש פנייה היום, עם תובנה ופעולה */}
+      <TodayTriage />
 
       {/* 5 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

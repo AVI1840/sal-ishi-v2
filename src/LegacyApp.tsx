@@ -145,7 +145,7 @@ export default function LegacyApp() {
           {/* Feedback FAB */}
           <button
             onClick={() => setFeedbackOpen(true)}
-            className="fixed bottom-6 left-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg text-white text-sm font-medium transition-transform hover:scale-105 active:scale-95"
+            className="fixed bottom-24 left-4 z-50 flex items-center gap-2 px-4 min-h-[48px] rounded-full shadow-lg text-white text-sm font-medium transition-transform hover:scale-105 active:scale-95"
             style={{ backgroundColor: "#1B3A5C" }}
             aria-label="משוב פיילוט"
           >

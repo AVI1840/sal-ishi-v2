@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen } from "lucide-react";
+import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -42,11 +42,22 @@ export default function AppShell({ variant }: AppShellProps) {
   const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי — ניהולי" : "פורטל ספקים";
   const subtitle = variant === "coordinator" ? "לוח בקרה למלווה חברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
   const { pathname } = useLocation();
+  // בטלפון התפריט נפתח בכפתור ולא מכסה את התוכן (0.5: המלווה עובדת מהנייד).
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [pathname]);
 
   return (
     <div dir="rtl" className="min-h-screen bg-background">
+      <div className="lg:hidden sticky top-10 z-30 flex items-center justify-between bg-white border-b border-border px-4 h-14">
+        <span className="font-bold text-primary">{title}</span>
+        <button type="button" className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1 rounded-lg border border-border px-3 text-sm font-semibold" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(!open)}>
+          {open ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+          תפריט
+        </button>
+      </div>
+      {open ? <div className="lg:hidden fixed inset-0 z-30 bg-black/30" aria-hidden="true" onClick={() => setOpen(false)} /> : null}
       {/* Sidebar */}
-      <aside className="fixed top-0 right-0 h-screen w-64 border-l border-border bg-white flex flex-col z-30">
+      <aside id="app-sidebar" className={cn("fixed top-10 right-0 h-[calc(100vh-2.5rem)] w-64 border-l border-border bg-white flex-col z-40 lg:z-30", open ? "flex" : "hidden lg:flex")}>
         <div className="px-5 py-5 border-b border-border">
           <NavLink to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
@@ -126,8 +137,8 @@ export default function AppShell({ variant }: AppShellProps) {
       </aside>
 
       {/* Main content */}
-      <main className="mr-64 min-h-screen">
-        <div className="p-8 animate-fade-in">
+      <main id="main" tabIndex={-1} className="lg:mr-64 min-h-screen">
+        <div className="p-4 lg:p-8 animate-fade-in">
           <Outlet />
         </div>
       </main>

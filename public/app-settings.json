@@ -3,6 +3,10 @@
   "version": "0.5",
   "mode_options": ["demo", "pilot"],
   "mode_note": "demo: שלוש דמויות בדויות, נתוני דמה וכפתור איפוס. pilot: בלי פס הדגמה, בלי איפוס ובלי נתוני פתיחה בדויים. אין הבדל בקוד.",
+  "program": {
+    "pilot_participants": 286,
+    "pilot_participants_source": "פיילוט פסגת זאב, מתוך נתוני הכלי הקיים [לאמת]"
+  },
   "citizen": {
     "persona_id": "c1",
     "baseline_spent_this_month": 100,

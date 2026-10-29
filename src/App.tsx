@@ -1,17 +1,11 @@
-import { lazy, Suspense } from "react";
-import { SHOW_DEMO_LAYERS } from "@/lib/edition";
-import { RouteFallback } from "@/components/system/RouteFallback";
-import PilotApp from "@/pilot/PilotApp";
+import { useState } from "react";
+import LegacyApp from "./LegacyApp";
+import { seedDemo } from "./pilot/demoSeed";
 
-const LegacyApp = lazy(() => import("./LegacyApp"));
-
-// מגרסה 0.5: הדגמה ופיילוט רצים על חוויית האזרח והמלווה. המסכים הישנים רק בגרסת ההאקתון.
+// גרסה 0.5 מאוחדת: הכלי הקיים הוא הבסיס. מה שנבנה ב-0.5 (מנוע, כללים, נגישות,
+// מיון פניות) נכנס לתוך המסכים הקיימים, בשפה העיצובית שלהם.
 export default function App() {
-  return SHOW_DEMO_LAYERS ? (
-    <Suspense fallback={<RouteFallback />}>
-      <LegacyApp />
-    </Suspense>
-  ) : (
-    <PilotApp />
-  );
+  // נקודת ההתחלה של ההדגמה, אחרי שהקטלוג נטען (main.tsx).
+  useState(() => seedDemo());
+  return <LegacyApp />;
 }

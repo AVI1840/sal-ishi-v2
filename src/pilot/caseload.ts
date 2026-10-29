@@ -118,7 +118,7 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 export function reasonsFor(p: CaseloadPerson, derived: Derived): TriageReason[] {
   const s = catalogState.seed.settings;
   const out: TriageReason[] = [];
-  if (derived.hospitalized.has(p.id)) out.push({ rule: "hospitalization", text: "באשפוז: לבדוק שחרור ולעדכן את הספקים" });
+  if (derived.hospitalized.has(p.id)) out.push({ rule: "hospitalization", text: "באשפוז" });
   for (const req of derived.requests.filter((x) => x.citizenId === p.id && x.status === "open")) {
     if (req.kind === "callback") out.push({ rule: "callback", text: "ביקש/ה שיחזרו אליו/ה", request: req });
     else if (req.kind === "claim_help") out.push({ rule: "claim_task", text: `משימת מיצוי: ${req.serviceName ?? "הגשה למממן אחר"}${req.note ? ` (${req.note})` : ""}`, request: req });

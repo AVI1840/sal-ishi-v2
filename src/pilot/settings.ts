@@ -19,6 +19,7 @@ export type TriageRule =
 export interface AppSettings {
   mode: AppMode;
   version: string;
+  program: { pilot_participants: number; pilot_participants_source: string };
   citizen: {
     persona_id: string;
     baseline_spent_this_month: number;
