@@ -17,7 +17,7 @@ const DREAMS = [
   "להתחיל לכתוב יומן",
 ];
 const TIPS = [
-  "התקשרי בבוקר — ערנית יותר ומגיבה בחיוב.",
+  "התקשרי בבוקר - ערנית יותר ומגיבה בחיוב.",
   "מעדיפ/ה שיחה אישית על פני קבוצתית בהתחלה.",
   "מתחבר/ת לזיכרונות ילדות כפתיח לשיחה.",
   "שירים מבית-אבא פותחים את הלב.",
@@ -121,7 +121,7 @@ function generateClient(i: number): Client {
 // Generate 75 clients
 const generated = Array.from({ length: 75 }, (_, i) => generateClient(i + 2));
 
-// Sarah — protagonist (id c1) — pinned to top
+// Sarah - protagonist (id c1) - pinned to top
 const sarah: Client = {
   id: "c1",
   firstName: "שרה",

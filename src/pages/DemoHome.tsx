@@ -1,5 +1,5 @@
 /**
- * DemoHome — Landing page
+ * DemoHome - Landing page
  * Visual architecture: צורך → פתרון → ערך → כניסה
  * Images: trust-building, not decorative
  */
@@ -200,7 +200,7 @@ export default function DemoHome() {
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-red-400 mb-3 block">הבעיה</span>
             <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-              הכסף מנוצל — אבל ל-בית ולניקיון, לא למניעת הידרדרות
+              הכסף מנוצל - אבל ל-בית ולניקיון, לא למניעת הידרדרות
             </h2>
             <p className="mt-3 text-sm text-gray-500 leading-relaxed">
               רוב תקציב הסיעוד מופנה היום לשירותי בית, ומעט ממנו לשירותים שמונעים הידרדרות [לאמת].
@@ -329,7 +329,7 @@ export default function DemoHome() {
       <section className="relative h-44 md:h-56 overflow-hidden">
         <img
           src="./images/community-club.png"
-          alt="קהילה חיה ופעילה — מתנס נווה יעקב"
+          alt="קהילה חיה ופעילה - מתנס נווה יעקב"
           className="w-full h-full object-cover object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#1B3A5C]/85 via-[#1B3A5C]/40 to-transparent" />

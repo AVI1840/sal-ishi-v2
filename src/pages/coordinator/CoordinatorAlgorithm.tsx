@@ -19,7 +19,7 @@ export default function CoordinatorAlgorithm() {
     { id: "prevention", label: "מניעת הידרדרות", description: "שירותים שמוכחים כמפחיתים ירידה תפקודית", icon: Activity, color: "#3b82f6", weight: 30 },
     { id: "motivation", label: "מוטיבציות ורצון אישי", description: "התאמה לרצונות, חלומות ותחביבי האדם", icon: Heart, color: "#ec4899", weight: 25 },
     { id: "profile", label: "פרופיל: ניידות, שפה, מגזר", description: "התאמה ליכולות ולצרכים הספציפיים", icon: Users, color: "#22c55e", weight: 20 },
-    { id: "social", label: "המלצות חברתיות ואמינות", description: "דירוגי עמיתים — מניע עיקרי לאימוץ שירות", icon: AlertTriangle, color: "#8b5cf6", weight: 15 },
+    { id: "social", label: "המלצות חברתיות ואמינות", description: "דירוגי עמיתים - מניע עיקרי לאימוץ שירות", icon: AlertTriangle, color: "#8b5cf6", weight: 15 },
     { id: "proximity", label: "זמינות וקרבה גיאוגרפית", description: "שכונה, הסעות, שעות פתיחה", icon: MapPin, color: "#f59e0b", weight: 10 },
   ]);
 

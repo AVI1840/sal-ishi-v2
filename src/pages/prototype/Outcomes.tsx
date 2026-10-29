@@ -26,7 +26,7 @@ const AFTER = [
 
 const INSIGHTS = [
   { icon: TrendingUp, title: "חוג שירה פעל ב-78% מהפרסונה החברתית-אקטיבית", tone: "success" as const },
-  { icon: TrendingDown, title: "שירות s12 (מכשיר שמיעה) — אפקטיביות נמוכה לפרסונת homebody", tone: "destructive" as const },
+  { icon: TrendingDown, title: "שירות s12 (מכשיר שמיעה) - אפקטיביות נמוכה לפרסונת homebody", tone: "destructive" as const },
   { icon: Lightbulb, title: "שילוב פיזיותרפיה + מתנדב = שיפור 23% בציון רגשי", tone: "info" as const },
   { icon: RefreshCcw, title: "Matching Engine עודכן: משקל פרסונה עלה ל-18%", tone: "warning" as const },
 ];
@@ -76,7 +76,7 @@ export default function Outcomes() {
           <Card className="bg-destructive-soft/30 border-destructive/20">
             <MiniChart data={BEFORE} title="לפני התערבות (קבוצת ביקורת)" />
             <div className="mt-3 flex items-center gap-2 text-xs text-destructive">
-              <TrendingDown className="w-4 h-4" aria-hidden="true" /> כל המדדים יורדים — הידרדרות טבעית
+              <TrendingDown className="w-4 h-4" aria-hidden="true" /> כל המדדים יורדים - הידרדרות טבעית
             </div>
           </Card>
           <Card className="bg-success-soft/30 border-success/20">

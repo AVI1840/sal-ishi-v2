@@ -1,5 +1,5 @@
 /**
- * ServiceRating — קומפוננטת דירוג לשירות
+ * ServiceRating - קומפוננטת דירוג לשירות
  * כוכבים 1-5 + "היית ממליץ?" + טקסט חופשי
  * שומר ב-localStorage לפי serviceId
  */

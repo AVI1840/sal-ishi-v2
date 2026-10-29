@@ -306,7 +306,7 @@ export default function CoordinatorIntake() {
                       </div>
                       <div>
                         <span className="text-xs font-medium text-muted-foreground mb-1.5 block">שלב מוכנות</span>
-                        <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-info-soft text-[hsl(var(--info))] border border-[hsl(var(--info))]/20">מוכנה להתחיל — מוטיבציה גבוהה</span>
+                        <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-info-soft text-[hsl(var(--info))] border border-[hsl(var(--info))]/20">מוכנה להתחיל - מוטיבציה גבוהה</span>
                       </div>
                     </div>
                   </div>

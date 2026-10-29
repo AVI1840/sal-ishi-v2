@@ -1,5 +1,5 @@
 /**
- * פרופיל מטופל עשיר — מנוע חיזוק חיים אישי
+ * פרופיל מטופל עשיר - מנוע חיזוק חיים אישי
  * Timeline טיפולי + מעגל חוזקות + תוכנית אישית + Nudges + Risk
  */
 import { useParams, Link } from "react-router-dom";
@@ -242,7 +242,7 @@ export default function CoordinatorPatientDetail() {
                 )}
               </div>
 
-              {/* Matched Services — from real matching engine */}
+              {/* Matched Services - from real matching engine */}
               <div className="libi-card p-5">
                 <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" /> שירותים מותאמים לפרופיל
@@ -368,7 +368,7 @@ export default function CoordinatorPatientDetail() {
               <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Target className="w-4 h-4 text-purple-500" /> מעגל חוזקות (VIA)
               </h3>
-              <p className="text-xs text-muted-foreground mb-4">חוזקות דומיננטיות שזוהו — משמשות להתאמת שירותים ולחיזוק</p>
+              <p className="text-xs text-muted-foreground mb-4">חוזקות דומיננטיות שזוהו - משמשות להתאמת שירותים ולחיזוק</p>
 
               {/* VIA strengths with lucide icons */}
               <div className="grid grid-cols-2 gap-3">
@@ -395,7 +395,7 @@ export default function CoordinatorPatientDetail() {
             {/* Services aligned with top matches (engine-sourced, no legacy SERVICES) */}
             <div className="libi-card p-5">
               <h3 className="text-base font-semibold text-foreground mb-4">שירותים מובילים</h3>
-              <p className="text-xs text-muted-foreground mb-3">שירותים מותאמים לפרופיל — מחוזקות, מוטיבציות ומצב תפקודי</p>
+              <p className="text-xs text-muted-foreground mb-3">שירותים מותאמים לפרופיל - מחוזקות, מוטיבציות ומצב תפקודי</p>
               <div className="space-y-2">
                 {matchedServices.map((result) => {
                   const { image, gradient } = getServiceImageInfo(result.service);

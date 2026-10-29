@@ -3,7 +3,7 @@ import { Home, MessageCircle, Star, User, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WEEK_SCHEDULE = [
-  { day: "יום א׳", date: "18.05", items: [{ time: "14:00", name: "ביקור בית — מתנדבת", status: "pending" }] },
+  { day: "יום א׳", date: "18.05", items: [{ time: "14:00", name: "ביקור בית - מתנדבת", status: "pending" }] },
   { day: "יום ב׳", date: "19.05", items: [] },
   { day: "יום ג׳", date: "20.05", items: [{ time: "10:00", name: "התעמלות קבוצתית", status: "confirmed" }, { time: "15:00", name: "שיחה עם מלווה", status: "confirmed" }] },
   { day: "יום ד׳", date: "21.05", items: [] },
@@ -19,7 +19,7 @@ export default function CitizenSchedule() {
           <Calendar className="w-5 h-5 text-[#1B3A5C]" />
           <h1 className="text-xl font-bold text-[#1B3A5C]">לוח הזמנים שלי</h1>
         </div>
-        <p className="text-xs text-gray-400 mt-1">השבוע — 18-23 במאי 2026</p>
+        <p className="text-xs text-gray-400 mt-1">השבוע - 18-23 במאי 2026</p>
       </header>
 
       <main className="px-5 pt-4 space-y-3">

@@ -1,5 +1,5 @@
 /**
- * CoordinatorAgents — מערכת אייג'נטים AI
+ * CoordinatorAgents - מערכת אייג'נטים AI
  * תצוגה מובנית, ברורה ומקצועית של כל האייג'נטים
  * כולל: תפקיד, קלט, פלט, טריגר, כלים, וסימולציית הרצה
  */
@@ -50,10 +50,10 @@ const AGENTS: AgentDef[] = [
     id: "super-agent",
     name: "Super Agent",
     nameHe: "מנהל מערכת",
-    role: "Supervisor / Orchestrator — מנתב בקשות לאייג'נט המתאים ומתזמן שרשראות",
+    role: "Supervisor / Orchestrator - מנתב בקשות לאייג'נט המתאים ומתזמן שרשראות",
     description: "האייג'נט המרכזי שמנהל את כל המערכת. מקבל כל אירוע (הודעת משתמש, טריגר מתוזמן, התראה) ומחליט איזה אייג'נט צריך לטפל. מתאם שרשראות: למשל שירות חדש → חישוב מחדש → nudge לאזרחים מתאימים.",
     model: "Claude 3.5 Sonnet",
-    schedule: "24/7 — event-driven",
+    schedule: "24/7 - event-driven",
     trigger: "כל אירוע במערכת (הודעה, scheduling, alert)",
     lastRun: "05.06.26, 08:05",
     lastResult: "כל 4 אייג'נטים פעילים · ללא תקלות · זמן ריצה ממוצע: 2.3s",
@@ -127,7 +127,7 @@ const AGENTS: AgentDef[] = [
     id: "matching-engine",
     name: "Matching Engine Agent",
     nameHe: "מנוע התאמה",
-    role: "מחשב ציוני התאמה 286×102 לפי 5 שכבות — ומייצר המלצות אישיות",
+    role: "מחשב ציוני התאמה 286×102 לפי 5 שכבות - ומייצר המלצות אישיות",
     description: "האלגוריתם המרכזי של סל אישי. לכל אזרח מחשב ציון התאמה לכל שירות בקטלוג לפי 5 שכבות: מניעת הידרדרות (30%), מוטיבציות אישיות (25%), פרופיל (20%), הוכחה חברתית (15%), קרבה גיאוגרפית (10%). מייצר רשימת Top-5 המלצות מנומקות.",
     model: "Claude 3.5 Haiku (מהיר)",
     schedule: "אחרי אינטייק חדש + שבועי (ראשון 07:00)",
@@ -206,7 +206,7 @@ const AGENTS: AgentDef[] = [
     name: "Nudge & Engagement Agent",
     nameHe: "חיזוקים ומעורבות",
     role: "שולח הודעות מותאמות אישית שמעודדות אזרחים להשתמש בשירותים",
-    description: "מייצר ושולח חיזוקים מותאמים — תזכורות לפעילות מחר, חגיגת milestones (\"10 פעילויות החודש!\"), reactivation לאזרחים שנעלמו, והודעות חברתיות (\"חברתך מרים תהיה שם\"). מבוסס על פרסונה, מוטיבציות, ושלב מוכנות.",
+    description: "מייצר ושולח חיזוקים מותאמים - תזכורות לפעילות מחר, חגיגת milestones (\"10 פעילויות החודש!\"), reactivation לאזרחים שנעלמו, והודעות חברתיות (\"חברתך מרים תהיה שם\"). מבוסס על פרסונה, מוטיבציות, ושלב מוכנות.",
     model: "Claude 3.5 Haiku (מהיר)",
     schedule: "יומי, 08:00 + event-driven",
     trigger: "EventBridge daily + post-Matching + post-Monitor",
@@ -374,7 +374,7 @@ export default function CoordinatorAgents() {
           </div>
         </div>
         <p className="text-sm text-white/80 leading-relaxed max-w-3xl">
-          5 אייג'נטים אוטונומיים שפועלים 24/7 — סורקים שירותים, מחשבים התאמות, מזהים הידרדרות, ושולחים חיזוקים מותאמים.
+          5 אייג'נטים אוטונומיים שפועלים 24/7 - סורקים שירותים, מחשבים התאמות, מזהים הידרדרות, ושולחים חיזוקים מותאמים.
           כל אייג'נט מתמחה בתפקיד אחד. ה-Super Agent מתזמן ומתאם ביניהם.
         </p>
         {/* Architecture summary stats */}
@@ -568,7 +568,7 @@ export default function CoordinatorAgents() {
             {/* Tools */}
             <div>
               <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" /> כלים (Tools) — {selected.tools.length}
+                <Zap className="w-4 h-4 text-amber-500" /> כלים (Tools) - {selected.tools.length}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {selected.tools.map((tool) => (

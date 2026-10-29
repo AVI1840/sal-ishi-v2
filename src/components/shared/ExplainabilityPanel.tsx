@@ -1,5 +1,5 @@
 /**
- * ExplainabilityPanel — ויזואליזציית 5 שכבות ציון ההתאמה
+ * ExplainabilityPanel - ויזואליזציית 5 שכבות ציון ההתאמה
  * מציג למה שירות הומלץ: progress bars צבעוניים + הסברים בעברית
  */
 import { cn } from "@/lib/utils";

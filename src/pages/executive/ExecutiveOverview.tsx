@@ -19,10 +19,10 @@ const TIMELINE_STEPS = [
 
 const SITES = [
   { name: "פסגת זאב", citizens: 286, coordinators: 4, providers: 12, utilization: 71, prevention: 54, budget: "₪930K", status: "פעיל" },
-  { name: "תלפיות מזרח", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "בית חנינא", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "נווה יעקב", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "עין כרם", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
+  { name: "תלפיות מזרח", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
+  { name: "בית חנינא", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
+  { name: "נווה יעקב", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
+  { name: "עין כרם", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
 ];
 
 
@@ -31,7 +31,7 @@ export default function ExecutiveOverview() {
     <div className="space-y-6">
       {/* Hero Banner */}
       <div className="bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] rounded-2xl p-8 text-white">
-        <h1 className="text-2xl font-bold">רפורמת סל אישי — מבט על</h1>
+        <h1 className="text-2xl font-bold">רפורמת סל אישי - מבט על</h1>
         <p className="text-sm text-white/70 mt-1">שלב 1: פיילוט ירושלים</p>
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
@@ -78,10 +78,10 @@ export default function ExecutiveOverview() {
 
       {/* Neighborhoods + Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Neighborhood status list — replaces decorative dot-map */}
+        {/* Neighborhood status list - replaces decorative dot-map */}
         <div className="libi-card p-5">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-muted-foreground" /> אתרי הפיילוט — ירושלים
+            <MapPin className="w-4 h-4 text-muted-foreground" /> אתרי הפיילוט - ירושלים
           </h3>
           <div className="space-y-2">
             {[
@@ -161,13 +161,13 @@ export default function ExecutiveOverview() {
               {SITES.map((site) => (
                 <tr key={site.name} className="border-b border-border/50 hover:bg-muted/30">
                   <td className="px-4 py-3 font-medium flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-muted-foreground" /> ירושלים — {site.name}
+                    <MapPin className="w-3.5 h-3.5 text-muted-foreground" /> ירושלים - {site.name}
                   </td>
-                  <td className="px-4 py-3">{site.citizens || "—"}</td>
-                  <td className="px-4 py-3">{site.coordinators || "—"}</td>
-                  <td className="px-4 py-3">{site.providers || "—"}</td>
-                  <td className="px-4 py-3">{site.utilization ? `${site.utilization}%` : "—"}</td>
-                  <td className="px-4 py-3">{site.prevention ? `${site.prevention}%` : "—"}</td>
+                  <td className="px-4 py-3">{site.citizens || "-"}</td>
+                  <td className="px-4 py-3">{site.coordinators || "-"}</td>
+                  <td className="px-4 py-3">{site.providers || "-"}</td>
+                  <td className="px-4 py-3">{site.utilization ? `${site.utilization}%` : "-"}</td>
+                  <td className="px-4 py-3">{site.prevention ? `${site.prevention}%` : "-"}</td>
                   <td className="px-4 py-3">{site.budget}</td>
                   <td className="px-4 py-3">
                     <Chip tone={site.status === "פעיל" ? "success" : "muted"}>{site.status}</Chip>

@@ -1,5 +1,5 @@
 /**
- * LiveAgenticFlow — Hero component for the Hackathon demo
+ * LiveAgenticFlow - Hero component for the Hackathon demo
  * Presenter clicks "הפעל הדגמה" → each step reveals with animation
  * Bedrock Analysis step shows streaming-like typing effect
  */
@@ -26,7 +26,7 @@ const STEPS: FlowStep[] = [
     icon: Mic,
     title: "תמלול קולי",
     service: "Amazon Transcribe",
-    input: "הקלטת שיחה — רבקה לוי, 78",
+    input: "הקלטת שיחה - רבקה לוי, 78",
     output: "\"כואב לי הברך... לא יצאתי כבר 3 שבועות. מרגישה לבד.\"",
     color: "text-blue-600",
     border: "border-blue-200",
@@ -149,7 +149,7 @@ export function LiveAgenticFlow() {
           <Sparkles className="w-4 h-4" />
         </div>
         <div className="flex-1">
-          <h3 className="text-base font-bold text-foreground">Agentic AI Flow — הדגמה חיה</h3>
+          <h3 className="text-base font-bold text-foreground">Agentic AI Flow - הדגמה חיה</h3>
           <p className="text-xs text-muted-foreground">מקצה לקצה · Amazon Bedrock · אוטומטי לחלוטין</p>
         </div>
         {phase === "idle" && (
@@ -176,7 +176,7 @@ export function LiveAgenticFlow() {
       {phase === "idle" && (
         <div className="rounded-xl border border-dashed border-[#1B3A5C]/20 bg-[#1B3A5C]/[0.02] p-4 text-center">
           <p className="text-sm text-muted-foreground">
-            לחץ <span className="font-semibold text-[#1B3A5C]">הפעל הדגמה</span> כדי לראות את הלולאה האוטונומית — מקליטת שיחה ועד Nudge אישי
+            לחץ <span className="font-semibold text-[#1B3A5C]">הפעל הדגמה</span> כדי לראות את הלולאה האוטונומית - מקליטת שיחה ועד Nudge אישי
           </p>
         </div>
       )}
@@ -230,7 +230,7 @@ export function LiveAgenticFlow() {
                       ) : isDone || (!step.streaming && isRunning) ? (
                         step.output
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-gray-300">-</span>
                       )}
                     </p>
                   </div>
@@ -247,7 +247,7 @@ export function LiveAgenticFlow() {
           <div className="flex items-start gap-2.5">
             <TrendingUp className="w-4 h-4 text-[#1B3A5C] mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-bold text-[#1B3A5C] mb-1">תוצאה — ללא התערבות ידנית</p>
+              <p className="text-xs font-bold text-[#1B3A5C] mb-1">תוצאה - ללא התערבות ידנית</p>
               <p className="text-xs text-gray-700 leading-relaxed">
                 רבקה לוי (21 יום ללא פעילות) → AI זיהה בדידות + כאב ברגל → הותאם חוג שירה + פיזיותרפיה → נשלח Nudge אישי → <span className="font-semibold text-emerald-700">ממתין לאישור</span>
               </p>

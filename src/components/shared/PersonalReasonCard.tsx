@@ -17,7 +17,7 @@ import { MatchExplainability } from "./MatchExplainability";
 
 interface Props {
   result: MatchResult;
-  /** citizen first name — used to personalise the hook */
+  /** citizen first name - used to personalise the hook */
   firstName?: string;
   /** show the full 5-layer breakdown when expanded (default true) */
   showLayers?: boolean;
@@ -47,20 +47,20 @@ export function PersonalReasonCard({
   const [open, setOpen] = useState(false);
 
   const explanations = result.explanations.filter(Boolean);
-  // First reason is the hook — shown collapsed
+  // First reason is the hook - shown collapsed
   const hookReason = explanations[0] ?? "מתאים לפרופיל שלך";
-  // Rest shown on expand (may overlap with hook — dedupe)
+  // Rest shown on expand (may overlap with hook - dedupe)
   const extraReasons = explanations.slice(1);
 
   return (
     <div className={cn("rounded-xl border border-[#1B3A5C]/10 bg-[#1B3A5C]/[0.025]", className)}>
-      {/* Hook — always visible */}
+      {/* Hook - always visible */}
       <div className="px-4 py-3 flex items-start gap-2.5">
         <CheckCircle className="w-4 h-4 text-[#1B3A5C] mt-0.5 shrink-0" />
         <p className="text-sm text-[#1B3A5C] font-medium leading-snug flex-1">
           {personalise(hookReason, firstName)}
         </p>
-        {/* Toggle button — only if there's more to show */}
+        {/* Toggle button - only if there's more to show */}
         {(extraReasons.length > 0 || showLayers) && (
           <button
             onClick={() => setOpen((v) => !v)}
@@ -93,7 +93,7 @@ export function PersonalReasonCard({
               ))}
             </ul>
           )}
-          {/* 5-layer breakdown — compact */}
+          {/* 5-layer breakdown - compact */}
           {showLayers && (
             <div className="pt-1 border-t border-[#1B3A5C]/10">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[#1B3A5C]/50 mb-2">

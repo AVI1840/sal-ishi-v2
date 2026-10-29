@@ -1,28 +1,28 @@
 /**
  * matchingEngine.ts
  * ─────────────────
- * אלגוריתם התאמה 5 שכבות — Sal Ishi
+ * אלגוריתם התאמה 5 שכבות - Sal Ishi
  * מבוסס נתוני פיילוט פסגת זאב (286 אזרחים)
  *
  * INPUT:  CitizenProfile + ServiceCatalog
  * OUTPUT: Scored + ranked services with explanations
  *
  * LAYERS (משקלות מאומתות מהשדה):
- *   L1: Prevention (30%) — מניעת הידרדרות תפקודית
- *   L2: Motivation (25%) — רצונות ומוטיבציות אישיות
- *   L3: Profile fit (20%) — ניידות, שפה, מגזר
- *   L4: Proximity (10%) — שכונה, הסעות, שעות
- *   L5: Social proof (15%) — דירוגי עמיתים ורמת אמון
+ *   L1: Prevention (30%) - מניעת הידרדרות תפקודית
+ *   L2: Motivation (25%) - רצונות ומוטיבציות אישיות
+ *   L3: Profile fit (20%) - ניידות, שפה, מגזר
+ *   L4: Proximity (10%) - שכונה, הסעות, שעות
+ *   L5: Social proof (15%) - דירוגי עמיתים ורמת אמון
  *
  * Canonical home of this module (moved from src/lib/matchingEngine.ts in
- * Sprint 0 so both the web app and Lambda handlers import the same logic —
+ * Sprint 0 so both the web app and Lambda handlers import the same logic -
  * see PROMPT_SONNET5_PRODUCTION.md "extract packages/domain"). Behavior is
  * unchanged from the pre-move version; src/lib/matchingEngine.ts now
  * re-exports from here for backward compatibility.
  *
  * This still operates on the legacy PersonalProfile shape (src/data/types.ts).
  * Adapting it to the pseudonymized Person/Enrollment shape in ./schema.ts is
- * Sprint 1 work, once the server-side API needs it — the golden tests in
+ * Sprint 1 work, once the server-side API needs it - the golden tests in
  * __tests__/matchingEngine.golden.test.ts pin today's scoring so that
  * refactor can be verified against a known-good baseline.
  */
@@ -81,7 +81,7 @@ export function safetyMismatch(citizen: PersonalProfile, service: CatalogService
 
 // ─── Default weights ────────────────────────────────────────────
 
-// משקלות מאומתות מנתוני פיילוט — סך 1.00
+// משקלות מאומתות מנתוני פיילוט - סך 1.00
 const DEFAULT_WEIGHTS = {
   prevention: 0.30,   // מניעת הידרדרות (הורד מ-40% → ממצאי שדה)
   motivation: 0.25,   // מוטיבציות ורצון אישי
@@ -128,7 +128,7 @@ function scorePrevention(citizen: PersonalProfile, service: CatalogService): { s
   // Specific risk signals
   if (citizen.loneliness >= 4 && dims.emotional_fit >= 4) {
     score += 15;
-    reasons.push("ממתן בדידות — מזוהה כגורם סיכון");
+    reasons.push("ממתן בדידות - מזוהה כגורם סיכון");
   }
   if (citizen.activityLevel <= 2 && dims.functional_fit >= 4) {
     score += 10;
@@ -195,7 +195,7 @@ function scoreProfileFit(citizen: PersonalProfile, service: CatalogService): { s
     reasons.push("מותאם למצב תפקודי");
   } else if (serviceMobility === "homebound" && mobilityLevel <= 1) {
     score += 25;
-    reasons.push("שירות ביתי — ללא צורך ביציאה");
+    reasons.push("שירות ביתי - ללא צורך ביציאה");
   } else if (serviceMobility === "frail-light" && mobilityLevel <= 3) {
     score += 15;
   } else {
@@ -211,7 +211,7 @@ function scoreProfileFit(citizen: PersonalProfile, service: CatalogService): { s
     if (citizenLangCode !== "hebrew") reasons.push(`זמין בשפה שלך (${citizenLang})`);
   } else {
     score -= 15;
-    reasons.push("שפה לא ודאית — לבדוק");
+    reasons.push("שפה לא ודאית - לבדוק");
   }
 
   // Age match
@@ -284,7 +284,7 @@ function scoreProximity(citizen: PersonalProfile, service: CatalogService, walle
 
 function scoreSocialProof(service: CatalogService): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  let score = 50; // baseline — no ratings yet
+  let score = 50; // baseline - no ratings yet
 
   // Certainty as proxy for now
   if (service.certainty === "high") {

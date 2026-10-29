@@ -1,5 +1,5 @@
 /**
- * ServicesCatalog — קטלוג סל שירותי הזדקנות מיטבית
+ * ServicesCatalog - קטלוג סל שירותי הזדקנות מיטבית
  * מבוסס על החלטות ממשלה 127 ו-150
  * 5 תחומי ליבה · קטגוריות משנה · רמות שירות
  */
@@ -93,7 +93,7 @@ const DOMAINS: Domain[] = [
       { icon: Home, label: "בטיחות ומניעה", services: [
         { name: "התאמת הבית למניעת נפילות", level: "local", linkedIds: ["srv_040"] },
         { name: "בדיקות בריאות מונעות", level: "local", linkedIds: ["srv_038"] },
-        { name: "מניעת נפילות — הדרכה", level: "local", linkedIds: ["srv_097"] },
+        { name: "מניעת נפילות - הדרכה", level: "local", linkedIds: ["srv_097"] },
       ]},
     ],
   },
@@ -116,7 +116,7 @@ const DOMAINS: Domain[] = [
       { icon: Lock, label: "עצמאות יומיומית", services: [
         { name: "שירותי עזר ביתיים", level: "local", linkedIds: ["srv_041","srv_065","srv_080"] },
         { name: "ליווי לרופאים ומוסדות", level: "local", linkedIds: ["srv_046","srv_071"] },
-        { name: "חברה לשעה — מתנדבים", level: "local", linkedIds: ["srv_048","srv_098"] },
+        { name: "חברה לשעה - מתנדבים", level: "local", linkedIds: ["srv_048","srv_098"] },
         { name: "הכנה למעברי חיים", level: "national", linkedIds: ["srv_057"] },
       ]},
     ],
@@ -139,7 +139,7 @@ const DOMAINS: Domain[] = [
       { icon: Globe, label: "קישוריות חברתית", services: [
         { name: "וידאו-שיחות עם המשפחה", level: "national" },
         { name: "מועדון דיגיטלי מרחוק", level: "national", linkedIds: ["srv_023"] },
-        { name: "טלמדיסין — רפואה מרחוק", level: "national", linkedIds: ["srv_095"] },
+        { name: "טלמדיסין - רפואה מרחוק", level: "national", linkedIds: ["srv_095"] },
         { name: "פלטפורמות למידה דיגיטליות", level: "national" },
       ]},
     ],
@@ -306,7 +306,7 @@ export default function ServicesCatalog() {
 
         {/* Algorithm */}
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">אלגוריתם התאמה — 5 שכבות</h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-4">אלגוריתם התאמה - 5 שכבות</h3>
           <div className="space-y-2.5">
             {[
               { w: "40%", title: "מניעת הידרדרות", desc: "מה מוכח מחקרית שמעכב ירידה תפקודית, מותאם לגורמי סיכון מזוהים" },

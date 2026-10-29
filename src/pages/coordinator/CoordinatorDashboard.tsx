@@ -1,5 +1,5 @@
 /**
- * דשבורד מלווה חברתית — מנוע חיזוק חיים
+ * דשבורד מלווה חברתית - מנוע חיזוק חיים
  * KPIs + גרפים + AI Recommendations + Risk + Timeline
  */
 import { Users, AlertTriangle, Target, Heart, Sparkles, ChevronLeft, Phone, Home, Activity, Clock, TrendingUp, ArrowUpRight, ArrowDownRight, MessageCircle } from "lucide-react";
@@ -30,11 +30,11 @@ const PERSISTENCE_DATA = [
 ];
 
 const SCHEDULE = [
-  { time: "09:00", title: "שיחה עם רבקה לוי", subtitle: "מעקב — 21 יום ללא פעילות", type: "call", tone: "destructive" },
-  { time: "10:30", title: "ביקור בית — אהרון מזרחי", subtitle: "הערכה תפקודית + הצעת שירות", type: "visit", tone: "info" },
-  { time: "12:00", title: "ליווי קבוצת התעמלות", subtitle: "פסגת זאב — 14 משתתפים", type: "class", tone: "success" },
+  { time: "09:00", title: "שיחה עם רבקה לוי", subtitle: "מעקב - 21 יום ללא פעילות", type: "call", tone: "destructive" },
+  { time: "10:30", title: "ביקור בית - אהרון מזרחי", subtitle: "הערכה תפקודית + הצעת שירות", type: "visit", tone: "info" },
+  { time: "12:00", title: "ליווי קבוצת התעמלות", subtitle: "פסגת זאב - 14 משתתפים", type: "class", tone: "success" },
   { time: "14:00", title: "פגישת צוות שבועית", subtitle: "סיכום + חלוקת משימות", type: "meeting", tone: "primary" },
-  { time: "15:30", title: "שיחה עם משה דהן", subtitle: "ירידה בהתמדה — בירור", type: "followup", tone: "warning" },
+  { time: "15:30", title: "שיחה עם משה דהן", subtitle: "ירידה בהתמדה - בירור", type: "followup", tone: "warning" },
 ];
 
 const ICON_MAP: Record<string, typeof Phone> = { call: Phone, visit: Home, class: Activity, meeting: Users, followup: MessageCircle };
@@ -86,7 +86,7 @@ export default function CoordinatorDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-semibold text-foreground">מגמת מעורבות</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">% אזרחים פעילים — 6 שבועות</p>
+              <p className="text-xs text-muted-foreground mt-0.5">% אזרחים פעילים - 6 שבועות</p>
             </div>
             <TrendingUp className="w-5 h-5 text-success" />
           </div>
@@ -229,7 +229,7 @@ export default function CoordinatorDashboard() {
         </div>
       </div>
 
-      {/* Agentic Flow — interactive Hero */}
+      {/* Agentic Flow - interactive Hero */}
     </div>
   );
 }

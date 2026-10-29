@@ -1,5 +1,5 @@
 /**
- * CoordinatorServices — קטלוג שירותים מנותח
+ * CoordinatorServices - קטלוג שירותים מנותח
  * ללא אימוגי. מקצועי. ממשלתי.
  * ניווט: קטגוריות, שכונות, מגזרים, מימדים
  */
@@ -237,7 +237,7 @@ export default function CoordinatorServices() {
 
       {/* Dimension averages */}
       <div className="bg-white border border-gray-100 rounded-xl p-4">
-        <p className="text-xs font-semibold text-gray-700 mb-3">ממוצע מימדים — כלל הקטלוג</p>
+        <p className="text-xs font-semibold text-gray-700 mb-3">ממוצע מימדים - כלל הקטלוג</p>
         <div className="grid grid-cols-5 gap-4">
           {(Object.keys(DIM_LABELS) as (keyof ServiceDimensions)[]).map((dim) => (
             <div key={dim} className="text-center">

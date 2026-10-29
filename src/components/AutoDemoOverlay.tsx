@@ -1,8 +1,8 @@
 /**
- * AutoDemoOverlay — דמו אוטומטי 30 שניות
+ * AutoDemoOverlay - דמו אוטומטי 30 שניות
  * 
  * גישה: Global overlay שחי מחוץ ל-Routes (ב-App.tsx).
- * מופעל דרך localStorage event — כך הוא שורד navigate בין דפים.
+ * מופעל דרך localStorage event - כך הוא שורד navigate בין דפים.
  * 
  * Flow:
  * 1. סקירה מהירה 3 שניות (מה זה סל אישי + מה נראה)
@@ -25,32 +25,32 @@ interface DemoStop {
 const STOPS: DemoStop[] = [
   {
     route: "/",
-    title: "סל אישי — דף הבית",
+    title: "סל אישי - דף הבית",
     subtitle: "5 ממשקים · מארקטפלייס שירותים · ארנק דיגיטלי · AI מוסבר",
     duration: 7000,
   },
   {
     route: "/citizen",
-    title: "שרה כהן, בת 78 — ממשק אזרח",
+    title: "שרה כהן, בת 78 - ממשק אזרח",
     subtitle: "ארנק 32 יחידות · המלצות מותאמות · סל מניעה חינם 100%",
     duration: 7000,
   },
   {
     route: "/citizen/services",
-    title: "102 שירותי מניעה — ציוני התאמה",
+    title: "102 שירותי מניעה - ציוני התאמה",
     subtitle: "כל שירות מדורג 0-100 לפי 5 שכבות · AI שקוף ומוסבר",
     duration: 7000,
   },
   {
     route: "/coordinator",
-    title: "דשבורד המלווה — רונית",
+    title: "דשבורד המלווה - רונית",
     subtitle: "75 אזרחים · CRM פרואקטיבי · פעולות ממוינות · KPIs",
     duration: 8000,
   },
   {
     route: "/coordinator/agents",
     title: "5 אייג'נטים AI אוטונומיים",
-    subtitle: "Discovery · Matching · Monitor · Nudge · Supervisor — 24/7",
+    subtitle: "Discovery · Matching · Monitor · Nudge · Supervisor - 24/7",
     duration: 8000,
   },
   {
@@ -67,13 +67,13 @@ const STOPS: DemoStop[] = [
   },
   {
     route: "/coordinator/deterioration",
-    title: "ניטור הידרדרות — RDI / SDI",
+    title: "ניטור הידרדרות - RDI / SDI",
     subtitle: "זיהוי מוקדם · RDI > 1.3 = התערבות · מניעה לפני משבר",
     duration: 7000,
   },
   {
     route: "/executive",
-    title: "דשבורד ניהולי — ROI",
+    title: "דשבורד ניהולי - ROI",
     subtitle: "286 אזרחים · 5 שכונות · 67% מימוש · חיסכון ₪2B בהרחבה",
     duration: 7000,
   },
@@ -300,7 +300,7 @@ export function AutoDemoOverlay() {
     );
   }
 
-  // ─── RUNNING — TOP BANNER (avoids conflict with mobile nav) ───
+  // ─── RUNNING - TOP BANNER (avoids conflict with mobile nav) ───
   const current = STOPS[currentStop];
   const completedMs = STOPS.slice(0, currentStop).reduce((s, stop) => s + stop.duration, 0) + elapsed;
   const totalProgress = Math.min((completedMs / TOTAL_DURATION) * 100, 100);
@@ -309,7 +309,7 @@ export function AutoDemoOverlay() {
 
   return (
     <>
-      {/* TOP BANNER — always visible, above everything */}
+      {/* TOP BANNER - always visible, above everything */}
       <div className="fixed top-0 left-0 right-0 z-[9999]" dir="rtl">
         {/* Banner */}
         <div className="bg-[#0a1628] border-b border-white/10 shadow-2xl">

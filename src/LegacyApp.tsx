@@ -74,7 +74,7 @@ export default function LegacyApp() {
             <DemoNav />
             <div className="pt-10"> {/* offset for DemoNav */}
             <Routes>
-              {/* Demo Home — Module Switcher */}
+              {/* Demo Home - Module Switcher */}
               <Route path="/" element={<DemoHome />} />
               <Route path="/scope" element={<ScopePage />} />
 
@@ -142,7 +142,7 @@ export default function LegacyApp() {
             </Routes>
             </div>
 
-            {/* GuidedDemo MUST be inside HashRouter — uses Link */}
+            {/* GuidedDemo MUST be inside HashRouter - uses Link */}
             {SHOW_DEMO_LAYERS && <GuidedDemo />}
             {SHOW_DEMO_LAYERS && <AutoDemoOverlay />}
           </HashRouter>

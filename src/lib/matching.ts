@@ -48,7 +48,7 @@ function scoreService(client: Client, service: Service): ScoredService {
 
   if (service.subsidy === 100) {
     score += 12;
-    reasons.push("סבסוד מלא — אין עומס תקציבי");
+    reasons.push("סבסוד מלא - אין עומס תקציבי");
   } else if (service.subsidy >= 50) {
     score += 5;
   }

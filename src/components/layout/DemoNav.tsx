@@ -1,5 +1,5 @@
 /**
- * DemoNav — ניווט עליון גלובלי
+ * DemoNav - ניווט עליון גלובלי
  * מאפשר לקפוץ בין ממשקים מכל מקום
  */
 import { NavLink, useLocation } from "react-router-dom";

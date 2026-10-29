@@ -103,7 +103,7 @@ export default function MobileShell() {
         </button>
       </div>
 
-      {/* Bottom Navigation — always visible */}
+      {/* Bottom Navigation - always visible */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg" aria-label="ניווט ראשי">
         <div className="flex items-center justify-around h-20 max-w-2xl mx-auto px-4">
           {TABS.map((tab) => {

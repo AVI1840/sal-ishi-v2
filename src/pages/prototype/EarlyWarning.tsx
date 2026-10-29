@@ -158,7 +158,7 @@ export default function EarlyWarning() {
               </div>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 פתח/י תוכנית מניעה מותאמת לפרופיל: שילוב התערבות בבדידות + שירותי מניעה.
-                <strong className="text-foreground"> אין פעולה אוטומטית</strong> — מלווה מקצועי מאשר.
+                <strong className="text-foreground"> אין פעולה אוטומטית</strong> - מלווה מקצועי מאשר.
               </p>
               <Link
                 to="/actions"
