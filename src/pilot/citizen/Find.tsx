@@ -51,9 +51,8 @@ export default function CitizenFind() {
                 {t.reason[reasonKey(s)]}
               </p>
               <p>{price.unknown ? t.costUnknown(price.total) : t.costLine(price.covered, price.copay)}</p>
-              <Link to={`/citizen/service/${encodeURIComponent(s.id)}`} className="p-btn p-btn--secondary p-btn--block">
+              <Link to={`/citizen/service/${encodeURIComponent(s.id)}`} className="p-btn p-btn--secondary p-btn--block" aria-label={`${t.details}: ${s.name}`}>
                 {t.details}
-                <span className="p-visually-hidden">: {s.name}</span>
                 <ChevronLeft aria-hidden="true" size={20} />
               </Link>
             </li>

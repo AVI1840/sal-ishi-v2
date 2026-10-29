@@ -66,8 +66,8 @@ export function PersonCard(props: { item: TriageItem }) {
       ) : (
         <p className="p-muted">אין כרגע סיבה לפנות.</p>
       )}
-      <Link to={`/companion/person/${person.id}`} className="p-btn p-btn--secondary">
-        לפתוח את התיק<span className="p-visually-hidden"> של {person.name}</span>
+      <Link to={`/companion/person/${person.id}`} className="p-btn p-btn--secondary" aria-label={`לפתוח את התיק של ${person.name}`}>
+        לפתוח את התיק
       </Link>
     </li>
   );
@@ -112,11 +112,11 @@ export function DecisionPanel(props: { request: Request; personName: string }) {
   if (!mode) {
     return (
       <div className="p-row">
-        <button type="button" className="p-btn p-btn--primary" onClick={() => setMode("approve")}>
-          לאשר<span className="p-visually-hidden">: {r.serviceName} ל{props.personName}</span>
+        <button type="button" className="p-btn p-btn--primary" onClick={() => setMode("approve")} aria-label={`לאשר: ${r.serviceName} ל${props.personName}`}>
+          לאשר
         </button>
-        <button type="button" className="p-btn p-btn--ghost" onClick={() => setMode("reject")}>
-          לא לאשר<span className="p-visually-hidden">: {r.serviceName} ל{props.personName}</span>
+        <button type="button" className="p-btn p-btn--ghost" onClick={() => setMode("reject")} aria-label={`לא לאשר: ${r.serviceName} ל${props.personName}`}>
+          לא לאשר
         </button>
       </div>
     );

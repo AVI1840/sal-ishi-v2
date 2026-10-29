@@ -50,9 +50,8 @@ export default function CitizenActivities() {
                   <StatusBadge status={b.status} text={t.status[b.status]} />
                 </p>
                 {b.status === "booked" ? (
-                  <Link to={`/citizen/cancel/${b.id}`} className="p-btn p-btn--secondary p-btn--block">
+                  <Link to={`/citizen/cancel/${b.id}`} className="p-btn p-btn--secondary p-btn--block" aria-label={`${t.cancel}: ${b.serviceName}`}>
                     {t.cancel}
-                    <span className="p-visually-hidden">: {b.serviceName}</span>
                   </Link>
                 ) : null}
               </li>
@@ -80,9 +79,8 @@ export default function CitizenActivities() {
                 {r.status === "approved" && r.kind === "gated_service" && r.serviceId ? (
                   <>
                     <p>{t.approvedNext}</p>
-                    <Link to={`/citizen/book/${encodeURIComponent(r.serviceId)}`} className="p-btn p-btn--primary p-btn--block">
+                    <Link to={`/citizen/book/${encodeURIComponent(r.serviceId)}`} className="p-btn p-btn--primary p-btn--block" aria-label={`${t.book}: ${r.serviceName}`}>
                       {t.book}
-                      <span className="p-visually-hidden">: {r.serviceName}</span>
                     </Link>
                   </>
                 ) : null}
