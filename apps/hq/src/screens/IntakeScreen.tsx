@@ -7,6 +7,7 @@ import {
   FileSyncAdapter,
   createBrowserFileIO,
   diffPackage,
+  migrationGaps,
   type PackageDiff,
   type PilotPackage,
 } from "@sal-ishi/core";
@@ -21,6 +22,11 @@ interface Pending {
 }
 
 export default function IntakeScreen() {
+  const seedNotice = useHq((s) => s.seedNotice);
+  const dismissSeedNotice = useHq((s) => s.dismissSeedNotice);
+  const isDemo = useHq((s) => s.isDemo);
+  const hqSeed = useHq((s) => s.seed);
+  const toComplete = migrationGaps(useHq((s) => s.state).services, hqSeed).filter((g) => g.gaps.length).length;
   const state = useHq((s) => s.state);
   const seed = useHq((s) => s.seed);
   const { merge, loadDemo, reset } = useHq.getState();
@@ -66,7 +72,7 @@ export default function IntakeScreen() {
         actions={
           <>
             <Button icon={<Inbox size={18} />} onClick={receive}>קליטת חבילות</Button>
-            <Button variant="secondary" icon={<Database size={18} />} onClick={() => void loadDemo().then(() => toast("success", "נטענו שתי חבילות הדגמה"))}>
+            <Button variant="secondary" icon={<Database size={18} />} onClick={() => void loadDemo().then(() => toast("success", "נטענו חבילות ההדגמה"))}>
               חבילות הדגמה
             </Button>
             {state.packages.length ? (
@@ -75,6 +81,20 @@ export default function IntakeScreen() {
           </>
         }
       />
+
+      {seedNotice ? (
+        <div className="stack">
+          <Alert tone="info" title="גרסת בסיס חדשה" live>{seedNotice}</Alert>
+          <div><Button small variant="secondary" onClick={dismissSeedNotice}>הבנתי</Button></div>
+        </div>
+      ) : null}
+
+      {toComplete ? (
+        <Alert tone="warning" title="שירותים שדורשים השלמה לגרסה 0.4">
+          {toComplete} שירותים בחבילות שנקלטו חסרים שדות של מודל התשלום (שעות ליחידה או אופן מתן). הם נשמרו כמו שהם, נשארים בקטלוג לאזרח, ולא נכנסים לתקן קליטת המפעילים עד שהשטח ישלים וישלח חבילה חדשה.
+          {isDemo ? " בנתוני הדגמה אפשר לטעון את חבילות ההדגמה המעודכנות." : ""}
+        </Alert>
+      ) : null}
 
       {errors.length ? (
         <Alert tone="error" title="קבצים שלא נקלטו" live>

@@ -12,6 +12,9 @@ export interface NeighborhoodUtilization {
   name: string;
   rate: number | null;
   flag: UtilizationFlag;
+  /** הוצאה ותקציב בחלון, לחישוב מיצוי מצטבר לפיילוט ולארץ. */
+  spent: number;
+  capacity: number;
 }
 
 export interface AuthoritySummary {
@@ -56,7 +59,7 @@ export function authoritySummaries(state: HqState, seed: Seed): AuthoritySummary
     const util: NeighborhoodUtilization[] = asOfMonth
       ? neighborhoods.map((n) => {
           const u = utilization({ neighborhoodId: n.id, asOfMonth, services, activity, enrollment }, seed);
-          return { neighborhoodId: n.id, name: n.name, rate: u.rate, flag: u.flag };
+          return { neighborhoodId: n.id, name: n.name, rate: u.rate, flag: u.flag, spent: u.spent, capacity: u.capacity };
         })
       : [];
 

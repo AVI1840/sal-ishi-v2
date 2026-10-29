@@ -6,6 +6,7 @@ import { Globe2, Plus } from "lucide-react";
 import {
   NATIONAL_AUTHORITY,
   competitionFlags,
+  productsQuarterlyCapPoints,
   supplierScore,
   type Service,
   type Supplier,
@@ -55,7 +56,7 @@ export default function NationalChannelScreen() {
     <>
       <PageHeader
         title="ערוץ ארצי"
-        description={`מוצרים ושירותים ארציים מספקים ארציים, בעיקר מוצרי מניעה ובטיחות (קטגוריה 6). מופיעים בקטלוג של כל שכונה בכל הפיילוטים, ולא נספרים ברצפה של שכונה. עד ${maxNational} ספקים לכל סוג מוצר.`}
+        description={`מוצרים ושירותים ארציים מספקים ארציים, בעיקר מוצרי מניעה ובטיחות (קטגוריה 6). מופיעים בקטלוג של כל שכונה בכל הפיילוטים${seed.settings.products_count_in_floor ? ", ונספרים ברצפה" : ", ולא נספרים ברצפה של שכונה"}. תקרה לאדם: ${productsQuarterlyCapPoints(seed.settings)} נקודות ברבעון (${Math.round(seed.settings.products_quarterly_cap_share.value * 100)}% מהארנק הרבעוני). עד ${maxNational} ספקים לכל סוג מוצר.`}
         actions={
           <>
             <Button icon={<Plus size={18} />} disabled={!suppliers.length} onClick={() => setEditing(blank())}>פריט ארצי חדש</Button>

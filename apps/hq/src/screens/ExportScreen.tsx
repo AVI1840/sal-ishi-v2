@@ -1,11 +1,18 @@
-// ייצוא: תקן קליטת מפעילים (operator_onboarding_standard) לספק העל לפי export_contract, עם בדיקת סכמה, וקטלוג
-// מאושר לכל שכונה עבור הכלי לאזרח.
+// ייצוא: תקן קליטת מפעילים (operator_onboarding_standard 1.1) לספק העל לפי
+// export_contract, עם בדיקת סכמה ו-JSON Schema להורדה, וקטלוג מאושר לכל שכונה
+// עבור הכלי לאזרח.
 
 import { useEffect, useState } from "react";
-import { Download, ShieldCheck } from "lucide-react";
+import { Download, FileJson, ShieldCheck } from "lucide-react";
+// ה-JSON Schema נגזר מהסכמה בקוד (packages/core/scripts), ובדיקה בליבה מוודאת שהוא מעודכן.
+import onboardingSchemaText from "../../../../schema/operator_onboarding_standard_1.1.schema.json?raw";
 import {
   EXPORT_FORBIDDEN_KEYS,
   FileSyncAdapter,
+  HOSPITALIZATION_TEXT,
+  SERVICE_MODE_LABELS,
+  isPublishable,
+  servesNeighborhood,
   buildOnboardingStandard,
   buildCitizenCatalog,
   buildCitizenCatalogIndex,
@@ -15,7 +22,12 @@ import {
   type OnboardingStandard,
   type SkippedService,
 } from "@sal-ishi/core";
-import { Alert, Badge, Button, PageHeader, TableWrap, useToast } from "@sal-ishi/ui";
+import { Alert, Badge, Button, PageHeader, TableWrap, downloadBytes, useToast } from "@sal-ishi/ui";
+
+const QOL_LABEL: Record<string, string> = { fixed_amount: "סכום קבוע מהנקודות", percent: "אחוז השתתפות" };
+const REF_LABEL: Record<string, string> = { monitor: "מעקב", binding: "מחייב בהיקף שנבחר", preactivated_low_competition: "מחייב בתחרות נמוכה" };
+const BASIS_LABEL: Record<string, string> = { tier: "דרגת השתתפות", qol_fixed: "איכות חיים, סכום קבוע", qol_percent: "איכות חיים, אחוז", reference_binding: "מחיר ייחוס מחייב" };
+const pts = (n: number | null) => (n === null ? "טרם נקבע" : n.toLocaleString("he-IL", { maximumFractionDigits: 2 }));
 import { useHqAnalysis } from "../analysis";
 
 export default function ExportScreen() {
@@ -64,15 +76,27 @@ export default function ExportScreen() {
     <>
       <PageHeader
         title="ייצוא"
-        description={`${contract.name} בגרסה ${contract.version}: החוזה שביטוח לאומי מחזיק, והאינטגרטור מקבל אותו ולא מגדיר אותו. נכנסים רק שירותים בסטטוס ${seed.settings.publish_to_citizen_statuses.join(", ")}.`}
+        description={`${contract.name} בגרסה ${contract.version}: תקן קליטת המפעילים שביטוח לאומי מחזיק. ספק העל מקבל אותו ולא מגדיר אותו, ומפעיל לפיו נקודות, ביטולים ונוכחות. נכנסים רק שירותים בסטטוס ${seed.settings.publish_to_citizen_statuses.join(", ")} שיש להם את כל שדות מודל התשלום.`}
       />
 
       {error ? <Alert tone="error" title="הייצוא נכשל" live>{error}</Alert> : null}
 
       <section className="card" aria-labelledby="int-h">
         <div className="card__header">
-          <h2 id="int-h">לאינטגרטור</h2>
-          <Button icon={<Download size={18} />} disabled={!exp || !check?.ok} onClick={download}>הורדת תקן קליטת מפעילים</Button>
+          <h2 id="int-h">לספק העל: תקן קליטת מפעילים</h2>
+          <div className="row">
+            <Button icon={<Download size={18} />} disabled={!exp || !check?.ok} onClick={download}>הורדת תקן קליטת מפעילים</Button>
+            <Button
+              variant="secondary"
+              icon={<FileJson size={18} />}
+              onClick={() => {
+                downloadBytes("operator_onboarding_standard_1.1.schema.json", new TextEncoder().encode(onboardingSchemaText), "application/schema+json");
+                toast("success", "ה-JSON Schema ירד");
+              }}
+            >
+              הורדת JSON Schema
+            </Button>
+          </div>
         </div>
         {exp && check ? (
           <>
@@ -83,7 +107,49 @@ export default function ExportScreen() {
               <Badge tone="neutral">חתימה {exp.contentHash.slice(0, 12)}</Badge>
             </div>
             {"message" in check && check.message ? <Alert tone="error">{check.message}</Alert> : null}
-            <p className="muted"><ShieldCheck size={16} aria-hidden="true" /> נבדק אוטומטית שאין בקובץ שדה של תושב, פרטי קשר של ספק, מחיר בשקלים או הערה פנימית.</p>
+            <p className="muted"><ShieldCheck size={16} aria-hidden="true" /> נבדק אוטומטית שאין בקובץ שדה של תושב, פרטי קשר של ספק, מחיר בשקלים או הערה פנימית. אותה בדיקה רצה מול ה-JSON Schema בבדיקות הליבה.</p>
+            <dl className="terms__list" aria-label="הכללים שהייצוא חושב לפיהם">
+              <div className="terms__row"><dt>איכות חיים</dt><dd>{QOL_LABEL[exp.rules.qolMode] ?? exp.rules.qolMode}</dd></div>
+              <div className="terms__row"><dt>מחיר ייחוס</dt><dd>{REF_LABEL[exp.rules.referencePriceMode] ?? exp.rules.referencePriceMode}</dd></div>
+              <div className="terms__row"><dt>נקודה</dt><dd>{1 / exp.rules.pointsPerShekel} ש"ח</dd></div>
+              <div className="terms__row"><dt>תקרת מוצרים</dt><dd>{exp.rules.productsQuarterlyCapPoints} נקודות ברבעון</dd></div>
+              <div className="terms__row"><dt>משתתף פעיל</dt><dd>לפחות {exp.rules.activeParticipantMinSessionsMonth} מפגשים בחודש</dd></div>
+            </dl>
+            <details>
+              <summary>השירותים בייצוא ({exp.services.length})</summary>
+              <TableWrap label="שירותים בתקן קליטת המפעילים">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">שירות</th>
+                      <th scope="col">פיילוט</th>
+                      <th scope="col">אופן מתן</th>
+                      <th scope="col">שעות ליחידה</th>
+                      <th scope="col">נקודות לשעה</th>
+                      <th scope="col">ביטול</th>
+                      <th scope="col">אי-הגעה</th>
+                      <th scope="col">אשפוז</th>
+                      <th scope="col">מהארנק / על הקשיש</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {exp.services.map((s) => (
+                      <tr key={s.serviceId}>
+                        <th scope="row">{s.name}{s.gatedByCompanion ? <div><Badge tone="info">באישור מלווה</Badge></div> : null}</th>
+                        <td>{s.authority}</td>
+                        <td>{s.serviceMode ? SERVICE_MODE_LABELS[s.serviceMode] : "מוצר"}{s.capacityLimited ? <div className="muted">מוגבל מקום</div> : null}</td>
+                        <td className="num">{s.hoursPerUnit ?? "-"}</td>
+                        <td className="num">{s.pointsPerHour === null ? "-" : pts(s.pointsPerHour)}</td>
+                        <td>{s.serviceMode ? (s.cancellationNoticeHours === null ? "טרם נקבע" : `${s.cancellationNoticeHours} שעות`) : "-"}</td>
+                        <td>{s.noShowCharged === null ? "-" : s.noShowCharged ? "מחויבת" : "לא מחויבת"}</td>
+                        <td>{s.hospitalizationRefund ? (HOSPITALIZATION_TEXT[s.hospitalizationRefund] ?? s.hospitalizationRefund) : "-"}</td>
+                        <td>{pts(s.coveredPoints)} / {pts(s.copayPoints)}<div className="muted">{BASIS_LABEL[s.copayBasis]}</div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TableWrap>
+            </details>
           </>
         ) : null}
         <div className="grid grid--cards">
@@ -97,7 +163,7 @@ export default function ExportScreen() {
           </div>
         </div>
         {skipped.length ? (
-          <Alert tone="warning" title={`${skipped.length} שירותים מאושרים לא נכנסו`}>
+          <Alert tone="warning" title={`${skipped.length} שירותים מאושרים לא נכנסו. שירות שדורש השלמה נשלם בשטח ומגיע בחבילה הבאה`}>
             <ul>{skipped.map((s) => <li key={s.serviceId}>{state.services.find((x) => x.id === s.serviceId)?.name ?? s.serviceId}: {s.reason}</li>)}</ul>
           </Alert>
         ) : null}
@@ -141,7 +207,8 @@ export default function ExportScreen() {
             </thead>
             <tbody>
               {state.neighborhoods.map((n) => {
-                const count = exp?.services.filter((s) => s.neighborhoodId === n.id || s.reach === "national" || ((s.reach === "authority" || s.reach === "regional") && s.authority === n.authority)).length ?? 0;
+                // הקטלוג לאזרח כולל גם שירות מאושר שעוד דורש השלמה (עם ערכים חסרים), ולכן נספר מהשירותים ולא מהייצוא.
+                const count = state.services.filter((s) => isPublishable(s, seed.settings) && servesNeighborhood(s, n)).length;
                 return (
                   <tr key={n.id}>
                     <td>{n.authority}</td>

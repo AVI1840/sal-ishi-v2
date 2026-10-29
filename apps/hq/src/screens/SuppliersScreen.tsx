@@ -21,7 +21,7 @@ export default function SuppliersScreen() {
       <PageHeader title="ספקים" description="כל הספקים בפיילוטים, לפי רשות. הקוד של ספק ייחודי בתוך הרשות." />
       <Alert tone="info" title="פרטי ספקים שהם אנשים פרטיים">
         {seed.settings.supplier_contact_to_hq
-          ? "שם ופרטי קשר של עוסק פטור ומורשה מגיעים למטה בחבילה ונשמרים כאן לניהול. הם לא נכללים ב-catalog_export ולא בקטלוג לאזרח."
+          ? "שם ופרטי קשר של עוסק פטור ומורשה מגיעים למטה בחבילה ונשמרים כאן לניהול. הם לא נכללים בתקן קליטת המפעילים ולא בקטלוג לאזרח."
           : "לפי ההגדרות, ספקים שהם אנשים פרטיים מגיעים למטה כקוד וסוג בלבד."}
       </Alert>
       {(() => {
@@ -73,7 +73,7 @@ export default function SuppliersScreen() {
                 <td>
                   {(() => {
                     const sc = supplierScore(s, seed.settings);
-                    return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} ({sc.quarter})</Badge> : <span className="muted">אין</span>;
+                    return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} ({sc.quarter})</Badge> : <span className="muted">{seed.settings.supplier_rating_enabled === false ? "הדירוג כבוי" : "אין"}</span>;
                   })()}
                 </td>
               </tr>

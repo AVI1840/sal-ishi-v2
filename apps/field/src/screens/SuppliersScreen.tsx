@@ -103,7 +103,7 @@ export default function SuppliersScreen() {
                   <td>
                     {(() => {
                       const sc = supplierScore(s, seed.settings);
-                      return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} מתוך 5</Badge> : <span className="muted">אין</span>;
+                      return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} מתוך 5</Badge> : <span className="muted">{seed.settings.supplier_rating_enabled === false ? "הדירוג כבוי" : "אין"}</span>;
                     })()}
                   </td>
                   <td>

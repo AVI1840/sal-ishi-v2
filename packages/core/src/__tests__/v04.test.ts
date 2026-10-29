@@ -17,6 +17,7 @@ import { coverage } from "../rules/coverage";
 import { ENTRY_STATUS, entryTest } from "../rules/entryTest";
 import { referenceBindings } from "../rules/referencePrice";
 import { utilization } from "../rules/utilization";
+import { supplierScore } from "../rules/suppliers";
 import { cancellationNoticeHours, hourlyPrice, noShowCharged, pointsSplit, serviceTerms } from "../rules/terms";
 import { defaultSeed as seed, isOlderSeedBase, parseSeed, upgradeSeed, withSettings, type Settings } from "../seed";
 import { productsQuarterlyCapPoints, proposalKeys, statusNote } from "../settings";
@@ -297,5 +298,17 @@ describe("בלי em dash בקוד ובטקסטים של האטלס", () => {
     const dash = String.fromCharCode(0x2014);
     const offenders = dirs.flatMap((d) => files(join(root, d))).filter((f) => readFileSync(f, "utf8").includes(dash));
     expect(offenders).toEqual([]);
+  });
+});
+
+describe("דירוג ספקים פנימי", () => {
+  it("כיבוי הדירוג מסתיר את הציון בכל מקום, גם בקטלוג לאזרח", () => {
+    const supplier = { evaluations: [{ quarter: "2026-Q3", quality: 5, outcomes: 5, satisfaction: 5, value: 5 }] };
+    const off = s04({ supplier_rating_enabled: false });
+    expect(supplierScore(supplier, seed.settings)?.score).toBe(5);
+    expect(supplierScore(supplier, off.settings)).toBeNull();
+    const data = buildDemoAuthority(0);
+    const { catalog } = buildCitizenCatalog(data, data.neighborhoods[0]!.id, off);
+    expect(catalog.services.every((s) => s.supplierScore === null)).toBe(true);
   });
 });

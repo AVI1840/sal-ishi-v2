@@ -761,3 +761,16 @@ a {
     gap: var(--spacing-1);
   }
 }
+
+/* קבוצת כללים בתוך כרטיס (מודל התשלום במטה) */
+.rule-block {
+  border-top: 1px solid var(--color-border-secondary);
+  padding-top: var(--spacing-4);
+}
+
+/* ערך בהגדרה בתוך יומן שינויים: נשבר לשורות ולא מרחיב את העמוד */
+.log-value {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  font-size: 0.875rem;
+}

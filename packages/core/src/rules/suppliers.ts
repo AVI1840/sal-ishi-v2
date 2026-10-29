@@ -14,7 +14,12 @@ export interface SupplierScore {
 }
 
 /** הציון לפי ההערכה האחרונה, עם משקלות מההגדרות. null אם אין הערכות. */
-export function supplierScore(supplier: Pick<Supplier, "evaluations">, settings: Pick<Settings, "supplier_rating_weights">): SupplierScore | null {
+/** null גם כשהדירוג כבוי בהגדרות (supplier_rating_enabled = false). */
+export function supplierScore(
+  supplier: Pick<Supplier, "evaluations">,
+  settings: Pick<Settings, "supplier_rating_weights" | "supplier_rating_enabled">,
+): SupplierScore | null {
+  if (settings.supplier_rating_enabled === false) return null;
   const evals = [...(supplier.evaluations ?? [])].sort((a, b) => a.quarter.localeCompare(b.quarter));
   const last = evals[evals.length - 1];
   if (!last) return null;

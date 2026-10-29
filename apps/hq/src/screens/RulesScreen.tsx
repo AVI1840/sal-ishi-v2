@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Pencil, Plus, Send } from "lucide-react";
-import { FileSyncAdapter, createBrowserFileIO, proposalKeys, type Seed } from "@sal-ishi/core";
+import { FileSyncAdapter, createBrowserFileIO, proposalKeys, statusNote, type Seed } from "@sal-ishi/core";
 import {
   Alert,
   Badge,
@@ -19,10 +19,12 @@ import {
 } from "@sal-ishi/ui";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { WeightsCard } from "../components/WeightsCard";
+import { PaymentRulesCard, finalizeSetting } from "../components/PaymentRulesCard";
 import { useHqAnalysis } from "../analysis";
 import { useHq } from "../store";
 
-type Kind = "int" | "money" | "ratio" | "bool" | "window";
+// nested: הגדרה בפורמט של 0.4, { value, status }, שהערך שלה נערך כאן.
+type Kind = "int" | "money" | "ratio" | "bool" | "window" | "nested-int" | "nested-ratio";
 
 const EDITABLE: { key: string; label: string; kind: Kind; status?: string }[] = [
   { key: "core_floor", label: "רצפת מגוון: שירותים רציפים לכל קטגוריית ליבה", kind: "int" },
@@ -35,7 +37,6 @@ const EDITABLE: { key: string; label: string; kind: Kind; status?: string }[] = 
   { key: "price_outlier_threshold", label: "חריגת מחיר מעל הייחוס", kind: "ratio" },
   { key: "reference_price_min_samples", label: "דגימות מינימום למחיר ייחוס", kind: "int" },
   { key: "points_rollover_months", label: "צבירת נקודות (חודשים)", kind: "int", status: "points_rollover_status" },
-  { key: "no_show_free_per_quarter", label: "היעדרויות בלי חיוב ברבעון", kind: "int", status: "no_show_status" },
   { key: "small_cell_threshold", label: "סף תא קטן", kind: "int" },
   { key: "qol_counts_in_target", label: "איכות חיים נספרת ביעד המיצוי", kind: "bool" },
   { key: "supplier_contact_to_hq", label: "פרטי ספק יחיד עוברים למטה", kind: "bool" },
@@ -47,6 +48,15 @@ const EDITABLE: { key: string; label: string; kind: Kind; status?: string }[] = 
   { key: "suggestions_per_domain", label: "הצעות לאזרח בכל תחום", kind: "int", status: "selection_status" },
   { key: "competition_max_suppliers_local", label: "תחרות: מקסימום ספקים לסוג שירות בשכונה", kind: "int", status: "competition_status" },
   { key: "competition_max_suppliers_national", label: "תחרות: מקסימום ספקים לסוג מוצר בערוץ הארצי", kind: "int", status: "competition_status" },
+  // גרסה 0.4: מודל התשלום של החשכ"ל
+  { key: "qol_copay", label: "איכות חיים במצב אחוז: השתתפות עצמית", kind: "ratio" },
+  { key: "qol_cap_month", label: "איכות חיים במצב אחוז: תקרה חודשית מהארנק (ש\"ח)", kind: "money" },
+  { key: "products_quarterly_cap_share", label: "תקרת מוצרים: שיעור מהארנק הרבעוני", kind: "nested-ratio" },
+  { key: "products_count_in_floor", label: "מוצרים נספרים ברצפת המגוון", kind: "bool" },
+  { key: "low_competition_operator_threshold", label: "תחרות נמוכה: פחות ספקים מ (לקטגוריה ושכונה)", kind: "int" },
+  { key: "active_participant_min_sessions_month", label: "משתתף פעיל: מפגשים בחודש לפחות", kind: "nested-int" },
+  { key: "first_service_max_days", label: "זמן לשירות ראשון: התראה מעל (ימים)", kind: "int" },
+  { key: "supplier_rating_enabled", label: "דירוג ספקים פנימי פעיל", kind: "bool", status: "supplier_rating_status" },
 ];
 
 const MATCHING_LAYERS = [
@@ -64,14 +74,23 @@ const RATING_CRITERIA = [
   { key: "value", label: "עלות-תועלת", source: "מחיר מול מחיר הייחוס" },
 ];
 
-const toDisplay = (kind: Kind, v: unknown) =>
-  kind === "ratio" ? String(Math.round(Number(v) * 100)) : kind === "window" ? String(/(\d+)/.exec(String(v))?.[1] ?? "") : String(v ?? "");
+const inner = (v: unknown) => (v && typeof v === "object" && "value" in v ? (v as { value: unknown }).value : v);
 
-const fromDisplay = (kind: Kind, s: string): unknown =>
-  kind === "ratio" ? Number(s) / 100 : kind === "window" ? `rolling_${Number(s)}_months` : Number(s);
+const toDisplay = (kind: Kind, v: unknown) => {
+  const x = inner(v);
+  if (kind === "ratio" || kind === "nested-ratio") return String(Math.round(Number(x) * 100));
+  if (kind === "window") return String(/(\d+)/.exec(String(x))?.[1] ?? "");
+  return String(x ?? "");
+};
+
+const fromDisplay = (kind: Kind, s: string, current: unknown): unknown => {
+  if (kind === "nested-ratio") return { ...(current as object), value: Number(s) / 100 };
+  if (kind === "nested-int") return { ...(current as object), value: Number(s) };
+  return kind === "ratio" ? Number(s) / 100 : kind === "window" ? `rolling_${Number(s)}_months` : Number(s);
+};
 
 export default function RulesScreen() {
-  const { seed, idx } = useHqAnalysis();
+  const { seed, idx, state } = useHqAnalysis();
   const pending = useHq((s) => s.pending);
   const { updateSetting, updateServiceType, addServiceType, publishSeed } = useHq.getState();
   const toast = useToast();
@@ -80,10 +99,12 @@ export default function RulesScreen() {
   const proposals = new Set(proposalKeys(seed.settings));
   const history = ((seed.meta as { changelog?: { version: string; published_at: string; changes: unknown[] }[] }).changelog ?? []).slice().reverse();
 
-  const markFinal = (statusKey: string) => {
-    const err = updateSetting(statusKey, `סופי ${new Date().toLocaleDateString("he-IL")}`);
+  const markFinal = (key: string, statusKey?: string) => {
+    const [k, v] = finalizeSetting(seed.settings, key, statusKey);
+    const err = updateSetting(k, v);
     toast(err ? "error" : "success", err ?? "הערך סומן כסופי");
   };
+  const authorities = [...new Set(state.neighborhoods.map((n) => n.authority))].sort();
 
   const publish = async () => {
     const published = publishSeed();
@@ -96,7 +117,7 @@ export default function RulesScreen() {
     <>
       <PageHeader
         title="ספרייה וכללים"
-        description="ההגדרות וספריית סוגי השירות. שינוי משפיע מיד על הכיסוי, המיצוי וחריגות המחיר במטה, ומגיע לשטח כשמפרסמים גרסת בסיס חדשה."
+        description="ההגדרות, כללי מודל התשלום וספריית סוגי השירות. שינוי משפיע מיד על הכיסוי, המדדים, המחירים והייצוא במטה, ומגיע לשטח כשמפרסמים גרסת בסיס חדשה."
         actions={
           <Button icon={<Send size={18} />} disabled={!pending.length} onClick={() => setConfirmPublish(true)}>
             פרסום גרסה ({pending.length} שינויים)
@@ -146,22 +167,22 @@ export default function RulesScreen() {
                             defaultValue={toDisplay(e.kind, value)}
                             onBlur={(ev) => {
                               if (ev.target.value === toDisplay(e.kind, value)) return;
-                              const err = updateSetting(e.key, fromDisplay(e.kind, ev.target.value));
+                              const err = updateSetting(e.key, fromDisplay(e.kind, ev.target.value, value));
                               if (err) {
                                 toast("error", `${e.label}: ${err}`);
                                 ev.target.value = toDisplay(e.kind, value);
                               } else toast("success", `עודכן: ${e.label}`);
                             }}
                           />
-                          {e.kind === "ratio" ? <span aria-hidden="true">%</span> : null}
+                          {e.kind === "ratio" || e.kind === "nested-ratio" ? <span aria-hidden="true">%</span> : null}
                         </span>
                       )}
                     </td>
                     <td>
                       {isProposal ? (
                         <span className="row">
-                          <ProposalBadge note={String((seed.settings as Record<string, unknown>)[e.status ?? ""] ?? "")} />
-                          {e.status ? <Button small variant="ghost" onClick={() => markFinal(e.status!)}>סימון כסופי</Button> : null}
+                          <ProposalBadge note={statusNote(seed.settings, e.key)} />
+                          <Button small variant="ghost" onClick={() => markFinal(e.key, e.status)}>סימון כסופי</Button>
                         </span>
                       ) : (
                         <Badge tone="success">סופי</Badge>
@@ -174,6 +195,8 @@ export default function RulesScreen() {
           </table>
         </TableWrap>
       </section>
+
+      <PaymentRulesCard seed={seed} authorities={authorities} />
 
       <WeightsCard
         id="layers-h"
@@ -189,7 +212,7 @@ export default function RulesScreen() {
       <WeightsCard
         id="rating-h"
         title="דירוג ספקים"
-        description="הציון של ספק הוא ממוצע משוקלל של ההערכה הרבעונית האחרונה. מוצג במטה ובשטח, ומזין את שכבת המלצות וניסיון. לא חוסם שירות ולא נכנס לחוזה האינטגרטור."
+        description="הציון של ספק הוא ממוצע משוקלל של ההערכה הרבעונית האחרונה. מוצג במטה ובשטח, ומזין את שכבת המלצות וניסיון. כלי פנימי: לא חוסם שירות ולא נכנס לתקן קליטת המפעילים, והדירוג המחייב אצל ספק העל. אפשר לכבות אותו בטבלת ההגדרות."
         settingKey="supplier_rating_weights"
         statusKey="supplier_rating_status"
         items={RATING_CRITERIA}
@@ -240,7 +263,11 @@ export default function RulesScreen() {
             {pending.map((c, i) => (
               <li key={i}>
                 {new Date(c.at).toLocaleString("he-IL")}: {c.kind === "setting" ? "הגדרה" : "סוג שירות"} {c.key}
-                {c.kind === "setting" ? <>: {JSON.stringify(c.before)} ל-{JSON.stringify(c.after)}</> : null}
+                {c.kind === "setting" ? (
+                  <>
+                    : <code dir="ltr" className="log-value">{JSON.stringify(c.before)}</code> ל-<code dir="ltr" className="log-value">{JSON.stringify(c.after)}</code>
+                  </>
+                ) : null}
               </li>
             ))}
           </ul>

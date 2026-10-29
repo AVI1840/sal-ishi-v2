@@ -267,7 +267,7 @@ export function buildCitizenCatalog(
       ...item,
       ...payment,
       demand: demandBand(s, activity, seed.settings, latest),
-      supplierScore: rating && sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
+      supplierScore: sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
     };
   });
 

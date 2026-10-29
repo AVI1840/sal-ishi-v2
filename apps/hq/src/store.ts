@@ -8,6 +8,7 @@ import {
   NATIONAL_AUTHORITY,
   buildPilotPackage,
   defaultSeed,
+  isOlderSeedBase,
   emptyHqState,
   mergePackage,
   openStore,
@@ -37,6 +38,9 @@ interface Persisted {
 
 export interface HqStore {
   hydrated: boolean;
+  /** הודעה כשה-seed השמור היה מגרסת בסיס ישנה והוחלף במובנה. */
+  seedNotice: string | null;
+  dismissSeedNotice(): void;
   state: HqState;
   seed: Seed;
   pending: ChangeLogEntry[];
@@ -78,18 +82,32 @@ export const useHq = create<HqStore>()((set, get) => {
     seed: defaultSeed,
     pending: [],
     isDemo: false,
+    seedNotice: null,
+
+    dismissSeedNotice() {
+      set({ seedNotice: null });
+    },
 
     async hydrate() {
       kv = await openStore("sal-ishi-hq");
       const saved = await kv.get<Persisted>(KEY);
       if (saved) {
         let seed = defaultSeed;
-        try {
-          seed = upgradeSeed(saved.seed);
-        } catch {
-          /* seed שמור לא תקין: חוזרים לברירת המחדל */
+        let seedNotice: string | null = null;
+        let pending = saved.pending ?? [];
+        if (isOlderSeedBase(saved.seed)) {
+          // מבנה ההגדרות השתנה בין גרסאות הבסיס: עוברים ל-seed המובנה, ושינויים שלא פורסמו בגרסה הישנה לא חלים עליו.
+          const from = (saved.seed as { meta?: { version?: string } } | null)?.meta?.version ?? "קודמת";
+          seedNotice = `גרסת הבסיס עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ערכים ששונו במטה בגרסה הקודמת הוחלפו בערכי ${defaultSeed.meta.version}, ויש לעדכן אותם מחדש בספרייה וכללים אם צריך.`;
+          pending = [];
+        } else {
+          try {
+            seed = upgradeSeed(saved.seed);
+          } catch {
+            /* seed שמור לא תקין: חוזרים לברירת המחדל */
+          }
         }
-        set({ state: saved.state, seed, pending: saved.pending ?? [], isDemo: saved.isDemo });
+        set({ state: saved.state, seed, pending, isDemo: saved.isDemo, seedNotice });
       } else if (EDITION === "preview") {
         set({ state: await demoState(), isDemo: true });
       }
