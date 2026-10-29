@@ -1,4 +1,6 @@
-// טופס שירות: ששת שדות החובה מסומנים, ומבחן הכניסה רץ בזמן ההקלדה.
+// טופס שירות: שדות החובה מסומנים, ומבחן הכניסה רץ בזמן ההקלדה. מגרסה 0.4 גם
+// שדות מודל התשלום (שעות ליחידה, אופן מתן, הגבלת מקום, שער מלווה), ותנאי
+// השירות שנגזרים מההגדרות מוצגים בזמן אמת.
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -7,11 +9,19 @@ import {
   COPAY_TIERS,
   DELIVERY_MODES,
   REACHES,
+  SERVICE_MODES,
+  SERVICE_MODE_LABELS,
   copayRate,
   defaultCopayTier,
   entryTest,
+  hourlyPrice,
+  isProduct,
   isProposal,
   missingMandatoryFields,
+  statusNote,
+  suggestedGate,
+  suggestedServiceMode,
+  type Seed,
   type Service,
 } from "@sal-ishi/core";
 import {
@@ -24,6 +34,7 @@ import {
   ProposalBadge,
   RadioGroup,
   SelectField,
+  ServiceTermsPanel,
   TextArea,
   TextField,
   useToast,
@@ -31,10 +42,11 @@ import {
 import { LANGUAGES, entryTone, shekel, useAnalysis } from "../analysis";
 import { newId, useField } from "../store";
 
-type Draft = Omit<Service, "unitPrice" | "marketPrice" | "pricePoints"> & {
+type Draft = Omit<Service, "unitPrice" | "marketPrice" | "pricePoints" | "hoursPerUnit"> & {
   unitPrice: string;
   marketPrice: string;
   pricePoints: string;
+  hoursPerUnit: string;
 };
 
 const toNum = (s: string) => (s.trim() === "" || Number.isNaN(Number(s)) ? undefined : Number(s));
@@ -54,6 +66,7 @@ function emptyDraft(authority: string, startMonth: string): Draft {
     unitPrice: "",
     marketPrice: "",
     pricePoints: "",
+    hoursPerUnit: "",
     copayTier: "core_and_prevention",
     communityFit: ["general"],
     deliveryMode: "community",
@@ -71,23 +84,41 @@ function toDraft(s: Service): Draft {
     unitPrice: s.unitPrice?.toString() ?? "",
     marketPrice: s.marketPrice?.toString() ?? "",
     pricePoints: s.pricePoints?.toString() ?? "",
+    hoursPerUnit: s.hoursPerUnit?.toString() ?? "",
   };
 }
 
 function fromDraft(d: Draft): Service {
-  const { unitPrice, marketPrice, pricePoints, ...rest } = d;
+  const { unitPrice, marketPrice, pricePoints, hoursPerUnit, ...rest } = d;
   const s: Service = { ...rest };
   const up = toNum(unitPrice);
   const mp = toNum(marketPrice);
   const pp = toNum(pricePoints);
+  const hp = toNum(hoursPerUnit);
   if (up !== undefined) s.unitPrice = up;
   if (mp !== undefined) s.marketPrice = mp;
   if (pp !== undefined) s.pricePoints = pp;
+  if (hp !== undefined && hp > 0) s.hoursPerUnit = hp;
+  if (!s.serviceMode) delete s.serviceMode;
+  if (s.serviceMode !== "group") delete s.capacityLimited;
+  if (!s.gatedByCompanion) delete s.gateReason;
   if (!s.programId) delete s.programId;
   if (!s.reach || s.reach === "neighborhood") delete s.reach;
   if (!s.servesNeighborhoods?.length || s.reach) delete s.servesNeighborhoods;
   if (!s.cancellationPolicy) delete s.cancellationPolicy;
   return s;
+}
+
+/**
+ * שירות חדש: אופן המתן ושער המלווה מוצעים לפי סוג השירות, והמשתמש יכול לשנות.
+ * בשירות קיים לא ממלאים לבד (רשימת ההשלמות מציעה ומחכה לאישור).
+ */
+function newServiceDefaults(seed: Seed, format: string, categoryCode: string): Partial<Draft> {
+  const gate = suggestedGate(seed, categoryCode);
+  return {
+    serviceMode: suggestedServiceMode({ format, deliveryMode: "community" }),
+    ...(gate ? { gatedByCompanion: true, gateReason: gate } : {}),
+  };
 }
 
 export const REACH_LABELS: Record<string, string> = {
@@ -128,6 +159,7 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
       format: type?.format ?? "",
       unit: type?.unit ?? "",
       copayTier: categoryCode ? defaultCopayTier(seed, categoryCode) : base.copayTier,
+      ...(type ? newServiceDefaults(seed, type.format, categoryCode) : {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.open]);
@@ -142,6 +174,9 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
   const ref = refs.get(`${draft.serviceTypeId}|${draft.unit}`);
   const suppliers = data.suppliers.filter((s) => !draft.neighborhoodId || s.neighborhoods.includes(draft.neighborhoodId));
   const cancellationIsProposal = isProposal(seed.settings, "cancellation_notice_hours");
+  const product = draft.categoryCode ? isProduct(seed, draft.categoryCode) : false;
+  const hourly = hourlyPrice(service);
+  const modeSuggestion = !draft.serviceMode && !product ? suggestedServiceMode(service) : null;
 
   const errors = useMemo(
     () => ({
@@ -156,7 +191,14 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
   };
   const onType = (id: string) => {
     const t = idx.serviceTypes.get(id);
-    setDraft((d) => ({ ...d, serviceTypeId: id, format: t?.format ?? d.format, unit: t?.unit ?? d.unit, name: d.name || t?.name || "" }));
+    setDraft((d) => ({
+      ...d,
+      serviceTypeId: id,
+      format: t?.format ?? d.format,
+      unit: t?.unit ?? d.unit,
+      name: d.name || t?.name || "",
+      ...(!props.service && t && !d.serviceMode ? newServiceDefaults(seed, t.format, d.categoryCode) : {}),
+    }));
   };
   const onUnitPrice = (v: string) => {
     setDraft((d) => {
@@ -249,6 +291,65 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
         />
       </div>
 
+      <fieldset className="fieldset">
+        <legend className="fieldset__legend">מודל התשלום</legend>
+        {product ? (
+          <p className="muted">מוצר בערוץ הארצי: בלי שעות שירות ובלי אופן מתן. התקרה הרבעונית מוצגת בתנאים.</p>
+        ) : (
+          <div className="stack">
+            <div className="grid grid--form">
+              <TextField
+                label="שעות שירות ליחידה"
+                required
+                inputMode="decimal"
+                value={draft.hoursPerUnit}
+                onChange={(e) => set("hoursPerUnit", e.target.value)}
+                hint={hourly !== null ? `מחיר לשעה: ${hourly.toLocaleString("he-IL", { maximumFractionDigits: 2 })} ש"ח` : `כמה שעות שירות יש ביחידה אחת (${draft.unit || "יחידה"})`}
+                error={touched && !toNum(draft.hoursPerUnit) ? "צריך מספר שעות גדול מאפס" : null}
+              />
+            </div>
+            <RadioGroup
+              legend="אופן מתן השירות"
+              value={draft.serviceMode ?? ""}
+              onChange={(v) => set("serviceMode", v as Service["serviceMode"])}
+              options={SERVICE_MODES.map((m) => ({ value: m, label: SERVICE_MODE_LABELS[m] }))}
+              hint={modeSuggestion ? `חסר. הצעה לפי הפורמט: ${SERVICE_MODE_LABELS[modeSuggestion]}` : "קובע את שעות הביטול, החיוב באי-הגעה וההחזר באשפוז"}
+            />
+            {modeSuggestion ? (
+              <div>
+                <Button variant="secondary" small onClick={() => set("serviceMode", modeSuggestion)}>
+                  החלת ההצעה: {SERVICE_MODE_LABELS[modeSuggestion]}
+                </Button>
+              </div>
+            ) : null}
+            {draft.serviceMode === "group" ? (
+              <CheckboxField
+                label="קבוצה מוגבלת מקום, עם רשימת המתנה"
+                checked={draft.capacityLimited ?? false}
+                onChange={(v) => set("capacityLimited", v)}
+                hint="בקבוצה מוגבלת מקום אי-הגעה מחויבת"
+              />
+            ) : null}
+          </div>
+        )}
+        <CheckboxField
+          label="נפתח רק באישור מלווה"
+          checked={draft.gatedByCompanion ?? false}
+          onChange={(v) => set("gatedByCompanion", v)}
+          hint="למשל ארוחה חמה או הטבת איכות חיים לפי צורך מתועד"
+        />
+        {draft.gatedByCompanion ? (
+          <TextField
+            label="סיבה לפתיחה באישור מלווה"
+            required
+            value={draft.gateReason ?? ""}
+            onChange={(e) => set("gateReason", e.target.value)}
+            error={touched && !draft.gateReason?.trim() ? "צריך סיבה, אחרת השירות יסומן חסרים נתונים" : null}
+          />
+        ) : null}
+        <ServiceTermsPanel service={service} seed={seed} showShekel />
+      </fieldset>
+
       <CheckboxGroup legend="שפות" required value={draft.languages} onChange={(v) => set("languages", v)} options={LANGUAGES.map((l) => ({ value: l, label: l }))} />
       <CheckboxGroup
         legend="התאמה קהילתית"
@@ -287,10 +388,11 @@ export function ServiceForm(props: { open: boolean; onClose: () => void; service
         hint="הכלי מתעד את השיטה ואינו מפעיל אותה"
       />
       <TextArea
-        label="מדיניות ביטול"
+        label="הערות למדיניות הביטול"
+        hint="הכללים עצמם (שעות הודעה, אי-הגעה ואשפוז) נקבעים בהגדרות ומוצגים בתנאי השירות"
         value={draft.cancellationPolicy ?? ""}
         onChange={(e) => set("cancellationPolicy", e.target.value)}
-        extra={cancellationIsProposal ? <ProposalBadge note={String(seed.settings.cancellation_status ?? "")} /> : null}
+        extra={cancellationIsProposal ? <ProposalBadge note={statusNote(seed.settings, "cancellation_notice_hours")} /> : null}
       />
       <div className="grid grid--form">
         <CheckboxField label="יש לשירות מממן אחר" checked={draft.otherFunder} onChange={(v) => set("otherFunder", v)} hint="סל הבריאות, שב&quot;ן, רווחה או גמלה" />

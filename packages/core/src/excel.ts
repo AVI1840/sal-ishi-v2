@@ -8,8 +8,10 @@ import * as XLSX from "xlsx";
 import {
   COMMUNITIES,
   DELIVERY_MODES,
+  SERVICE_MODES,
   type Community,
   type DeliveryMode,
+  type ServiceMode,
   type MonthlyActivity,
   type Neighborhood,
   type Service,
@@ -118,6 +120,12 @@ export const SERVICE_IMPORT_FIELDS = [
   { key: "otherFunder", label: "מממן אחר", aliases: [] },
   { key: "startMonth", label: "חודש התחלה", aliases: ["התחלה"] },
   { key: "programId", label: "קוד תוכנית", aliases: ["תוכנית"] },
+  // גרסה 0.4: מודל התשלום של החשכ"ל
+  { key: "hoursPerUnit", label: "שעות ליחידה", aliases: ["שעות שירות ליחידה", "hours_per_unit"] },
+  { key: "serviceMode", label: "אופן מתן", aliases: ["אופן מתן השירות", "service_mode"] },
+  { key: "capacityLimited", label: "מוגבל מקום", aliases: ["רשימת המתנה", "capacity_limited"] },
+  { key: "gatedByCompanion", label: "באישור מלווה", aliases: ["נפתח באישור מלווה", "gated_by_companion"] },
+  { key: "gateReason", label: "סיבה לאישור מלווה", aliases: ["gate_reason"] },
 ] as const satisfies readonly ImportField[];
 
 export type ServiceImportKey = (typeof SERVICE_IMPORT_FIELDS)[number]["key"];
@@ -188,6 +196,14 @@ function communities(c: Cell): Community[] {
   return out.length ? [...new Set(out)] : ["general"];
 }
 
+const SERVICE_MODE_WORDS: Record<string, ServiceMode> = { קבוצתי: "group", קבוצה: "group", פרטני: "individual", בבית: "home", בית: "home", מרחוק: "remote" };
+
+/** אופן מתן מתוך מילה או מזהה. תא ריק או לא מזוהה: בלי ערך, והשירות ייכנס לרשימת ההשלמות. */
+function serviceMode(c: Cell): ServiceMode | undefined {
+  const t = text(c);
+  return SERVICE_MODE_WORDS[t] ?? ((SERVICE_MODES as readonly string[]).includes(t) ? (t as ServiceMode) : undefined);
+}
+
 function delivery(c: Cell): DeliveryMode {
   const t = text(c);
   return DELIVERY_WORDS[t] ?? ((DELIVERY_MODES as readonly string[]).includes(t) ? (t as DeliveryMode) : "community");
@@ -234,6 +250,10 @@ export function rowsToServices(
     const supplierRaw = text(get(row, "supplier"));
     const supplier = ctx.suppliers.find((s) => s.code === supplierRaw);
     const unitPrice = num(get(row, "unitPrice"));
+    const hoursPerUnit = num(get(row, "hoursPerUnit"));
+    const mode = serviceMode(get(row, "serviceMode"));
+    const gated = yes(get(row, "gatedByCompanion"));
+    const gateReason = text(get(row, "gateReason"));
 
     services.push({
       id: ctx.newId(),
@@ -255,6 +275,10 @@ export function rowsToServices(
       otherFunder: yes(get(row, "otherFunder")),
       enforceable: true,
       ...(text(get(row, "programId")) ? { programId: text(get(row, "programId")) } : {}),
+      ...(hoursPerUnit !== undefined && hoursPerUnit > 0 ? { hoursPerUnit } : {}),
+      ...(mode ? { serviceMode: mode } : {}),
+      ...(mode === "group" && yes(get(row, "capacityLimited")) ? { capacityLimited: true } : {}),
+      ...(gated ? { gatedByCompanion: true, ...(gateReason ? { gateReason } : {}) } : {}),
       startMonth: normalizeMonth(get(row, "startMonth")) ?? ctx.defaultStartMonth,
       status: "טיוטה",
     });
@@ -323,7 +347,7 @@ export function labels(seed: Seed) {
     copayTier: {
       core_and_prevention: `ליבה ומניעה (${rate(tiers.core_and_prevention)})`,
       classes: `חוגים (${rate(tiers.classes)})`,
-      qol: `איכות חיים (${rate(tiers.qol)})`,
+      qol: seed.settings.qol_mode.value === "fixed_amount" ? "איכות חיים (סכום קבוע מהנקודות)" : `איכות חיים (${rate(seed.settings.qol_copay)})`,
     } as Record<string, string>,
   };
 }

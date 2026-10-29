@@ -4,6 +4,7 @@
 import { create } from "zustand";
 import {
   defaultSeed,
+  isOlderSeedBase,
   openStore,
   upgradeSeed,
   upsertActivity,
@@ -11,6 +12,7 @@ import {
   type KeyValueStore,
   type MonthlyActivity,
   type Neighborhood,
+  type NeighborhoodMonth,
   type Seed,
   type Service,
   type Supplier,
@@ -19,6 +21,8 @@ import {
 } from "@sal-ishi/core";
 import { buildDemoAuthority } from "@sal-ishi/core";
 import { EDITION } from "@sal-ishi/ui";
+
+export type EnrollmentPatch = Partial<Omit<NeighborhoodMonth, "neighborhoodId" | "month">>;
 
 interface Persisted {
   data: AuthorityData;
@@ -31,6 +35,8 @@ export interface FieldState {
   hydrated: boolean;
   seed: Seed;
   seedFromHq: boolean;
+  /** הודעה כשה-seed השמור היה מגרסת בסיס ישנה והוחלף במובנה. */
+  seedNotice: string | null;
   data: AuthorityData;
   isDemo: boolean;
   lastPackage?: { hash: string; at: string };
@@ -47,7 +53,9 @@ export interface FieldState {
   setStatus(ids: string[], status: WorkflowStatus, note?: string): void;
   mergeActivity(list: MonthlyActivity[]): void;
   mergeUnmetDemand(rows: UnmetDemand[]): void;
-  setEnrollment(neighborhoodId: string, month: string, enrolled: number): void;
+  /** עדכון חלקי של נתוני השכונה בחודש. שדה שלא נשלח נשמר כמו שהוא. */
+  setEnrollment(neighborhoodId: string, month: string, patch: EnrollmentPatch): void;
+  dismissSeedNotice(): void;
   setSeed(seed: Seed): void;
   markPackageSent(hash: string): void;
   loadDemo(): void;
@@ -73,6 +81,7 @@ export const useField = create<FieldState>()((set, get) => {
     hydrated: false,
     seed: defaultSeed,
     seedFromHq: false,
+    seedNotice: null,
     data: emptyData(),
     isDemo: false,
 
@@ -82,7 +91,12 @@ export const useField = create<FieldState>()((set, get) => {
       if (saved) {
         let seed = defaultSeed;
         let seedFromHq = false;
-        if (saved.seed) {
+        let seedNotice: string | null = null;
+        if (saved.seed && isOlderSeedBase(saved.seed)) {
+          // מבנה ההגדרות השתנה בין גרסאות הבסיס: עוברים ל-seed המובנה ומודיעים.
+          const from = (saved.seed as { meta?: { version?: string } }).meta?.version ?? "קודמת";
+          seedNotice = `גרסת הבסיס עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ההגדרות שהגיעו מהמטה בגרסה הקודמת הוחלפו בהגדרות של ${defaultSeed.meta.version}. אם המטה שינה ערכים, בקשו ממנו גרסת בסיס חדשה.`;
+        } else if (saved.seed) {
           try {
             seed = upgradeSeed(saved.seed);
             seedFromHq = true;
@@ -90,7 +104,7 @@ export const useField = create<FieldState>()((set, get) => {
             /* seed שמור לא תקין: חוזרים לברירת המחדל */
           }
         }
-        set({ data: saved.data, isDemo: saved.isDemo, lastPackage: saved.lastPackage, seed, seedFromHq });
+        set({ data: saved.data, isDemo: saved.isDemo, lastPackage: saved.lastPackage, seed, seedFromHq, seedNotice });
       } else if (EDITION === "preview") {
         // בגרסת התצוגה לשותפים, ביקור ראשון נפתח עם נתוני הדגמה ולא במסך ריק.
         set({ data: buildDemoAuthority(), isDemo: true });
@@ -178,14 +192,20 @@ export const useField = create<FieldState>()((set, get) => {
       });
     },
 
-    setEnrollment(neighborhoodId, month, enrolled) {
-      update((d) => ({
-        ...d,
-        enrollment: [
-          ...d.enrollment.filter((e) => !(e.neighborhoodId === neighborhoodId && e.month === month)),
-          { neighborhoodId, month, enrolled },
-        ],
-      }));
+    setEnrollment(neighborhoodId, month, patch) {
+      update((d) => {
+        const current = d.enrollment.find((e) => e.neighborhoodId === neighborhoodId && e.month === month);
+        const next: NeighborhoodMonth = { neighborhoodId, month, enrolled: 0, ...current, ...patch };
+        for (const k of Object.keys(next) as (keyof NeighborhoodMonth)[]) if (next[k] === undefined) delete next[k];
+        return {
+          ...d,
+          enrollment: [...d.enrollment.filter((e) => !(e.neighborhoodId === neighborhoodId && e.month === month)), next],
+        };
+      });
+    },
+
+    dismissSeedNotice() {
+      set({ seedNotice: null });
     },
 
     setSeed(seed) {

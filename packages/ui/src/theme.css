@@ -368,6 +368,13 @@ a {
   font-weight: var(--font-weight-medium);
   white-space: nowrap;
   border: 1px solid currentColor;
+  max-width: 100%;
+}
+/* תגית עם הסבר ארוך (שדות חסרים, הנחיה) נשברת לשורות ולא גולשת בטלפון. */
+.entry-panel .badge,
+.terms .badge--warning {
+  white-space: normal;
+  border-radius: var(--radius-base);
 }
 .badge svg {
   flex: none;
@@ -710,5 +717,47 @@ a {
   }
   h1 {
     font-size: var(--font-size-2xl);
+  }
+}
+
+/* תנאי שירות לפי מודל התשלום (גרסה 0.4) */
+.terms {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-3) var(--spacing-4);
+  min-width: 0;
+}
+.terms__title {
+  margin: 0 0 var(--spacing-2);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.terms__list {
+  margin: 0;
+  display: grid;
+  gap: var(--spacing-2);
+}
+.terms__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) 1fr;
+  gap: var(--spacing-3);
+  align-items: baseline;
+}
+.terms__row dt {
+  font-weight: 500;
+}
+.terms__row dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  align-items: center;
+  min-width: 0;
+}
+@media (max-width: 480px) {
+  .terms__row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-1);
   }
 }

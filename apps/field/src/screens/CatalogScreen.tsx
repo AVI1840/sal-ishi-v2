@@ -14,6 +14,7 @@ import { Badge, Button, EmptyState, PageHeader, SelectField, TableWrap, TextFiel
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ImportDialog } from "../components/ImportDialog";
 import { ServiceForm } from "../components/ServiceForm";
+import { CompletionPanel } from "../components/CompletionPanel";
 import { entryTone, shekel, useAnalysis, workflowTone } from "../analysis";
 import { newId, useField } from "../store";
 
@@ -54,7 +55,7 @@ export default function CatalogScreen() {
     <>
       <PageHeader
         title="הקטלוג שלי"
-        description="כל שירות עובר מבחן כניסה בכל שמירה. ששת שדות החובה: עלות ליחידה, ספק, שכונה, שפה, סוג שירות והגעה (נוכחות חודשית)."
+        description={`כל שירות עובר מבחן כניסה בכל שמירה. שדות החובה: ${seed.mandatory_fields.map((f) => f.label).join(", ")}.`}
         actions={
           <>
             <Button icon={<Plus size={18} />} disabled={!data.neighborhoods.length} onClick={() => { setPrefill(undefined); setEditing("new"); }}>
@@ -74,6 +75,8 @@ export default function CatalogScreen() {
           ))}
         </div>
       ) : null}
+
+      <CompletionPanel onEdit={(s) => setEditing(s)} />
 
       <section className="card" aria-labelledby="cat-filter-h">
         <h2 id="cat-filter-h" className="visually-hidden">סינון</h2>

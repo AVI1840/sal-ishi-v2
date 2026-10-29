@@ -1,4 +1,6 @@
 // מה הולך: פעילות חודשית מצטברת, מגמה, מיצוי בחלון מתגלגל ושירותים מתחת לסף.
+// גרסה 0.4: מיצוי (כסף) וחדירה (אנשים) הם מדדים נפרדים, ונוספו פריסה, זמן
+// לשירות ראשון ומדד מחיר לשעה. הנתונים על אנשים מצטברים, מדוח ספק העל.
 
 import { useMemo, useState } from "react";
 import { FileSpreadsheet, LineChart as LineIcon } from "lucide-react";
@@ -6,8 +8,17 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import {
   ACTIVITY_IMPORT_FIELDS,
   CONTINUITY_STATUS,
+  activeMinSessions,
   activityTemplateWorkbook,
   formatCount,
+  hourlyPriceIndex,
+  isProposal,
+  metricName,
+  penetration,
+  pricePeriod,
+  spread,
+  statusNote,
+  timeToFirstService,
   rowsToActivity,
   servicesBelowThreshold,
   utilization,
@@ -15,10 +26,36 @@ import {
   windowMonths,
   type UtilizationFlag,
 } from "@sal-ishi/core";
-import { Badge, Button, EmptyState, PageHeader, SelectField, TableWrap, type Tone, useToast } from "@sal-ishi/ui";
+import { Badge, Button, EmptyState, PageHeader, ProposalBadge, SelectField, TableWrap, type Tone, useToast } from "@sal-ishi/ui";
 import { ImportDialog } from "../components/ImportDialog";
 import { monthLabel, percent, shekel, useAnalysis } from "../analysis";
-import { latestMonth, useField } from "../store";
+import { latestMonth, useField, type EnrollmentPatch } from "../store";
+
+/** שדה מספרי בטבלה: נשמר ביציאה מהשדה, וריק נשאר ריק. */
+function NumberCell(props: { id: string; label: string; value: number | undefined; decimal?: boolean; onSave: (v: number | undefined) => void }) {
+  return (
+    <>
+      <label className="visually-hidden" htmlFor={props.id}>{props.label}</label>
+      <input
+        id={props.id}
+        className="input input--narrow"
+        type="number"
+        min={0}
+        step={props.decimal ? "0.1" : "1"}
+        inputMode={props.decimal ? "decimal" : "numeric"}
+        defaultValue={props.value ?? ""}
+        key={`${props.id}-${props.value ?? ""}`}
+        onBlur={(e) => {
+          const raw = e.target.value.trim();
+          const v = raw === "" ? undefined : Number(raw);
+          if (v !== undefined && (!Number.isFinite(v) || v < 0 || (!props.decimal && !Number.isInteger(v)))) return;
+          if (v === props.value) return;
+          props.onSave(v);
+        }}
+      />
+    </>
+  );
+}
 
 const FLAG: Record<UtilizationFlag, { tone: Tone; label: string }> = {
   red: { tone: "error", label: "דגל אדום" },
@@ -34,7 +71,7 @@ export default function ActivityScreen() {
   const data = useField((s) => s.data);
   const seed = useField((s) => s.seed);
   const { mergeActivity, setEnrollment } = useField.getState();
-  const { coverage } = useAnalysis();
+  const { coverage, idx } = useAnalysis();
   const toast = useToast();
   const [importing, setImporting] = useState(false);
 
@@ -47,6 +84,30 @@ export default function ActivityScreen() {
     u: utilization({ neighborhoodId: n.id, asOfMonth: asOf, services: data.services, activity: data.activity, enrollment: data.enrollment }, seed),
     enrolled: data.enrollment.find((e) => e.neighborhoodId === n.id && e.month === asOf)?.enrolled,
   }));
+
+  const row = (nid: string) => data.enrollment.find((e) => e.neighborhoodId === nid && e.month === asOf);
+  const save = (nid: string, name: string, patch: EnrollmentPatch, what: string) => {
+    setEnrollment(nid, asOf, patch);
+    toast("success", `עודכן ${what} ב${name}`);
+  };
+  const penRows = data.neighborhoods.map((n) => ({
+    n,
+    p: penetration(n.id, data.enrollment, seed.settings, asOf),
+    f: timeToFirstService(n.id, data.enrollment, seed.settings, asOf),
+    r: row(n.id),
+  }));
+  const totals = penRows.reduce(
+    (acc, { r }) => ({ active: acc.active + (r?.activeParticipants ?? 0), eligible: acc.eligible + (r?.eligible ?? 0) }),
+    { active: 0, eligible: 0 },
+  );
+  const spent = utilRows.reduce((a, r) => a + r.u.spent, 0);
+  const capacity = utilRows.reduce((a, r) => a + r.u.capacity, 0);
+  const productsAvailable = data.services.some((s) => s.reach === "national" && s.status === "אושר");
+  const sp = spread(coverage, productsAvailable);
+  const slow = penRows.filter((x) => x.f.overMax).length;
+  const prices = hourlyPriceIndex(data.services, seed, asOf);
+  const minSessions = activeMinSessions(seed.settings);
+  const activeProposal = isProposal(seed.settings, "active_participant_min_sessions_month");
 
   const serviceNeighborhood = new Map(data.services.map((s) => [s.id, s.neighborhoodId]));
   const trend = months.map((m) => {
@@ -95,8 +156,27 @@ export default function ActivityScreen() {
             </div>
           </div>
 
+          <section className="grid grid--kpi" aria-label={`מדדים ב-${monthLabel(asOf)}`}>
+            <div className="card kpi">
+              <span className="kpi__value">{percent(capacity ? spent / capacity : null)}</span>
+              <span className="kpi__label">{metricName(seed, "utilization")}: כסף שנוצל מהארנק</span>
+            </div>
+            <div className="card kpi">
+              <span className="kpi__value">{percent(totals.eligible && totals.active >= seed.settings.small_cell_threshold ? totals.active / totals.eligible : null)}</span>
+              <span className="kpi__label">{metricName(seed, "penetration")}: משתתפים פעילים מתוך הזכאים</span>
+            </div>
+            <div className="card kpi">
+              <span className="kpi__value">{sp.meeting} מתוך {sp.neighborhoods}</span>
+              <span className="kpi__label">{metricName(seed, "spread")}: שכונות שעומדות ברצפה בכל קטגוריות הליבה</span>
+            </div>
+            <div className="card kpi">
+              <span className="kpi__value">{slow}</span>
+              <span className="kpi__label">שכונות מעל {seed.settings.first_service_max_days} ימים ל{metricName(seed, "time_to_first_service")}</span>
+            </div>
+          </section>
+
           <section className="card" aria-labelledby="util-h">
-            <h2 id="util-h">מיצוי הארנק האישי</h2>
+            <h2 id="util-h">{metricName(seed, "utilization")} הארנק האישי (כסף)</h2>
             <p className="muted">
               הוצאה מהארנק מול {shekel(seed.settings.personal_wallet)} לכל מחזיק סל בחודש, בחלון של {win.length} חודשים. יעד {percent(seed.settings.utilization_target)}, דגל אדום מתחת ל-{percent(seed.settings.red_flag_avg)}.
               {seed.settings.qol_counts_in_target ? "" : " איכות חיים וליווי המלווה לא נספרים."}
@@ -130,7 +210,7 @@ export default function ActivityScreen() {
                           onBlur={(e) => {
                             const v = Number(e.target.value);
                             if (e.target.value === "" || !Number.isInteger(v) || v < 0 || v === enrolled) return;
-                            setEnrollment(n.id, asOf, v);
+                            setEnrollment(n.id, asOf, { enrolled: v });
                             toast("success", `עודכן מספר מחזיקי הסל ב${n.name}`);
                           }}
                         />
@@ -144,6 +224,94 @@ export default function ActivityScreen() {
                 </tbody>
               </table>
             </TableWrap>
+          </section>
+
+          <section className="card" aria-labelledby="pen-h">
+            <h2 id="pen-h">{metricName(seed, "penetration")} (אנשים) ו{metricName(seed, "time_to_first_service")}</h2>
+            <p className="muted">
+              נתונים מצטברים מדוח ספק העל לשכונה ולחודש {monthLabel(asOf)}. משתתף פעיל: לפחות {minSessions} מפגשים בחודש
+              {activeProposal ? <> <ProposalBadge note={statusNote(seed.settings, "active_participant_min_sessions_month")} /></> : null}.
+              {" "}{metricName(seed, "penetration")} היא פעילים חלקי הזכאים ברמות 1 עד 3, ואינה {metricName(seed, "utilization")}, שמודד כסף. מספר קטן מ-{seed.settings.small_cell_threshold} לא מוצג.
+            </p>
+            <TableWrap label={`${metricName(seed, "penetration")} וזמן לשירות ראשון לפי שכונה`}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th scope="col">שכונה</th>
+                    <th scope="col">משתתפים פעילים</th>
+                    <th scope="col">זכאים ברמות 1 עד 3</th>
+                    <th scope="col">{metricName(seed, "penetration")}</th>
+                    <th scope="col">ימים ממוצע לשירות ראשון</th>
+                    <th scope="col">נרשמים בחודש</th>
+                    <th scope="col">מצב</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {penRows.map(({ n, p, f, r }) => (
+                    <tr key={n.id}>
+                      <th scope="row">{n.name}</th>
+                      <td>
+                        <NumberCell id={`act-${n.id}`} label={`משתתפים פעילים ב${n.name}`} value={r?.activeParticipants}
+                          onSave={(v) => save(n.id, n.name, { activeParticipants: v }, "מספר המשתתפים הפעילים")} />
+                      </td>
+                      <td>
+                        <NumberCell id={`eli-${n.id}`} label={`זכאים ב${n.name}`} value={r?.eligible}
+                          onSave={(v) => save(n.id, n.name, { eligible: v }, "מספר הזכאים")} />
+                      </td>
+                      <td className="num">{p.suppressed ? `<${seed.settings.small_cell_threshold}` : percent(p.rate)}</td>
+                      <td>
+                        <NumberCell id={`ftd-${n.id}`} label={`ימים ממוצע לשירות ראשון ב${n.name}`} value={r?.firstServiceDaysAvg} decimal
+                          onSave={(v) => save(n.id, n.name, { firstServiceDaysAvg: v }, "הזמן לשירות ראשון")} />
+                      </td>
+                      <td>
+                        <NumberCell id={`ftc-${n.id}`} label={`נרשמים חדשים ב${n.name}`} value={r?.firstServiceCount}
+                          onSave={(v) => save(n.id, n.name, { firstServiceCount: v }, "מספר הנרשמים")} />
+                      </td>
+                      <td>
+                        {f.suppressed ? (
+                          <Badge tone="neutral">פחות מ-{seed.settings.small_cell_threshold} נרשמים, לא מוצג</Badge>
+                        ) : f.avgDays === null ? (
+                          <Badge tone="neutral">אין נתונים</Badge>
+                        ) : f.overMax ? (
+                          <Badge tone="warning">מעל {seed.settings.first_service_max_days} ימים</Badge>
+                        ) : (
+                          <Badge tone="success">עד {seed.settings.first_service_max_days} ימים</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrap>
+          </section>
+
+          <section className="card" aria-labelledby="hourly-h">
+            <h2 id="hourly-h">{metricName(seed, "hourly_price_index")}, {pricePeriod(asOf, seed.settings)}</h2>
+            <p className="muted">ממוצע של מחיר ליחידה חלקי שעות השירות ביחידה, לפי קטגוריה. נכנסים שירותים שהתחילו עד סוף התקופה ולא נדחו, ושיש להם שעות ליחידה.</p>
+            {prices.length ? (
+              <TableWrap label={metricName(seed, "hourly_price_index")}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">קטגוריה</th>
+                      <th scope="col">שירותים</th>
+                      <th scope="col">מחיר ממוצע לשעה</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prices.filter((x) => x.authority === data.authority).map((x) => (
+                      <tr key={x.categoryCode}>
+                        <th scope="row">{x.categoryCode} {idx.categories.get(x.categoryCode)?.name ?? ""}</th>
+                        <td className="num">{x.services}</td>
+                        <td className="num">{x.avgHourly.toLocaleString("he-IL", { maximumFractionDigits: 2 })} ש"ח</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TableWrap>
+            ) : (
+              <p>אין עדיין שירותים עם שעות ליחידה. השלימו אותם בקטלוג.</p>
+            )}
           </section>
 
           <section className="card" aria-labelledby="trend-h">

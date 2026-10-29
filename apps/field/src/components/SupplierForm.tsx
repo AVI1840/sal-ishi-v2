@@ -70,7 +70,7 @@ export function SupplierForm(props: { open: boolean; onClose: () => void; suppli
     >
       <div className="grid grid--form">
         <TextField label="קוד ספק" required value={draft.code} disabled={Boolean(props.supplier)} onChange={(e) => set("code", e.target.value.trim())}
-          error={touched ? errors.code : null} hint="הקוד הוא מה שעובר לאינטגרטור ולכלי לאזרח" />
+          error={touched ? errors.code : null} hint="הקוד הוא מה שעובר לספק העל ולכלי לאזרח" />
         <SelectField label="סוג עוסק" required value={draft.type} onChange={(e) => set("type", e.target.value as Supplier["type"])}
           options={SUPPLIER_TYPES.map((t) => ({ value: t, label: labels.supplierType[t]! }))} />
         <TextField label={personal ? "שם הספק (אדם פרטי)" : "שם הארגון"} value={draft.displayName ?? ""} onChange={(e) => set("displayName", e.target.value)} />
@@ -86,8 +86,8 @@ export function SupplierForm(props: { open: boolean; onClose: () => void; suppli
       {personal ? (
         <Alert tone="info" title="ספק שהוא אדם פרטי">
           {seed.settings.supplier_contact_to_hq
-            ? "השם ופרטי הקשר נשמרים ברשות ועוברים למטה בחבילת הפיילוט. הם לא עוברים לאינטגרטור ולא לכלי לאזרח."
-            : "השם ופרטי הקשר נשמרים ברשות בלבד. למטה, לאינטגרטור ולכלי לאזרח עוברים רק קוד וסוג."}
+            ? "השם ופרטי הקשר נשמרים ברשות ועוברים למטה בחבילת הפיילוט. הם לא עוברים לספק העל ולא לכלי לאזרח."
+            : "השם ופרטי הקשר נשמרים ברשות בלבד. למטה, לספק העל ולכלי לאזרח עוברים רק קוד וסוג."}
         </Alert>
       ) : null}
 

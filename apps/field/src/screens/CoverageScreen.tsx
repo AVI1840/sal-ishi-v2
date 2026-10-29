@@ -13,6 +13,7 @@ import {
   type CoverageCell,
   type Service,
   type UnmetDemand,
+  productsQuarterlyCapPoints,
 } from "@sal-ishi/core";
 import { Alert, Badge, Button, Dialog, EmptyState, PageHeader, TableWrap, useToast, type Tone } from "@sal-ishi/ui";
 import { ServiceForm } from "../components/ServiceForm";
@@ -23,7 +24,7 @@ const LEVEL: Record<CoverageCell["level"], { tone: Tone; text: (c: CoverageCell)
   green: { tone: "success", text: (c) => `עומד (${c.count}/${c.floor})` },
   orange: { tone: "warning", text: (c) => `חסר 1 (${c.count}/${c.floor})` },
   red: { tone: "error", text: (c) => `חסרים ${c.missing} (${c.count}/${c.floor})` },
-  not_checked: { tone: "neutral", text: () => "ערוץ ארצי, לא נבדק" },
+  not_checked: { tone: "neutral", text: () => "ערוץ ארצי, לא נספר ברצפה" },
 };
 
 export default function CoverageScreen() {
@@ -118,7 +119,10 @@ export default function CoverageScreen() {
                   return (
                     <td key={cc.id}>
                       {cell.level === "not_checked" ? (
-                        <Badge tone={lv.tone}>{lv.text(cell)}</Badge>
+                        <>
+                          <Badge tone={lv.tone}>{lv.text(cell)}</Badge>
+                          <div className="muted">תקרה: {productsQuarterlyCapPoints(seed.settings)} נקודות ברבעון</div>
+                        </>
                       ) : (
                         <button className="cell-btn" type="button" onClick={() => setOpen(cell)} aria-label={`${n.name}, ${cc.name}: ${lv.text(cell)}${alerts.length ? `, ${alerts.length} התראות` : ""}${asked ? `, ביקשו ואין: ${formatCount(asked, seed.settings)}` : ""}. פירוט`}>
                           <Badge tone={lv.tone}>{lv.text(cell)}</Badge>

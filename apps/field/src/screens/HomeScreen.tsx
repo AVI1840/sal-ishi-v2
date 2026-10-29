@@ -6,9 +6,14 @@ import { Database, MapPin, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react"
 import {
   COMMUNITIES,
   FileSyncAdapter,
+  HOSPITALIZATION_TEXT,
   createBrowserFileIO,
+  migrationGaps,
+  productsQuarterlyCapPoints,
   proposalKeys,
+  statusNote,
   type Neighborhood,
+  type Settings,
 } from "@sal-ishi/core";
 import {
   Alert,
@@ -39,12 +44,49 @@ const SETTING_LABELS: [string, string][] = [
   ["price_outlier_threshold", "חריגת מחיר מעל הייחוס"],
   ["reference_price_min_samples", "דגימות מינימום למחיר ייחוס"],
   ["points_rollover_months", "צבירת נקודות (חודשים)"],
-  ["no_show_free_per_quarter", "היעדרויות בלי חיוב ברבעון"],
   ["small_cell_threshold", "סף תא קטן (מוצג כ-<)"],
   ["supplier_contact_to_hq", "פרטי ספק יחיד עוברים למטה"],
+  // גרסה 0.4: מודל התשלום של החשכ"ל
+  ["cancellation_notice_hours", "הודעה מראש לביטול"],
+  ["no_show_charge_rule", "חיוב באי-הגעה"],
+  ["hospitalization_refund", "החזר באשפוז"],
+  ["qol_mode", "איכות חיים: אופן הכיסוי"],
+  ["reference_price_mode", "מחיר ייחוס"],
+  ["low_competition_operator_threshold", "תחרות נמוכה: פחות ספקים מ"],
+  ["products_quarterly_cap_share", "תקרת מוצרים ברבעון"],
+  ["products_count_in_floor", "מוצרים נספרים ברצפת המגוון"],
+  ["active_participant_min_sessions_month", "משתתף פעיל: מפגשים בחודש לפחות"],
+  ["first_service_max_days", "זמן לשירות ראשון: עד (ימים)"],
 ];
 
-function formatSetting(key: string, value: unknown): string {
+const MODE_TEXT: Record<string, string> = {
+  fixed_amount: "סכום קבוע מהנקודות, השאר על הקשיש",
+  percent: "אחוז השתתפות עם תקרה חודשית",
+  monitor: "מעקב והתראה, בלי חסימה",
+  binding: "מחייב בקטגוריות ורשויות שנבחרו",
+  preactivated_low_competition: "מחייב אוטומטית בתחרות נמוכה",
+  individual_or_capacity_limited_only: "רק בפרטני, בבית או בקבוצה מוגבלת מקום",
+  always: "תמיד",
+  never: "אף פעם",
+};
+
+function formatSetting(key: string, value: unknown, settings: Settings): string {
+  const hours = (h: unknown) => (typeof h === "number" ? `${h} שעות` : "טרם נקבע");
+  if (key === "cancellation_notice_hours" && value && typeof value === "object") {
+    const v = value as Record<string, unknown>;
+    return `קבוצה ${hours(v.group)}, בבית ${hours(v.home)}, פרטני ${hours(v.individual)}, מרחוק ${hours(v.remote)}`;
+  }
+  if (key === "hospitalization_refund" && value && typeof value === "object") {
+    const v = value as Record<string, unknown>;
+    return `קבוצה: ${HOSPITALIZATION_TEXT[String(v.group)] ?? v.group}. פרטני ובבית: ${HOSPITALIZATION_TEXT[String(v.individual)] ?? v.individual}${v.notify_companion ? ". הודעה למלווה" : ""}`;
+  }
+  if (key === "products_quarterly_cap_share") {
+    return `${Math.round(settings.products_quarterly_cap_share.value * 100)}% מהארנק הרבעוני (${productsQuarterlyCapPoints(settings)} נקודות)`;
+  }
+  if (value && typeof value === "object" && "value" in value) {
+    const inner = (value as { value: unknown }).value;
+    return typeof inner === "string" ? (MODE_TEXT[inner] ?? inner) : formatSetting(key, inner, settings);
+  }
   if (typeof value === "boolean") return value ? "כן" : "לא";
   if (typeof value === "number" && value > 0 && value < 1) return `${Math.round(value * 100)}%`;
   if (key === "utilization_window" && typeof value === "string") return value.replace(/rolling_(\d+)_months/, "$1 חודשים מתגלגלים");
@@ -55,7 +97,9 @@ export default function HomeScreen() {
   const data = useField((s) => s.data);
   const seed = useField((s) => s.seed);
   const seedFromHq = useField((s) => s.seedFromHq);
-  const { setAuthority, upsertNeighborhood, removeNeighborhood, loadDemo, reset, setSeed } = useField.getState();
+  const seedNotice = useField((s) => s.seedNotice);
+  const isDemo = useField((s) => s.isDemo);
+  const { setAuthority, upsertNeighborhood, removeNeighborhood, loadDemo, reset, setSeed, dismissSeedNotice } = useField.getState();
   const { coverage, perService, labels } = useAnalysis();
   const toast = useToast();
 
@@ -69,6 +113,7 @@ export default function HomeScreen() {
   const entered = [...perService.values()].filter((a) => a.entry.status === "נכנס").length;
   const approved = data.services.filter((s) => s.status === "אושר").length;
   const redCells = coverage.cells.filter((c) => c.level === "red").length;
+  const toComplete = migrationGaps(data.services, seed).filter((g) => g.gaps.length).length;
 
   const receiveSeed = async () => {
     try {
@@ -101,6 +146,24 @@ export default function HomeScreen() {
           </>
         }
       />
+
+      {seedNotice ? (
+        <div className="stack">
+          <Alert tone="info" title="גרסת בסיס חדשה" live>{seedNotice}</Alert>
+          <div><Button small variant="secondary" onClick={dismissSeedNotice}>הבנתי</Button></div>
+        </div>
+      ) : null}
+
+      {toComplete ? (
+        <Alert tone="warning" title="שירותים שדורשים השלמה">
+          {toComplete} שירותים חסרים שדות של מודל התשלום (שעות ליחידה או אופן מתן). הנתונים שלהם נשמרו. <Link to="/catalog">לרשימת ההשלמות בקטלוג</Link>
+          {isDemo ? (
+            <div style={{ marginTop: "var(--spacing-2)" }}>
+              <Button small variant="secondary" icon={<Database size={16} />} onClick={() => setConfirmDemo(true)}>טעינת נתוני ההדגמה המעודכנים (0.4)</Button>
+            </div>
+          ) : null}
+        </Alert>
+      ) : null}
 
       {!hasData ? (
         <EmptyState icon={<MapPin size={40} />} title="עוד לא הוגדרה רשות">
@@ -216,8 +279,8 @@ export default function HomeScreen() {
               {SETTING_LABELS.map(([key, label]) => (
                 <tr key={key}>
                   <th scope="row">{label}</th>
-                  <td>{formatSetting(key, (seed.settings as Record<string, unknown>)[key])}</td>
-                  <td>{proposals.has(key) ? <ProposalBadge /> : <Badge tone="success">סופי</Badge>}</td>
+                  <td>{formatSetting(key, (seed.settings as Record<string, unknown>)[key], seed.settings)}</td>
+                  <td>{proposals.has(key) ? <ProposalBadge note={statusNote(seed.settings, key)} /> : <Badge tone="success">סופי</Badge>}</td>
                 </tr>
               ))}
             </tbody>

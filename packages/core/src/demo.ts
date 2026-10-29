@@ -250,7 +250,7 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
         const enrolled = v.enrolled[i]!;
         // נתונים מצטברים מדוח ספק העל (חדירה וזמן לשירות ראשון). השכונה הקטנה
         // מתחת לסף התא הקטן, כדי שההסתרה תופיע בהדגמה.
-        const fresh = Math.round(enrolled * 0.08);
+        const fresh = Math.round(enrolled * 0.12);
         return {
           neighborhoodId: n.id,
           month,

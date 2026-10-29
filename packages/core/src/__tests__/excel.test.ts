@@ -48,6 +48,22 @@ describe("ייבוא Excel", () => {
     expect(missingRequiredMappings([...SERVICE_IMPORT_FIELDS], mapping)).toEqual([]);
   });
 
+  it("עמודות מודל התשלום (0.4) נקלטות, ותא ריק נשאר חסר", () => {
+    let n = 0;
+    const { services } = rowsToServices(
+      [
+        { שירות: "שיווי משקל", שכונה: "שכונת הדגמה ב", סוג: "T16", ספק: supplierNpo.code, שעות: "6", מתן: "קבוצתי", מקום: "כן", מלווה: "", סיבה: "" },
+        { שירות: "סל טיפוח", שכונה: "שכונת הדגמה ב", סוג: "T51", ספק: supplierNpo.code, שעות: "", מתן: "לא ידוע", מקום: "", מלווה: "כן", סיבה: "צורך מתועד" },
+      ],
+      { name: "שירות", neighborhood: "שכונה", serviceType: "סוג", supplier: "ספק", hoursPerUnit: "שעות", serviceMode: "מתן", capacityLimited: "מקום", gatedByCompanion: "מלווה", gateReason: "סיבה" },
+      { authority: AUTH, neighborhoods: [nGeneral, nHaredi], suppliers: [supplierNpo], seed, newId: () => `id${++n}`, defaultStartMonth: "2026-12" },
+    );
+    expect(services[0]).toMatchObject({ hoursPerUnit: 6, serviceMode: "group", capacityLimited: true });
+    expect(services[1]).toMatchObject({ gatedByCompanion: true, gateReason: "צורך מתועד" });
+    expect(services[1]!.hoursPerUnit).toBeUndefined();
+    expect(services[1]!.serviceMode).toBeUndefined();
+  });
+
   it("שורות הופכות לשירותים בטיוטה, ושורה עם שכונה לא מוכרת נדחית", () => {
     let n = 0;
     const { services, errors } = rowsToServices(

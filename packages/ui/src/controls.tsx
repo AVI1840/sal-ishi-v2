@@ -51,11 +51,13 @@ export function Badge(props: { tone: Tone; children: ReactNode; title?: string }
   );
 }
 
-/** סימון "הצעה" לערך שממתין להכרעה (לפי *_status ב-seed). */
+/** סימון "הצעה, ממתין להכרעה" לערך שעוד לא הוכרע (status: proposal ב-seed). */
 export function ProposalBadge(props: { note?: string }) {
+  // ב-seed הסטטוס נכתב "proposal - פירוט". מציגים רק את הפירוט.
+  const note = props.note?.replace(/^\s*proposal\s*-?\s*/i, "").trim() || undefined;
   return (
-    <Badge tone="proposal" title={props.note}>
-      הצעה{props.note ? <span className="visually-hidden">: {props.note}</span> : null}
+    <Badge tone="proposal" title={note}>
+      הצעה, ממתין להכרעה{note ? <span className="visually-hidden">: {note}</span> : null}
     </Badge>
   );
 }
