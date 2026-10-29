@@ -27,7 +27,7 @@ const RULE: Record<TriageRule, { icon: typeof Clock; label: string; action: stri
 const PERSONAS = new Set(["c1", "c2", "c3"]);
 
 /** אישור שירות מותנה בשלוש נגיעות: לאשר או לא, סיבה, לתעד. */
-function Decide(props: { request: Request; name: string }) {
+export function Decide(props: { request: Request; name: string }) {
   const r = props.request;
   const [mode, setMode] = useState<"approve" | "reject" | null>(null);
   const [reason, setReason] = useState<string | null>(null);

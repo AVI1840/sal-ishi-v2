@@ -28,6 +28,7 @@ import CitizenProfile from "@/pages/citizen/CitizenProfile";
 import CoordinatorDashboard from "@/pages/coordinator/CoordinatorDashboard";
 import CoordinatorPatients from "@/pages/coordinator/CoordinatorPatients";
 import CoordinatorPatientDetail from "@/pages/coordinator/CoordinatorPatientDetail";
+import CoordinatorPilotScreen, { CompanionRedirect } from "@/pages/coordinator/CoordinatorPilotScreen";
 import CoordinatorAlgorithm from "@/pages/coordinator/CoordinatorAlgorithm";
 import CoordinatorIntake from "@/pages/coordinator/CoordinatorIntake";
 import CoordinatorDeterioration from "@/pages/coordinator/CoordinatorDeterioration";
@@ -90,6 +91,8 @@ export default function LegacyApp() {
                 <Route index element={<CoordinatorDashboard />} />
                 <Route path="patients" element={<CoordinatorPatients />} />
                 <Route path="patients/:id" element={<CoordinatorPatientDetail />} />
+                <Route path="patients/:id/session" element={<CoordinatorPilotScreen screen="session" />} />
+                <Route path="patients/:id/review" element={<CoordinatorPilotScreen screen="review" />} />
                 <Route path="intake" element={<CoordinatorIntake />} />
                 <Route path="deterioration" element={<CoordinatorDeterioration />} />
                 <Route path="ai" element={SHOW_DEMO_LAYERS ? <CoordinatorAI /> : <Navigate to="/coordinator" replace />} />
@@ -99,6 +102,11 @@ export default function LegacyApp() {
                 {/* עמודי ה-AI וה"אייג'נטים" רק בגרסת ההאקתון (תשובות כתובות מראש) */}
                 <Route path="agents" element={<Navigate to="/coordinator" replace />} />
               </Route>
+
+              {/* קישורים פנימיים של מסכי 0.5 */}
+              <Route path="/companion/person/:id" element={<CompanionRedirect to="" />} />
+              <Route path="/companion/session/:id" element={<CompanionRedirect to="/session" />} />
+              <Route path="/companion/review/:id" element={<CompanionRedirect to="/review" />} />
 
               {/* Executive Dashboard */}
               <Route path="/executive" element={<AppShell variant="executive" />}>

@@ -8,6 +8,8 @@ import { usePilot } from "../store";
 import { useAutoSync } from "../sync";
 
 const CaseloadContext = createContext<CaseloadPerson[]>([]);
+/** לעטיפת מסכי 0.5 (פגישה משותפת, מעקב חודשי) בתוך לוח המלווה הקיים. */
+export const CaseloadProvider = CaseloadContext.Provider;
 export const useCaseload = () => useContext(CaseloadContext);
 export const usePersonName = () => {
   const people = useCaseload();

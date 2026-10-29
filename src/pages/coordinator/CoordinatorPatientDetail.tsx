@@ -19,6 +19,7 @@ import { MOTIVATION_LABELS, BARRIER_LABELS, STRENGTH_LABELS, READINESS_LABELS } 
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PersonActions } from "@/components/companion/PersonActions";
 
 // Strength colors for radar
 const STRENGTH_COLORS: Record<string, string> = {
@@ -32,11 +33,6 @@ export default function CoordinatorPatientDetail() {
   const timeline = TIMELINE_EVENTS.filter((e) => e.citizenId === citizen.id);
   const nudges = NUDGES.filter((n) => n.citizenId === citizen.id);
   const recommendations = AI_RECOMMENDATIONS.filter((r) => r.citizenId === citizen.id);
-
-  // Level-2 wallet model — 32 יחידות / 775₪ (consistent with CitizenProfile + CitizenHome)
-  const walletTotal = 32;
-  const walletUsed = Math.round(walletTotal * Math.min(0.92, citizen.engagementScore / 100 + 0.1));
-  const walletBalance = Math.max(0, walletTotal - walletUsed);
 
   // Matched services from the real engine (no legacy SERVICES array)
   const matchedServices = useMemo(
@@ -71,14 +67,6 @@ export default function CoordinatorPatientDetail() {
               <Chip tone="muted">מעורבות: {citizen.engagementScore}%</Chip>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button className="h-10 px-4 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2">
-              <Phone className="w-4 h-4" /> שיחה
-            </button>
-            <button className="h-10 px-4 border border-border text-foreground rounded-xl text-xs font-medium hover:bg-muted transition-colors flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" /> הערה
-            </button>
-          </div>
         </div>
 
         {/* Quick Stats */}
@@ -101,6 +89,9 @@ export default function CoordinatorPatientDetail() {
           </div>
         </div>
       </div>
+
+      {/* 0.5 מאוחד: פעולות המלווה בתיק */}
+      <PersonActions citizen={citizen} />
 
       {/* Tabs */}
       <Tabs defaultValue="profile" className="w-full">
@@ -291,18 +282,6 @@ export default function CoordinatorPatientDetail() {
 
             {/* Sidebar */}
             <div className="space-y-4">
-              {/* Wallet — level 2 model */}
-              <div className="libi-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3">ארנק יחידות</h4>
-                <div className="flex items-end gap-2 mb-2">
-                  <div className="text-2xl font-bold text-primary">{walletBalance}</div>
-                  <div className="text-xs text-muted-foreground pb-0.5">מתוך {walletTotal}</div>
-                  <div className="mr-auto text-xs font-semibold text-emerald-700">775₪</div>
-                </div>
-                <ProgressBar value={walletUsed} max={walletTotal} tone="primary" />
-                <p className="text-[10px] text-muted-foreground mt-1.5">רמה 2 · {walletUsed} יחידות נוצלו</p>
-              </div>
-
               {/* Nudges */}
               <div className="libi-card p-5">
                 <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
