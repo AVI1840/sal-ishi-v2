@@ -293,7 +293,10 @@ export function buildCitizenCatalog(
       capacityLimited: s.capacityLimited ?? false,
       ...citizenFitFields(s, item.pricePoints, seed),
       demand: demandBand(s, activity, seed.settings, latest),
-      supplierScore: sup ? (supplierScore(sup, seed.settings)?.score ?? null) : null,
+      supplierScore: (() => {
+        const sc = sup ? supplierScore(sup, seed.settings) : null;
+        return sc && !sc.newSupplier ? sc.score : null;
+      })(),
     };
   });
 

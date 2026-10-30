@@ -174,9 +174,6 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
 
 /** קטלוג ההדגמה: הוריאציה של האטלס שמתאימה לשכונות של אזרחי ההדגמה, ועוד הערוץ הארצי. */
 export function buildDemoCatalogs(seed: Seed): CitizenCatalog[] {
-  // דירוג הספק מוצג כשההגדרות מבקשות (supplier_rating.show), גם אם ב-seed הוא כבוי.
-  // המשקל שלו במנוע ההתאמה נשאר לפי ה-seed (תוספת 3), ולכן הסדר לא משתנה.
-  if (appSettings.supplier_rating?.show) seed = withSettings(seed, { supplier_rating_enabled: true });
   const data = buildDemoAuthority(DEMO_JERUSALEM);
   const national = buildDemoNationalChannel();
   const source = { ...data, suppliers: [...data.suppliers, ...national.suppliers], services: [...data.services, ...national.services] };

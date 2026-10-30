@@ -64,9 +64,18 @@ describe("רוחב בתוך קטגוריה ותת-תחום קוגניטיבי", 
 });
 
 describe("דירוג ספקים", () => {
-  it("ציון משוקלל לפי ההערכה האחרונה", () => {
-    const s = supplierScore({ evaluations: [{ quarter: "2026-Q2", quality: 1, outcomes: 1, satisfaction: 1, value: 1 }, { quarter: "2026-Q3", quality: 5, outcomes: 4, satisfaction: 3, value: 2 }] }, seed.settings);
-    expect(s).toEqual({ score: 4, quarter: "2026-Q3", evaluations: 2 }); // 5*.4+4*.3+3*.2+2*.1
+  it("חמשת הרכיבים, ממוצע שווה עד שייקבעו משקלות, לפי ההערכה האחרונה", () => {
+    const last = { quarter: "2026-Q3", quality: 5, outcomes: 4, satisfaction: 3, audienceFit: 4, serviceLevel: 4 };
+    const s = supplierScore({ evaluations: [{ quarter: "2026-Q2", quality: 1, outcomes: 1, satisfaction: 1 }, last] }, seed.settings);
+    expect(s).toEqual({ score: 4, quarter: "2026-Q3", evaluations: 2, newSupplier: false }); // (5+4+3+4+4)/5
+    // עם משקלות: ממוצע משוקלל.
+    const w = supplierScore({ evaluations: [last, { ...last, quarter: "2026-Q4" }] }, { ...seed.settings, supplier_rating_component_weights: { quality: 0.5, outcomes: 0.5 } });
+    expect(w?.score).toBe(4.5);
+  });
+
+  it("פחות הערכות מהמינימום: ספק חדש", () => {
+    const s = supplierScore({ evaluations: [{ quarter: "2026-Q3", quality: 5, outcomes: 5, satisfaction: 5 }] }, seed.settings);
+    expect(s?.newSupplier).toBe(true);
   });
 
   it("בלי הערכות: אין ציון", () => {
@@ -91,7 +100,7 @@ describe("דירוג ספקים", () => {
 
   it("ההגדרות החדשות מסומנות כהצעה", () => {
     const keys = proposalKeys(seed.settings);
-    expect(keys).toEqual(expect.arrayContaining(["supplier_rating_weights", "matching_weights", "selection_max_active", "competition_max_suppliers_local", "subcategory_breadth_min"]));
+    expect(keys).toEqual(expect.arrayContaining(["supplier_rating_enabled", "matching_weights", "selection_max_active", "competition_max_suppliers_local", "subcategory_breadth_min"]));
   });
 });
 

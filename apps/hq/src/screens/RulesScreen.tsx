@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Pencil, Plus, Send } from "lucide-react";
-import { FileSyncAdapter, createBrowserFileIO, proposalKeys, statusNote, type Seed } from "@sal-ishi/core";
+import { FileSyncAdapter, SUPPLIER_RATING_COMPONENTS, createBrowserFileIO, proposalKeys, statusNote, type Seed } from "@sal-ishi/core";
 import {
   Alert,
   Badge,
@@ -46,8 +46,6 @@ const EDITABLE: { key: string; label: string; kind: Kind; status?: string }[] = 
   { key: "selection_max_active", label: "בחירת האזרח: מקסימום שירותים פעילים במקביל", kind: "int", status: "selection_status" },
   { key: "selection_change_months", label: "בחירת האזרח: אפשרות החלפה כל (חודשים)", kind: "int", status: "selection_status" },
   { key: "suggestions_per_domain", label: "הצעות לאזרח בכל תחום", kind: "int", status: "selection_status" },
-  { key: "competition_max_suppliers_local", label: "תחרות: מקסימום ספקים לסוג שירות בשכונה", kind: "int", status: "competition_status" },
-  { key: "competition_max_suppliers_national", label: "תחרות: מקסימום ספקים לסוג מוצר בערוץ הארצי", kind: "int", status: "competition_status" },
   // גרסה 0.4: מודל התשלום של החשכ"ל
   { key: "qol_copay", label: "איכות חיים במצב אחוז: השתתפות עצמית", kind: "ratio" },
   { key: "qol_cap_month", label: "איכות חיים במצב אחוז: תקרה חודשית מהארנק (ש\"ח)", kind: "money" },
@@ -56,22 +54,19 @@ const EDITABLE: { key: string; label: string; kind: Kind; status?: string }[] = 
   { key: "low_competition_operator_threshold", label: "תחרות נמוכה: פחות ספקים מ (לקטגוריה ושכונה)", kind: "int" },
   { key: "active_participant_min_sessions_month", label: "משתתף פעיל: מפגשים בחודש לפחות", kind: "nested-int" },
   { key: "first_service_max_days", label: "זמן לשירות ראשון: התראה מעל (ימים)", kind: "int" },
-  { key: "supplier_rating_enabled", label: "דירוג ספקים פנימי פעיל", kind: "bool", status: "supplier_rating_status" },
+  { key: "supplier_rating_enabled", label: "דירוג ספקים פעיל (מתג אחד לכל המסכים)", kind: "bool", status: "supplier_rating_status" },
+  { key: "supplier_rating_min_evaluations", label: "דירוג ספקים: הערכות לפחות לפני שמוצג ציון", kind: "int", status: "supplier_rating_status" },
 ];
+
+/** סוגים שמחוץ להיקף הסל (תעסוקה), לא מוצגים בספרייה. נשארים ב-seed לקריאת קבצים ישנים. */
+const HIDDEN_TYPES = new Set(["T14"]);
 
 const MATCHING_LAYERS = [
   { key: "prevention", label: "מניעת הידרדרות", source: "קטגוריה וסוג השירות בספרייה (שיווי משקל, גירוי קוגניטיבי, תזונה)" },
   { key: "motivation", label: "רצון ומוטיבציה", source: "תחום הליבה של השירות מול המוטיבציות שהאדם ביטא בשיחה עם המלווה" },
   { key: "profileFit", label: "התאמה לפרופיל", source: "שפות, התאמה קהילתית ואופן מסירה (בבית, מרחוק) מהקטלוג" },
-  { key: "socialProof", label: "המלצות וניסיון", source: "ביקוש בפועל בשכונה (מצטבר) ודירוג הספק" },
+  { key: "socialProof", label: "המלצות וניסיון", source: "מספק העל, כשיהיו נתוני ניסיון" },
   { key: "proximity", label: "זמינות מעשית", source: "שכונה, היקף (רשותי, אזורי, ארצי) והשתתפות עצמית" },
-];
-
-const RATING_CRITERIA = [
-  { key: "quality", label: "איכות השירות", source: "הערכה רבעונית של הרכזת" },
-  { key: "outcomes", label: "תוצאות מניעה", source: "הערכה רבעונית, ובהמשך מדדי תוצאה" },
-  { key: "satisfaction", label: "שביעות רצון", source: "סקרי שביעות רצון של המשתתפים" },
-  { key: "value", label: "עלות-תועלת", source: "מחיר מול מחיר הייחוס" },
 ];
 
 const inner = (v: unknown) => (v && typeof v === "object" && "value" in v ? (v as { value: unknown }).value : v);
@@ -201,28 +196,45 @@ export default function RulesScreen() {
       <WeightsCard
         id="layers-h"
         title="שכבות ההתאמה לאזרח"
-        description="המשקלות שמנוע ההתאמה בכלי לאזרח ולמלווה משתמש בהם. ועדת הסל קובעת אותם אחת לחציון (מסמך הקטלוג). הכלי המרכזי קורא אותם מגרסת הבסיס שמתפרסמת."
+        description="המשקלות שמנוע ההתאמה בכלי לאזרח ולמלווה משתמש בהם. ועדת הסל קובעת אותם. המלצות וניסיון על 0 עד שיהיו נתוני ניסיון. הכלי המרכזי קורא אותם מגרסת הבסיס שמתפרסמת."
         settingKey="matching_weights"
         statusKey="matching_weights_status"
         items={MATCHING_LAYERS}
-        defaults={{ prevention: 0.3, motivation: 0.25, profileFit: 0.2, socialProof: 0.15, proximity: 0.1 }}
+        defaults={{ prevention: 0.3, motivation: 0.3, profileFit: 0.25, socialProof: 0, proximity: 0.15 }}
         settings={seed.settings}
       />
 
-      <WeightsCard
-        id="rating-h"
-        title="דירוג ספקים"
-        description="הציון של ספק הוא ממוצע משוקלל של ההערכה הרבעונית האחרונה. מוצג במטה ובשטח, ומזין את שכבת המלצות וניסיון. כלי פנימי: לא חוסם שירות ולא נכנס לתקן קליטת המפעילים, והדירוג המחייב אצל ספק העל. אפשר לכבות אותו בטבלת ההגדרות."
-        settingKey="supplier_rating_weights"
-        statusKey="supplier_rating_status"
-        items={RATING_CRITERIA}
-        defaults={{ quality: 0.4, outcomes: 0.3, satisfaction: 0.2, value: 0.1 }}
-        settings={seed.settings}
-      />
+      <section className="card" aria-labelledby="rating-h">
+        <div className="card__header">
+          <h2 id="rating-h">דירוג ספקים</h2>
+          <ProposalBadge note={statusNote(seed.settings, "supplier_rating_enabled")} />
+        </div>
+        <p className="muted">
+          הגדרה אחת לכל המסכים: המטה, השטח והשוק לאזרח. מתג אחד בטבלת ההגדרות. הציון מוצג רק מעל מספר מינימלי של הערכות, ואחרת "ספק חדש". לא חוסם שירות ולא נכנס לתקן קליטת המפעילים. הדירוג המחייב אצל ספק העל.
+        </p>
+        <TableWrap label="רכיבי הדירוג">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">רכיב</th>
+                <th scope="col">משקל</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SUPPLIER_RATING_COMPONENTS.map((c) => (
+                <tr key={c.key}>
+                  <th scope="row">{c.label}</th>
+                  <td>{seed.settings.supplier_rating_component_weights?.[c.key] != null ? `${Math.round(seed.settings.supplier_rating_component_weights[c.key]! * 100)}%` : "ייקבע"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableWrap>
+      </section>
 
       <section className="card" aria-labelledby="types-h">
         <div className="card__header">
-          <h2 id="types-h">ספריית סוגי השירות ({seed.service_types.length})</h2>
+          <h2 id="types-h">ספריית סוגי השירות ({seed.service_types.filter((t) => !HIDDEN_TYPES.has(t.id)).length})</h2>
           <Button variant="secondary" icon={<Plus size={18} />} onClick={() => setEditingType("new")}>סוג שירות חדש</Button>
         </div>
         <TableWrap label="סוגי שירות">
@@ -239,7 +251,7 @@ export default function RulesScreen() {
               </tr>
             </thead>
             <tbody>
-              {seed.service_types.map((t) => (
+              {seed.service_types.filter((t) => !HIDDEN_TYPES.has(t.id)).map((t) => (
                 <tr key={t.id}>
                   <th scope="row">{t.id}</th>
                   <td>{t.name}</td>

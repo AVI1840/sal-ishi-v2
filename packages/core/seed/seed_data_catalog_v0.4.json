@@ -132,13 +132,7 @@
   "selection_change_months": 1,
   "selection_status": "proposal - מסמך הקטלוג (מפגש 2), להכרעה במפגש 3",
   "suggestions_per_domain": 3,
-  "supplier_rating_weights": {
-   "quality": 0.4,
-   "outcomes": 0.3,
-   "satisfaction": 0.2,
-   "value": 0.1
-  },
-  "supplier_rating_status": "proposal - תוספת 3: דירוג ספקים אצל ספק העל, ולכן כבוי בכלי (supplier_rating_enabled=false). אפשר להדליק לשימוש פנימי",
+  "supplier_rating_status": "proposal - חמישה רכיבים: התאמה לקהל היעד, דירוג לקוחות ושביעות רצון, דירוג מלווה, עמידה ברמת השירות ותוצאות. המשקלות ייקבעו בהמשך (עד אז ממוצע שווה). מוצג מעל 2 הערכות, אחרת ספק חדש. הדירוג המחייב אצל ספק העל",
   "competition_max_suppliers_local": 3,
   "competition_max_suppliers_national": 5,
   "competition_status": "proposal - מסמך הקטלוג (מפגש 2), מדד בלבד ולא חוסם",
@@ -162,9 +156,10 @@
   ],
   "subarea_alert_min": 1,
   "subarea_status": "proposal - התראה קוגניטיבית כשאין אף שירות רציף בתת-התחום",
-  "supplier_rating_enabled": false,
+  "supplier_rating_enabled": true,
   "reference_price_binding_scope": [],
-  "reference_price_binding_scope_status": "proposal - רשימת קטגוריה ורשות שבהן מחיר הייחוס מחייב. אזור = רשות"
+  "reference_price_binding_scope_status": "proposal - רשימת קטגוריה ורשות שבהן מחיר הייחוס מחייב. אזור = רשות",
+  "supplier_rating_min_evaluations": 2
  },
  "categories": [
   {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { COMMUNITIES, DELIVERY_MODES, SUPPLIER_TYPES, supplierScore, type Supplier, type SupplierEvaluation } from "@sal-ishi/core";
+import { COMMUNITIES, DELIVERY_MODES, SUPPLIER_TYPES, supplierScore, type Supplier, type SupplierEvaluation, SUPPLIER_RATING_COMPONENTS } from "@sal-ishi/core";
 import { Alert, Button, CheckboxField, CheckboxGroup, Dialog, SelectField, TextField, useToast } from "@sal-ishi/ui";
 import { LANGUAGES, useAnalysis } from "../analysis";
 import { nextSupplierCode, useField } from "../store";
@@ -104,29 +104,25 @@ export function SupplierForm(props: { open: boolean; onClose: () => void; suppli
         onChange={(evaluations) => set("evaluations", evaluations.length ? evaluations : undefined)}
         scoreLabel={(() => {
           const sc = supplierScore(draft, seed.settings);
-          return sc ? `ציון נוכחי ${sc.score.toFixed(1)} מתוך 5 (${sc.quarter})` : "עוד אין הערכה";
+          return sc ? (sc.newSupplier ? `ספק חדש: הדירוג יוצג מ-2 הערכות` : `ציון נוכחי ${sc.score.toFixed(1)} מתוך 5`) : "עוד אין הערכה";
         })()}
       />
     </Dialog>
   );
 }
 
-const CRITERIA: { key: "quality" | "outcomes" | "satisfaction" | "value"; label: string }[] = [
-  { key: "quality", label: "איכות השירות" },
-  { key: "outcomes", label: "תוצאות מניעה" },
-  { key: "satisfaction", label: "שביעות רצון" },
-  { key: "value", label: "עלות-תועלת" },
-];
+// חמשת רכיבי הדירוג, מהליבה (מקור אחד עם המטה והכלי המרכזי).
+const CRITERIA = SUPPLIER_RATING_COMPONENTS;
 
 function currentQuarter(): string {
   const d = new Date();
   return `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`;
 }
 
-/** הערכה רבעונית של ספק: ארבעה מדדים מ-1 עד 5. המשקלות נקבעים במטה. */
+/** הערכה רבעונית של ספק: חמישה רכיבים מ-1 עד 5. המשקלות ייקבעו בהמשך. */
 function EvaluationEditor(props: { evaluations: SupplierEvaluation[]; onChange: (e: SupplierEvaluation[]) => void; scoreLabel: string }) {
   const quarter = currentQuarter();
-  const current = props.evaluations.find((e) => e.quarter === quarter) ?? { quarter, quality: 3, outcomes: 3, satisfaction: 3, value: 3 };
+  const current = props.evaluations.find((e) => e.quarter === quarter) ?? { quarter, quality: 3, outcomes: 3, satisfaction: 3, audienceFit: 3, serviceLevel: 3 };
   const update = (key: (typeof CRITERIA)[number]["key"], v: number) => {
     const next = { ...current, [key]: v };
     props.onChange([...props.evaluations.filter((e) => e.quarter !== quarter), next].sort((a, b) => a.quarter.localeCompare(b.quarter)));
@@ -134,13 +130,13 @@ function EvaluationEditor(props: { evaluations: SupplierEvaluation[]; onChange: 
   return (
     <fieldset className="fieldset">
       <legend className="fieldset__legend">דירוג הספק לרבעון {quarter}</legend>
-      <p className="field__hint">{props.scoreLabel}. הדירוג לא חוסם שירות. הוא מוצג במטה ומזין את שכבת "המלצות וניסיון" בהתאמה לאזרח.</p>
+      <p className="field__hint">{props.scoreLabel}. הדירוג לא חוסם שירות. הוא מוצג במטה, בשטח ובשוק לאזרח. המשקלות ייקבעו בהמשך, והדירוג המחייב אצל ספק העל.</p>
       <div className="grid grid--form">
         {CRITERIA.map((c) => (
           <SelectField
             key={c.key}
             label={c.label}
-            value={String(current[c.key])}
+            value={String(current[c.key] ?? 3)}
             onChange={(e) => update(c.key, Number(e.target.value))}
             options={[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: `${n}${n === 1 ? " (נמוך)" : n === 5 ? " (גבוה)" : ""}` }))}
           />

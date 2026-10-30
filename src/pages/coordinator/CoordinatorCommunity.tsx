@@ -4,7 +4,8 @@
  * סוג), ואיפה יש פער ומה החלופות. בלי נתוני אזרחים.
  */
 import { useMemo } from "react";
-import { CheckCircle2, AlertTriangle, MapPinned, Store, Accessibility } from "lucide-react";
+import { CheckCircle2, AlertTriangle, MapPinned, Store, Accessibility, HandHeart } from "lucide-react";
+import { buildCaseload } from "@/pilot/caseload";
 import { cn } from "@/lib/utils";
 import { communityFor } from "@/lib/community";
 import { catalogState } from "@/data/catalogSource";
@@ -22,6 +23,8 @@ export const COMPANION_NEIGHBORHOOD = "פסגת זאב";
 export default function CoordinatorCommunity() {
   const c = useMemo(() => communityFor(COMPANION_NEIGHBORHOOD), []);
   const s = catalogState.seed.settings;
+  const budgetPer = (s as unknown as { community: number }).community;
+  const caseload = useMemo(() => buildCaseload().length, []);
   if (!c) return <p className="text-base">השכונה לא נמצאה בקטלוג.</p>;
 
   return (
@@ -48,11 +51,23 @@ export default function CoordinatorCommunity() {
           </ul>
         </div>
         <div className="libi-card p-5">
-          <p className="text-sm text-muted-foreground">הכללים (תוספת 3)</p>
-          <p className="text-sm text-foreground mt-2">רצפה: {s.core_floor} שירותים בכל תחום ליבה. יעד עושר: 5, מדד ולא חסימה. לפחות שירות נגיש אחד.</p>
-          <p className="text-xs text-muted-foreground mt-1">הצעה, ממתין להכרעה במפגש 3</p>
+          <p className="text-sm text-muted-foreground">הכללים</p>
+          <p className="text-sm text-foreground mt-2">רצפה: {s.core_floor} שירותים רציפים בכל תחום ליבה. <span className="font-semibold">הוכרע במפגש 2.</span></p>
+          <p className="text-sm text-foreground mt-1">גיוון, יעד עושר של 5 (מדד, לא חסימה) ושירות נגיש אחד לפחות: <span className="font-semibold">הצעה.</span></p>
+          <p className="text-xs text-muted-foreground mt-1">מוצרי מניעה ובטיחות לא נספרים ברצפה.</p>
         </div>
       </div>
+
+      <section className="libi-card p-5" aria-labelledby="budget-h">
+        <h2 id="budget-h" className="text-base font-semibold text-foreground flex items-center gap-2">
+          <HandHeart className="w-5 h-5 text-primary" aria-hidden="true" /> תקציב הקהילה שלי
+        </h2>
+        <p className="text-3xl font-bold text-foreground mt-2">₪{(budgetPer * caseload).toLocaleString("he-IL")} בחודש</p>
+        <p className="text-sm text-foreground mt-1">
+          ₪{budgetPer} לכל אזרח בתיק, כפול {caseload} אזרחים. המלווה מנהלת אותו לפעילות קהילתית שהיא יוזמת: מפגשים, ימי הולדת, פרחים, יציאות משותפות.
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">מההגדרות (חלוקת ₪760, מפגש 2). אופן השימוש: הצעה.</p>
+      </section>
 
       <section className="libi-card p-5" aria-labelledby="cat-h">
         <h2 id="cat-h" className="text-base font-semibold text-foreground mb-4">מה יש בכל תחום</h2>

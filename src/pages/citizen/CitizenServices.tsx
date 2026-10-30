@@ -80,11 +80,10 @@ function ServiceCard({ service, reason }: { service: RealService; reason?: strin
               <Clock className="w-4 h-4 shrink-0" aria-hidden="true" /> {when}
             </p>
           ) : null}
-          {service.supplierScore ? (
-            <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
-              <Award className="w-4 h-4 shrink-0 text-amber-700" aria-hidden="true" /> דירוג הספק {service.supplierScore.toFixed(1)} מתוך 5
-            </p>
-          ) : null}
+          <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
+            <Award className="w-4 h-4 shrink-0 text-amber-700" aria-hidden="true" />
+            {service.supplierScore ? `דירוג הספק ${service.supplierScore.toFixed(1)} מתוך 5` : "ספק חדש בשוק"}
+          </p>
           {service.gatedByCompanion ? (
             <p className="text-sm text-violet-900 mt-1 flex items-center gap-1">
               <UserCheck className="w-4 h-4 shrink-0" aria-hidden="true" /> נפתח יחד עם המלווה

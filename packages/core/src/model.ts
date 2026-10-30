@@ -61,14 +61,19 @@ export const copayBasisSchema = z.enum(COPAY_BASES);
 
 const score = z.number().int().min(1).max(5);
 
-// הערכת ספק רבעונית: ארבעה מדדים מ-1 עד 5. המשקלות בהגדרות (supplier_rating_weights).
+// הערכת ספק רבעונית, 1 עד 5. דירוג הספק בנוי מחמישה רכיבים: התאמה לקהל היעד
+// (audienceFit), דירוג לקוחות ושביעות רצון (satisfaction), דירוג מלווה (quality),
+// עמידה ברמת השירות שנקבעה (serviceLevel) ותוצאות (outcomes). value (עלות-תועלת)
+// נשאר לקריאת קבצים ישנים ולא נכנס לדירוג.
 export const supplierEvaluationSchema = z
   .object({
     quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "רבעון בפורמט 2026-Q3"),
     quality: score,
     outcomes: score,
     satisfaction: score,
-    value: score,
+    value: score.optional(),
+    audienceFit: score.optional(),
+    serviceLevel: score.optional(),
     note: z.string().optional(),
   })
   .strict();

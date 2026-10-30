@@ -10,6 +10,7 @@ import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
 import { BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
+import { DECIDED_PRINCIPLES_MEETING_2, isDecided, ruleKeys, statusNote } from "@sal-ishi/core";
 import { communityFor } from "@/lib/community";
 import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
 import { statusText } from "@/lib/statusText";
@@ -19,17 +20,6 @@ import { usePilot } from "@/pilot/store";
 
 /** שכונות הפיילוט לפי ההחלטות. הר נוף עוד לא בקטלוג ההדגמה. */
 const PILOT_NEIGHBORHOODS = ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"];
-
-type Rule = { key: string; status: string };
-
-function ruleStatuses(settings: Record<string, unknown>): Rule[] {
-  const out: Rule[] = [];
-  for (const [key, v] of Object.entries(settings)) {
-    const status = key.endsWith("_status") && typeof v === "string" ? v : v && typeof v === "object" && "status" in v ? String((v as { status: unknown }).status) : null;
-    if (status) out.push({ key, status });
-  }
-  return out;
-}
 
 function Card(props: { icon: typeof Store; label: string; value: string | number; sub?: string; to?: string; href?: string }) {
   const body = (
@@ -51,9 +41,10 @@ export default function ExecutiveOverview() {
   const settings = catalogState.seed.settings as unknown as Record<string, unknown>;
   const basket = settings as Record<"total" | "personal_wallet" | "companion" | "community" | "overhead", number>;
   const weights = catalogState.seed.settings.matching_weights as Record<string, number>;
-  const rules = useMemo(() => ruleStatuses(settings), [settings]);
-  const proposals = rules.filter((r) => r.status.startsWith("proposal")).length;
-  const decided = rules.length - proposals;
+  // מקור אחד לסטטוס הכללים, אותו כמו באטלס המטה (הליבה).
+  const rules = ruleKeys(catalogState.seed.settings);
+  const decided = rules.filter((k) => isDecided(catalogState.seed.settings, k)).length;
+  const proposals = rules.length - decided;
   const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
   const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
   const requests = derived.requests.length;
@@ -73,7 +64,7 @@ export default function ExecutiveOverview() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
         <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
-        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו · ${proposals} הצעה, ממתין להכרעה`} />
+        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2) · ${proposals} הצעה`} />
         <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${bookings} הזמנות · ${requests} בקשות למלווה`} />
       </div>
 
@@ -124,6 +115,18 @@ export default function ExecutiveOverview() {
         </p>
       </section>
 
+      <section className="libi-card p-5" aria-labelledby="decided-h">
+        <h2 id="decided-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-2">
+          <Scale className="w-5 h-5 text-primary" aria-hidden="true" /> מה הוכרע במפגש 2
+        </h2>
+        <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          {["חלוקת ₪760: ארנק 500, ליווי 181, קהילה 20, תפעול 59", "רצפה של 3 שירותים בכל תחום ליבה", "השתתפות עצמית 0, 20 ועד 50", "תקרת איכות חיים 100", "יעד מיצוי 70%, דגל אדום 35%", ...DECIDED_PRINCIPLES_MEETING_2].map((x) => (
+            <li key={x} className="flex items-start gap-1.5"><CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" /> {x}</li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground mt-2">כל שאר הכללים בהגדרות מסומנים כהצעה, גם כאן וגם באטלס המטה.</p>
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <BasketBreakdown headingId="basket-h" />
 
@@ -142,8 +145,8 @@ export default function ExecutiveOverview() {
               </li>
             ))}
           </ul>
-          <p className="text-xs text-muted-foreground mt-3">{statusText(settings.matching_weights_status)}</p>
-          <h3 className="text-sm font-semibold text-foreground mt-4">דירוג ספק: הרכיבים</h3>
+          <p className="text-xs text-muted-foreground mt-3">{statusNote(catalogState.seed.settings, "matching_weights")}</p>
+          <h3 className="text-sm font-semibold text-foreground mt-4">דירוג ספק: חמישה רכיבים</h3>
           <p className="text-sm text-foreground mt-1">{SUPPLIER_RATING_COMPONENTS.join(" · ")}</p>
           <p className="text-xs text-muted-foreground mt-1">ההרכב והמשקלות ייקבעו בהמשך. מוצג בשוק, ולא משנה את סדר ההתאמה.</p>
         </section>

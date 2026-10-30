@@ -48,10 +48,14 @@ export const settingsSchema = z
     selection_max_active: z.number().int().positive().optional(),
     selection_change_months: z.number().int().positive().optional(),
     suggestions_per_domain: z.number().int().positive().optional(),
-    supplier_rating_weights: z
-      .object({ quality: ratio, outcomes: ratio, satisfaction: ratio, value: ratio })
+    /** ישן (4 רכיבים). נשאר לקריאת seed ישן, לא בשימוש. */
+    supplier_rating_weights: z.record(z.string(), ratio).optional(),
+    /** משקלות חמשת רכיבי הדירוג. חסר: ממוצע שווה (המשקלות ייקבעו). */
+    supplier_rating_component_weights: z
+      .record(z.enum(["audienceFit", "satisfaction", "quality", "serviceLevel", "outcomes"]), ratio)
       .refine((w) => Math.abs(Object.values(w).reduce((a, b) => a + b, 0) - 1) < 0.011, "סכום המשקלות חייב להיות 100%")
       .optional(),
+    supplier_rating_min_evaluations: z.number().int().positive().optional(),
     competition_max_suppliers_local: z.number().int().positive().optional(),
     competition_max_suppliers_national: z.number().int().positive().optional(),
     subcategory_breadth_min: z.number().int().nonnegative().optional(),

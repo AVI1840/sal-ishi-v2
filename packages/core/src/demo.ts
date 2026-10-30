@@ -217,14 +217,16 @@ const VARIANTS: Variant[] = [
   { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"], specs: SPECS_J },
 ];
 
-// הערכות רבעוניות לדוגמה (איכות, תוצאות מניעה, שביעות רצון, עלות-תועלת).
-const ev = (quarter: string, quality: number, outcomes: number, satisfaction: number, value: number): SupplierEvaluation => ({ quarter, quality, outcomes, satisfaction, value });
+// הערכות רבעוניות לדוגמה: דירוג מלווה, תוצאות, דירוג לקוחות, התאמה לקהל היעד,
+// עמידה ברמת השירות. ספק עם הערכה אחת מוצג כ"ספק חדש" (מינימום 2).
+const ev = (quarter: string, quality: number, outcomes: number, satisfaction: number, audienceFit: number, serviceLevel: number): SupplierEvaluation => ({ quarter, quality, outcomes, satisfaction, audienceFit, serviceLevel });
 const EVALUATIONS: Record<string, SupplierEvaluation[] | undefined> = {
-  "S-001": [ev("2026-Q2", 4, 3, 4, 4), ev("2026-Q3", 4, 4, 4, 4)],
-  "S-002": [ev("2026-Q3", 5, 4, 5, 4)],
-  "S-003": [ev("2026-Q2", 3, 3, 3, 2), ev("2026-Q3", 3, 2, 3, 2)],
-  "S-004": [ev("2026-Q3", 4, 4, 5, 5)],
-  "S-007": [ev("2026-Q3", 4, 3, 4, 3)],
+  "S-001": [ev("2026-Q2", 4, 3, 4, 4, 4), ev("2026-Q3", 4, 4, 5, 4, 4)],
+  "S-002": [ev("2026-Q3", 5, 4, 5, 5, 4)],
+  "S-003": [ev("2026-Q2", 3, 3, 3, 3, 3), ev("2026-Q3", 4, 3, 4, 4, 3)],
+  "S-004": [ev("2026-Q2", 4, 4, 4, 4, 5), ev("2026-Q3", 4, 4, 5, 4, 5)],
+  "S-006": [ev("2026-Q2", 4, 4, 4, 5, 4), ev("2026-Q3", 5, 4, 4, 5, 4)],
+  "S-007": [ev("2026-Q2", 4, 3, 4, 4, 4), ev("2026-Q3", 4, 4, 4, 5, 4)],
 };
 
 // ביקוש שלא נענה: מה שמלוות סימנו כ"ביקשו ואין", לפי שכונה וסוג שירות.
@@ -410,7 +412,7 @@ export function buildDemoNationalChannel(): { suppliers: Supplier[]; services: S
     communityFit: ["general", "haredi", "arab"],
     accessible: true,
     deliveryModes: ["home"],
-    evaluations: [ev("2026-Q3", score[0]!, score[1]!, score[2]!, score[3]!)],
+    evaluations: [ev("2026-Q2", score[0]!, score[1]!, score[2]!, score[3]!, score[3]!), ev("2026-Q3", score[0]!, score[1]!, score[2]!, score[3]!, score[3]!)],
   });
   const suppliers = [
     supplier("N-001", "ספק מוצרי בטיחות ארצי (הדגמה)", [4, 4, 4, 3]),

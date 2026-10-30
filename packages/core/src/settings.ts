@@ -19,36 +19,82 @@ function nestedStatus(value: unknown): string | undefined {
 }
 
 /**
- * מפתחות הגדרה שהסטטוס שלהם הוא הצעה. שני פורמטים: מפתח X_status שחל על כל
- * הגדרה ששמה מתחיל ב-X (points_rollover_status חל על points_rollover_months),
- * או status בתוך ההגדרה עצמה (qol_mode: { value, status }).
+ * מקור אחד לסטטוס הכללים בכל המסכים (המטה, השטח והכלי המרכזי): מה שהוכרע במפגש 2
+ * (סיכום מפגש 2), ומה שסומן "הוכרע" או "סופי" אחר כך. כל השאר הצעה.
  */
-export function proposalKeys(settings: Settings): string[] {
-  const record = settings as Record<string, unknown>;
-  const keys = Object.keys(settings);
-  const result = new Set<string>();
-  for (const key of keys) {
-    if (isProposalText(nestedStatus(record[key]))) result.add(key);
-    if (!key.endsWith(STATUS_SUFFIX) || !isProposalText(record[key])) continue;
-    const prefix = key.slice(0, -STATUS_SUFFIX.length);
-    for (const k of keys) if (k !== key && k.startsWith(prefix)) result.add(k);
-  }
-  return [...result].sort();
-}
+export const DECIDED_MEETING_2: Record<string, string> = {
+  personal_wallet: "הוכרע במפגש 2: ארנק אישי 500",
+  companion: "הוכרע במפגש 2: חלוקת ₪760",
+  community: "הוכרע במפגש 2: חלוקת ₪760",
+  overhead: "הוכרע במפגש 2: חלוקת ₪760",
+  total: "הוכרע במפגש 2: ₪760 לאזרח בחודש",
+  core_floor: "הוכרע במפגש 2: רצפה של 3",
+  copay_tiers: "הוכרע במפגש 2: השתתפות 0, 20 ועד 50",
+  qol_copay: "הוכרע במפגש 2: השתתפות עד 50 באיכות חיים",
+  qol_cap_month: "הוכרע במפגש 2: תקרת איכות חיים 100",
+  utilization_target: "הוכרע במפגש 2: יעד מיצוי 70%",
+  red_flag_avg: "הוכרע במפגש 2: דגל אדום 35%",
+};
 
-export function isProposal(settings: Settings, key: string): boolean {
-  return proposalKeys(settings).includes(key);
-}
+/** החלטות של מפגש 2 שאינן הגדרה מספרית. */
+export const DECIDED_PRINCIPLES_MEETING_2 = [
+  "חמשת תחומי הליבה",
+  "סל משלים בלבד",
+  "מרכזי יום והסעות מחוץ לסל",
+  "מלווה לכל 70 עד 80 אזרחים",
+] as const;
 
-/** טקסט הסטטוס של הגדרה (מהאובייקט עצמו או ממפתח X_status), להצגה ליד "הצעה". */
-export function statusNote(settings: Settings, key: string): string {
-  const record = settings as Record<string, unknown>;
+const isDecidedText = (value: unknown): value is string => typeof value === "string" && /^\s*(הוכרע|סופי)/.test(value);
+
+/** הסטטוס שכתוב בהגדרה עצמה, או במפתח X_status שחל עליה (הארוך ביותר). */
+function ownStatus(record: Record<string, unknown>, key: string): string | undefined {
   const nested = nestedStatus(record[key]);
   if (nested) return nested;
   const statusKey = Object.keys(record)
-    .filter((k) => k.endsWith(STATUS_SUFFIX) && key.startsWith(k.slice(0, -STATUS_SUFFIX.length)))
+    .filter((k) => k.endsWith(STATUS_SUFFIX) && k !== key && key.startsWith(k.slice(0, -STATUS_SUFFIX.length)))
     .sort((a, b) => b.length - a.length)[0];
-  return statusKey ? String(record[statusKey] ?? "") : "";
+  return statusKey ? String(record[statusKey] ?? "") : undefined;
+}
+
+/** הכרעה: ברשימת מפגש 2, או סומן "הוכרע"/"סופי". */
+export function isDecided(settings: Settings, key: string): boolean {
+  if (key in DECIDED_MEETING_2) return true;
+  return isDecidedText(ownStatus(settings as Record<string, unknown>, key));
+}
+
+/** כל הכללים בהגדרות (בלי מפתחות הסטטוס). */
+export function ruleKeys(settings: Settings): string[] {
+  return Object.keys(settings).filter((k) => !k.endsWith(STATUS_SUFFIX)).sort();
+}
+
+export function isProposal(settings: Settings, key: string): boolean {
+  return !isDecided(settings, key);
+}
+
+/** מפתחות הגדרה בסטטוס הצעה: כל כלל שלא הוכרע. */
+export function proposalKeys(settings: Settings): string[] {
+  return ruleKeys(settings).filter((k) => !isDecided(settings, k));
+}
+
+/**
+ * טקסט הסטטוס להצגה, בעברית ובלי מונחים פנימיים ("proposal", שמות מסמכים,
+ * שמות שדות). כלל ממפגש 2 מוצג עם ההכרעה.
+ */
+export function statusNote(settings: Settings, key: string): string {
+  if (key in DECIDED_MEETING_2) return DECIDED_MEETING_2[key]!;
+  return plainStatus(ownStatus(settings as Record<string, unknown>, key) ?? "");
+}
+
+/** ניקוי טקסט סטטוס לתצוגה. */
+export function plainStatus(text: string): string {
+  return text
+    .replace(/^\s*proposal\s*-?\s*/i, "")
+    .replace(/\s*\(?[a-z_]+=(true|false)\)?/gi, "")
+    .replace(/תוספת 3:\s*/g, "")
+    .replace(/\s*\(תוספת 3\)/g, "")
+    .replace(/תוספת 3/g, "ההצעה לפיילוט")
+    .replace(/מודל החשכ"ל/g, "הצעת החשכ\"ל")
+    .trim();
 }
 
 // קריאת ההגדרות של 0.4 שמגיעות בפורמט { value, status }.
