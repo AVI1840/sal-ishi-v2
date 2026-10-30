@@ -24,6 +24,46 @@ import { reasonKey, useCitizen, usePersonalProfile, useWallet } from "@/pilot/ci
 import { personalReasonFor } from "@/lib/personalMatch";
 import { amount } from "@/lib/wallet";
 import { catalogState } from "@/data/catalogSource";
+import { getActiveWeights, type MatchResult } from "@/lib/matchingEngine";
+import { DOMAIN_PREVENTION } from "@/pilot/why";
+
+/** איך בחרנו את זה בשבילך: כל סיבה במילים, וכמה היא חזקה. בלי ציון. המשקלות מההגדרות. */
+const LAYER_WORDS: { key: keyof MatchResult["layers"]; label: string }[] = [
+  { key: "prevention", label: "שומר על הבריאות והתפקוד" },
+  { key: "motivation", label: "מתאים למה שחשוב לך" },
+  { key: "profileFit", label: "מתאים ליכולות שלך" },
+  { key: "proximity", label: "קרוב ונוח, ונכנס בסל" },
+  { key: "socialProof", label: "אנשים בשכונה ממליצים" },
+];
+
+function HowWeChose(props: { result: MatchResult }) {
+  const w = getActiveWeights();
+  const rows = LAYER_WORDS.filter((l) => (w[l.key] ?? 0) > 0).map((l) => ({ ...l, value: props.result.layers[l.key] }));
+  const strength = (v: number) => (v >= 75 ? "חזק" : v >= 50 ? "בינוני" : "חלש");
+  return (
+    <details className="bg-white rounded-xl border border-gray-200 group">
+      <summary className="min-h-[52px] px-5 flex items-center justify-between cursor-pointer text-lg font-bold text-gray-900">
+        איך בחרנו את זה בשבילך
+        <span className="text-base font-semibold text-[#1B3A5C] group-open:hidden">לפתוח</span>
+        <span className="text-base font-semibold text-[#1B3A5C] hidden group-open:inline">לסגור</span>
+      </summary>
+      <ul className="px-5 pb-5 space-y-3">
+        {rows.map((r) => (
+          <li key={r.key}>
+            <div className="flex items-center justify-between text-base text-gray-900">
+              <span>{r.label}</span>
+              <span className="font-semibold">{strength(r.value)}</span>
+            </div>
+            <div className="mt-1 h-3 rounded-full bg-gray-100 overflow-hidden" role="img" aria-label={`${r.label}: ${strength(r.value)}`}>
+              <div className="h-full rounded-full bg-[#1B3A5C]" style={{ width: `${Math.max(6, Math.min(100, r.value))}%` }} />
+            </div>
+          </li>
+        ))}
+        <li className="text-sm text-gray-600">ההמלצה מחושבת לפי מה שסיפרת, היכולות שלך, השכונה והארנק. המשקל של כל סיבה נקבע בהגדרות של התכנית.</li>
+      </ul>
+    </details>
+  );
+}
 
 const LANG_MAP: Record<string, string> = {
   hebrew: "עברית", arabic: "ערבית", russian: "רוסית", english: "אנגלית",
@@ -125,7 +165,7 @@ export default function CitizenServiceDetail() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 right-0 left-0 p-5 flex items-end justify-between gap-3">
               <div>
-                <h1 className="text-xl font-bold text-white drop-shadow leading-tight">{service.name}</h1>
+                <h1 className="text-2xl font-bold text-white drop-shadow leading-tight">{service.name}</h1>
                 <p className="text-sm text-white/90 mt-1">{service.provider}</p>
               </div>
               <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center shrink-0">
@@ -133,7 +173,7 @@ export default function CitizenServiceDetail() {
               </div>
             </div>
             <div className="absolute top-3 right-3">
-              <span className="text-[10px] px-2 py-1 rounded-lg bg-black/30 backdrop-blur text-white/80 font-medium">
+              <span className="text-sm px-2 py-1 rounded-lg bg-black/50 text-white font-semibold">
                 {domainName}
               </span>
             </div>
@@ -230,13 +270,31 @@ export default function CitizenServiceDetail() {
           </ul>
         </section>
 
+        {/* מה זה נותן לך */}
+        <section aria-labelledby="value-h" className="bg-white rounded-xl p-5 border border-gray-200 space-y-2">
+          <h2 id="value-h" className="text-lg font-bold text-gray-900">מה זה נותן לך</h2>
+          <p className="text-base text-gray-800">{DOMAIN_PREVENTION[service.coreCategoryId ?? ""] ?? "רגע טוב בשבוע, ליד הבית"}.</p>
+          {service.hoursPerUnit ? (
+            <p className="text-base text-gray-800">
+              {service.hoursPerUnit} שעות של פעילות {service.unit ? `לכל ${service.unit}` : ""}, עם מדריך מקצועי.
+            </p>
+          ) : null}
+          {!price.unknown && price.state !== "full" ? (
+            <p className="text-base text-gray-800">
+              שווה {amount(price.total)}. {price.copay === 0 ? "לך זה לא עולה כסף, הכל מהסל." : `מהסל ${amount(price.covered)}, ממך ${amount(price.copay)}.`}
+            </p>
+          ) : null}
+        </section>
+
+        {matchResult ? <HowWeChose result={matchResult} /> : null}
+
         {/* Languages */}
         {service.languages.length > 0 && (
           <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-700 mb-2">שפות השירות</p>
+            <p className="text-base font-semibold text-gray-900 mb-2">שפות השירות</p>
             <div className="flex flex-wrap gap-2">
               {service.languages.map((lang) => (
-                <span key={lang} className="text-xs px-2.5 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
+                <span key={lang} className="text-base px-3 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
                   {LANG_MAP[lang] ?? lang}
                 </span>
               ))}
@@ -247,10 +305,10 @@ export default function CitizenServiceDetail() {
         {/* Accessibility */}
         {service.accessibility.length > 0 && (
           <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-700 mb-2">נגישות</p>
+            <p className="text-base font-semibold text-gray-900 mb-2">נגישות</p>
             <div className="flex flex-wrap gap-2">
               {service.accessibility.map((a) => (
-                <span key={a} className="text-xs px-2.5 py-1 rounded-md bg-teal-50 border border-teal-200 text-teal-700">
+                <span key={a} className="text-base px-3 py-1 rounded-md bg-teal-50 border border-teal-200 text-teal-700">
                   {ACCESS_MAP[a] ?? a}
                 </span>
               ))}

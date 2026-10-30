@@ -7,7 +7,7 @@ import { getActiveWeights, type MatchResult } from "@/domain/matchingEngine";
 
 type Layer = keyof MatchResult["layers"];
 
-const DOMAIN_PREVENTION: Record<string, string> = {
+export const DOMAIN_PREVENTION: Record<string, string> = {
   belonging: "מפגש עם אנשים שומר על מצב הרוח והבריאות",
   health_function: "שומר על הגוף חזק ומונע נפילות",
   resilience: "תמיכה שעוזרת בתקופה לא פשוטה",

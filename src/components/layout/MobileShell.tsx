@@ -77,6 +77,8 @@ export default function MobileShell() {
         </div>
       ) : null}
 
+      {/* במחשב: עמודה אחת במרכז, כמו טלפון גדול, ולא מתיחה על כל הרוחב */}
+      <div className="relative md:max-w-3xl md:mx-auto md:bg-white md:shadow-[0_0_24px_rgba(27,58,92,0.08)] md:min-h-screen">
       {/* Content */}
       <div className={online ? "pb-24" : "pb-44"}>
         <Outlet />
@@ -101,6 +103,8 @@ export default function MobileShell() {
         <button type="button" onClick={toggleMode} className={toolClass} aria-pressed={!isImages} aria-label={isImages ? "תצוגה בלי תמונות" : "תצוגה עם תמונות"}>
           {isImages ? <ImageOff className="w-4 h-4" aria-hidden="true" /> : <Image className="w-4 h-4" aria-hidden="true" />}
         </button>
+      </div>
+
       </div>
 
       {/* Bottom Navigation - always visible */}
