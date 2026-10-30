@@ -269,7 +269,7 @@ export default function CitizenServices() {
       <div className="bg-[#1B3A5C] text-white px-6 pt-24 pb-6">
         <h1 className="text-3xl font-bold">השירותים בשכונה שלך</h1>
         <p className="text-lg text-white/90 mt-1">
-          {profile.neighborhood} · {all.length} שירותים מאושרים
+          {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
         </p>
         <div className="mt-4 bg-white/10 rounded-xl p-4">
           <p className="text-lg">

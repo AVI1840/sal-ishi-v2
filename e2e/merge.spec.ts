@@ -416,36 +416,41 @@ test("טקסט מוגדל בטלפון צר: בלי גלילה לצדדים", as
   }
 });
 
-test("השירותים בשכונה: בהתאמה אישית למעלה, ואז לפי קטגוריה", async ({ page }) => {
+test("השוק: חמש דרכים לחפש, נושאים, סינון ושתי תצוגות", async ({ page }) => {
   await page.goto("./#/citizen/services");
   await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
-  const personal = page.locator("section[aria-labelledby=foryou-h]");
-  await expect(personal.getByRole("heading", { level: 2, name: "שירותים בהתאמה אישית עבורך" })).toBeVisible();
-  await expect(personal.getByRole("link").first()).toContainText("מקהלה קהילתית");
-  const byCat = page.locator("section[aria-labelledby=bycat-h]");
-  // ברירת המחדל: כל השירותים לפי ההתאמה, עם רמת התאמה במילים ו"להראות עוד".
-  await expect(byCat.getByRole("heading", { level: 2, name: "כל השירותים, לפי ההתאמה אלייך" })).toBeVisible();
-  await expect(byCat.getByText(/מתאים לך/).first()).toBeVisible();
-  await expect(byCat.getByRole("button", { name: /להראות עוד 12/ })).toBeVisible();
-  await byCat.getByRole("radio", { name: "קרוב לבית" }).click();
-  await expect(byCat.getByRole("heading", { level: 2, name: "כל השירותים, הקרובים לבית קודם" })).toBeVisible();
-  await byCat.getByRole("radio", { name: "פופולרי בשכונה" }).click();
-  await expect(byCat.getByText(/פופולרי מאוד בשכונה/).first()).toBeVisible();
-  await byCat.getByRole("button", { name: "בבית או בטלפון" }).click();
-  await expect(byCat.getByRole("button", { name: "בבית או בטלפון" })).toHaveAttribute("aria-pressed", "true");
-  await byCat.getByRole("button", { name: "בבית או בטלפון" }).click();
-  await byCat.getByRole("radio", { name: "לפי קטגוריה" }).click();
-  await expect(byCat.getByRole("heading", { level: 2, name: "שירותים לפי קטגוריה" })).toBeVisible();
-  // ההתאמה האישית נשארת למעלה גם כשבוחרים קטגוריה.
-  await byCat.getByRole("button", { name: "הכל" }).isVisible();
-  const chips = byCat.getByRole("group", { name: "קטגוריה" }).getByRole("button");
-  await chips.nth(1).click();
-  await expect(personal.getByRole("link").first()).toContainText("מקהלה קהילתית");
-  expect(await byCat.getByRole("heading", { level: 3 }).count()).toBe(1);
-  // בחיפוש: גם מה שבהתאמה האישית מופיע בתוצאות.
-  await chips.first().click();
-  await byCat.getByRole("searchbox", { name: "חיפוש שירות" }).fill("מקהלה");
-  await expect(byCat.getByRole("link", { name: /מקהלה קהילתית/ })).toBeVisible();
+  const how = page.getByRole("radiogroup", { name: "איך לחפש" });
+  // ברירת המחדל: מומלץ לי, שלוש המלצות קודם, ואז "עוד".
+  await expect(how.getByRole("radio", { name: /מומלץ לי/ })).toHaveAttribute("aria-checked", "true");
+  const results = page.locator("section[aria-labelledby=results-h]");
+  await expect(results.getByRole("link").first()).toContainText("מקהלה קהילתית");
+  expect(await results.locator("ul > li").count()).toBe(3);
+  await results.getByRole("button", { name: /עוד שירותים שמתאימים לך/ }).click();
+  expect(await results.locator("ul > li").count()).toBeGreaterThan(3);
+  // כל השירותים, קרוב לבית, פופולרי
+  await how.getByRole("radio", { name: /כל השירותים/ }).click();
+  await expect(results.getByRole("button", { name: /להראות עוד 12/ })).toBeVisible();
+  await how.getByRole("radio", { name: /קרוב לבית/ }).click();
+  await expect(results.getByText(/מגיע אלייך הביתה|בשכונה שלך/).first()).toBeVisible();
+  await how.getByRole("radio", { name: /פופולרי בשכונה/ }).click();
+  await expect(results.getByText(/פופולרי/).first()).toBeVisible();
+  // לפי נושא: אריחים עם תמונה, ובחירה מסננת
+  await how.getByRole("radio", { name: /לפי נושא/ }).click();
+  const topics = page.getByRole("group", { name: "נושא" });
+  await topics.getByRole("button", { name: /שייכות ומשמעות/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: /שייכות ומשמעות/ })).toBeVisible();
+  // סינון מהיר ותצוגה
+  await page.getByRole("button", { name: "בבית או בטלפון" }).click();
+  await expect(page.getByRole("button", { name: "בבית או בטלפון" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "בבית או בטלפון" }).click();
+  await page.getByRole("button", { name: "רשימה" }).click();
+  await expect(page.getByRole("button", { name: "רשימה" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "כרטיסים" }).click();
+  // חיפוש
+  await page.getByRole("searchbox", { name: "חיפוש שירות" }).fill("מקהלה");
+  await how.getByRole("radio", { name: /כל השירותים/ }).click();
+  await topics.getByRole("button", { name: /שייכות ומשמעות/ }).isVisible();
+  await expect(results.getByRole("link", { name: /מקהלה קהילתית/ })).toBeVisible();
 });
 
 test("הפס העליון בטלפון: כל הדלתות בתוך המסך, בלי חיתוך", async ({ page }) => {
