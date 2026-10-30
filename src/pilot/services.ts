@@ -107,18 +107,33 @@ export function lateCancelCharged(b: Booking, s: RealService | undefined, now = 
 
 // ── שמור ונוצל ──────────────────────────────────────────────
 // מודל החשכ"ל: משלמים על נוכחות מדווחת. בהזמנה הסכום "שמור" בארנק, ואחרי
-// דיווח הספק הוא "נוצל". במנוי חודשי: הסכום לחודש מתחלק למפגשים. היתרה נגזרת
-// מהאירועים בלבד: אין סכום פתיחה בקוד.
+// דיווח הספק הוא "נוצל". במנוי חודשי: הסכום לחודש מתחלק למפגשים, והמנוי
+// מתחדש בכל חודש עד שעוזבים. היתרה נגזרת מהאירועים בלבד: אין סכום פתיחה בקוד.
 
-/** כמה נוצל בפועל מהזמנה אחת, לפי הנוכחות שדווחה. */
-export function usedOf(b: Booking): number {
-  const attended = b.attendedSessions ?? 0;
-  if (attended <= 0) return 0;
+/** החודש של תאריך (YYYY-MM), כמו בכל חישובי הארנק. */
+export const monthOf = (iso: string | Date) => (typeof iso === "string" ? new Date(iso) : iso).toISOString().slice(0, 7);
+
+/** כמה מפגשים דווחו בחודש. בלי דיווחים מתוארכים (נתונים ישנים): הכל בחודש ההזמנה. */
+export function attendedIn(b: Booking, month: string): number {
+  if (b.attendance?.length) return b.attendance.filter((a) => monthOf(a.at) === month).reduce((n, a) => n + a.sessions, 0);
+  return monthOf(b.createdAt) === month ? b.attendedSessions ?? 0 : 0;
+}
+
+/** כמה נוצל מהזמנה אחת, לפי הנוכחות שדווחה. במנוי: בחודש הנתון (ברירת מחדל: החודש). */
+export function usedOf(b: Booking, month = monthOf(new Date())): number {
   if (b.mode === "subscription") {
+    const attended = attendedIn(b, month);
+    if (attended <= 0) return 0;
     const per = b.coveredShekel / (b.sessionsPerMonth ?? sessionsPerMonth());
     return Math.min(b.coveredShekel, Math.round(per * attended));
   }
-  return b.coveredShekel;
+  return (b.attendedSessions ?? 0) > 0 ? b.coveredShekel : 0;
+}
+
+/** המנוי פעיל בחודש: הצטרפו בו או לפניו, ולא עזבו לפניו. */
+function subscriptionCovers(b: Booking, month: string): boolean {
+  if (monthOf(b.createdAt) > month) return false;
+  return !(b.status === "cancelled" && b.cancelledAt && monthOf(b.cancelledAt) < month);
 }
 
 export interface WalletState {
@@ -133,16 +148,18 @@ export interface WalletState {
 }
 
 export function walletOf(bookings: Booking[], incentives: { citizenId: string; points: number; at: string }[], citizenId: string, now = new Date()): WalletState {
-  const month = now.toISOString().slice(0, 7);
+  const month = monthOf(now);
   const total = monthlyWalletShekel();
-  const bonus = incentives.filter((i) => i.citizenId === citizenId && i.at.slice(0, 7) === month).reduce((n, i) => n + i.points, 0);
+  const bonus = incentives.filter((i) => i.citizenId === citizenId && monthOf(i.at) === month).reduce((n, i) => n + i.points, 0);
   let reserved = 0;
   let used = 0;
   for (const b of bookings) {
-    if (b.citizenId !== citizenId || b.createdAt.slice(0, 7) !== month) continue;
-    const u = usedOf(b);
-    if (b.status === "cancelled") {
-      // ביטול: מה שנוצל נשאר נוצל. ביטול מאוחר מחויב: גם השאר.
+    if (b.citizenId !== citizenId) continue;
+    if (b.mode === "subscription" ? !subscriptionCovers(b, month) : monthOf(b.createdAt) !== month) continue;
+    const u = usedOf(b, month);
+    // ביטול או עזיבה בחודש הזה: מה שנוצל נשאר נוצל. ביטול מאוחר מחויב: גם השאר.
+    // עזיבה בחודש מאוחר יותר: החודש הזה היה מנוי מלא.
+    if (b.status === "cancelled" && (b.mode !== "subscription" || !b.cancelledAt || monthOf(b.cancelledAt) === month)) {
       used += b.charged ? b.coveredShekel : u;
       continue;
     }

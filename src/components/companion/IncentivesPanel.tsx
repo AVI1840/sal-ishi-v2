@@ -7,6 +7,7 @@ import { Award, HandHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { amount } from "@/lib/wallet";
 import { incentiveRoom, monthlyCap, persistenceSuggestion, rateOf } from "@/lib/incentives";
+import { attendedIn, monthOf } from "@/pilot/services";
 import { grantIncentive, setEligibility, usePilot } from "@/pilot/store";
 import type { IncentiveRole } from "@/pilot/model";
 import { appSettings } from "@/pilot/settings";
@@ -60,7 +61,7 @@ export function IncentivesPanel({ citizenId, firstName, female }: { citizenId: s
         <div className="p-3 rounded-lg border border-success/30 bg-success-soft flex items-center justify-between gap-3 flex-wrap">
           <p className="text-sm text-foreground">
             <Award className="w-4 h-4 inline text-success ml-1" aria-hidden="true" />
-            {firstName} {g("השתתפה", "השתתף", "השתתפ/ה")} ב-{persistence.attendedSessions} מתוך {persistence.sessionsPerMonth ?? 4} מפגשים ב{persistence.serviceName} החודש.
+            {firstName} {g("השתתפה", "השתתף", "השתתפ/ה")} ב-{attendedIn(persistence, monthOf(new Date()))} מתוך {persistence.sessionsPerMonth ?? 4} מפגשים ב{persistence.serviceName} החודש.
           </p>
           <button type="button" className={cn(btn, "bg-primary text-primary-foreground")} onClick={() => grant("persistence", rateOf("persistence"), persistence.serviceName)}>
             להעניק תמריץ התמדה ({amount(rateOf("persistence"))})

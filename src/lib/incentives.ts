@@ -5,6 +5,7 @@
  */
 import type { PersonalProfile } from "@/data/types";
 import type { Booking, Incentive, IncentiveReason, IncentiveRole } from "@/pilot/model";
+import { attendedIn } from "@/pilot/services";
 import { appSettings } from "@/pilot/settings";
 
 export const incentivesOn = () => appSettings.incentives?.enabled !== false;
@@ -34,7 +35,7 @@ export function persistenceSuggestion(bookings: Booking[], incentives: Incentive
         b.citizenId === citizenId &&
         b.status === "booked" &&
         b.mode === "subscription" &&
-        (b.attendedSessions ?? 0) / (b.sessionsPerMonth ?? 4) >= cfg().persistence_min_share,
+        attendedIn(b, month) / (b.sessionsPerMonth ?? 4) >= cfg().persistence_min_share,
     ) ?? null
   );
 }

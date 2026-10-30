@@ -242,3 +242,31 @@ test("תמריצים: הצעה אישית רק למי שסומן, התמדה ב�
   await page.goto("./#/citizen");
   await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("כולל 20 נקודות שקיבלת כתמריץ");
 });
+
+// תחילת חודש: מנוי חודשי מתחדש, והנוכחות נספרת לפי חודש. אותם מספרים בשער (2.11),
+// ביום ההדגמה (3.11), ובבוקר הראשון של החודש.
+for (const day of ["2026-11-01T06:00:00Z", "2026-11-02T08:00:00Z", "2026-11-03T08:00:00Z"]) {
+  test(`תחילת חודש (${day.slice(0, 10)}): הארנק, ההצטרפות וההתמדה כמו בתסריט`, async ({ page, context }) => {
+    await context.clock.setFixedTime(new Date(day));
+    await page.goto("./#/citizen");
+    const wallet = page.locator("[aria-labelledby=wallet-title]");
+    await expect(wallet).toContainText("נשארו 374 נקודות");
+    await expect(wallet).toContainText("שמור 63 נקודות");
+    await expect(wallet).toContainText("נוצל 63 נקודות");
+
+    await page.goto("./#/citizen/services/demoj-choir");
+    await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
+    await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+    await page.goto("./#/citizen");
+    await expect(wallet).toContainText("נשארו 290 נקודות");
+    await expect(wallet).toContainText("שמור 147 נקודות");
+
+    const companion = await context.newPage();
+    await companion.goto("./#/coordinator");
+    await expect(companion.getByText(/נרשמה למקהלה קהילתית/)).toBeVisible();
+    await companion.getByRole("button", { name: "הדגמה" }).click();
+    await companion.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
+    await companion.goto("./#/coordinator/patients/c1");
+    await expect(companion.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
+  });
+}

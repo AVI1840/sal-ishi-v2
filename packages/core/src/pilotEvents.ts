@@ -106,8 +106,10 @@ export const bookingSchema = z.object({
   copayShekel: z.number(),
   mode: bookingModeSchema.optional(),
   sessionsPerMonth: z.number().int().positive().optional(),
-  /** מפגשים שהספק דיווח עליהם. */
+  /** מפגשים שהספק דיווח עליהם, בסך הכל. */
   attendedSessions: z.number().int().nonnegative().optional(),
+  /** הדיווחים עצמם, עם תאריך: במנוי, "נוצל" נספר לפי חודש. */
+  attendance: z.array(z.object({ at: z.string(), sessions: z.number().int().positive() })).optional(),
   status: z.enum(["booked", "cancelled", "paused"]),
   cancelledAt: z.string().optional(),
   charged: z.boolean().optional(),

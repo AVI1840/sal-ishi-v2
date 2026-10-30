@@ -5,7 +5,7 @@ import { applyCatalogs, buildDemoCatalogs } from "@/data/catalogSource";
 import { defaultSeed } from "@sal-ishi/core";
 import { derive, type PilotEvent } from "../model";
 import { buildCaseload, reasonsFor, triage, PERSONA_PERSON } from "../caseload";
-import { cancelRuleOf, lateCancelCharged, priceOf, recommend, serviceById, slotsFor, walletOf } from "../services";
+import { cancelRuleOf, lateCancelCharged, priceOf, recommend, serviceById, slotsFor, usedOf, walletOf } from "../services";
 import { he } from "../i18n/he";
 import { ar } from "../i18n/ar";
 import { ru } from "../i18n/ru";
@@ -70,6 +70,37 @@ describe("ארנק ומחיר בשקלים", () => {
     expect(w.reserved).toBe(100 + 63);
     expect(w.bonus).toBe(20);
     expect(w.left).toBe(500 + 20 - 93 - 163);
+  });
+
+  it("מנוי חודשי מתחדש בתחילת חודש: נוצל לפי הנוכחות של החודש בלבד", () => {
+    // יום ההדגמה: 3.11. שרה הצטרפה ב-31.10.
+    const now = new Date("2026-11-03T08:00:00Z");
+    const base = { citizenId: "c1", serviceId: "s", serviceName: "x", slot: null, createdBy: "citizen" as const, copayShekel: 0, coveredShekel: 126, mode: "subscription" as const, sessionsPerMonth: 4 };
+    const joined = { ...base, id: "1", createdAt: "2026-10-31T08:00:00Z", status: "booked" as const };
+    // נוכחות בנובמבר: נספרת בנובמבר.
+    const nov = walletOf([{ ...joined, attendedSessions: 2, attendance: [{ at: "2026-11-01T08:00:00Z", sessions: 2 }] }], [], "c1", now);
+    expect([nov.used, nov.reserved, nov.left]).toEqual([63, 63, 374]);
+    // נוכחות באוקטובר: בנובמבר המנוי שמור כולו מחדש.
+    const oct = { ...joined, attendedSessions: 2, attendance: [{ at: "2026-10-31T12:00:00Z", sessions: 2 }] };
+    expect(walletOf([oct], [], "c1", now)).toMatchObject({ used: 0, reserved: 126, left: 374 });
+    expect(usedOf(oct, "2026-10")).toBe(63);
+    // עזבה באוקטובר: לא בנובמבר. עזבה בנובמבר: מה שנוצל בנובמבר נשאר.
+    expect(walletOf([{ ...oct, status: "cancelled", cancelledAt: "2026-10-31T20:00:00Z" }], [], "c1", now).left).toBe(500);
+    const leftNov = { ...joined, status: "cancelled" as const, cancelledAt: "2026-11-02T08:00:00Z", attendedSessions: 1, attendance: [{ at: "2026-11-01T08:00:00Z", sessions: 1 }] };
+    expect(walletOf([leftNov], [], "c1", now)).toMatchObject({ used: 32, reserved: 0 });
+    // הזמנה חד-פעמית מהחודש הקודם לא נספרת.
+    expect(walletOf([{ ...base, id: "2", mode: "single", createdAt: "2026-10-30T08:00:00Z", status: "booked", coveredShekel: 40 }], [], "c1", now).left).toBe(500);
+  });
+
+  it("נוכחות נגזרת מהאירועים עם תאריך", () => {
+    const at = "2026-11-01T08:00:00Z";
+    const ev = (e: Record<string, unknown>) => ({ id: String(Math.random()), at, actor: "citizen", citizenId: "c1", synced: true, ...e }) as PilotEvent;
+    const d = derive([
+      ev({ type: "booking.created", bookingId: "b", serviceId: "s", serviceName: "x", slot: null, coveredShekel: 126, copayShekel: 0, mode: "subscription", sessionsPerMonth: 4 }),
+      ev({ type: "attendance.reported", actor: "system", bookingId: "b", sessions: 2 }),
+    ]);
+    expect(d.bookings[0].attendance).toEqual([{ at, sessions: 2 }]);
+    expect(d.bookings[0].attendedSessions).toBe(2);
   });
 
   it("המחיר מתחלק לסל ולאזרח לפי הקטלוג", () => {

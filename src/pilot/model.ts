@@ -86,12 +86,16 @@ export function derive(events: PilotEvent[]): Derived {
           mode: e.mode ?? "single",
           sessionsPerMonth: e.sessionsPerMonth,
           attendedSessions: 0,
+          attendance: [],
           status: hospitalized.has(e.citizenId) ? "paused" : "booked",
         });
         break;
       case "attendance.reported": {
         const b = bookings.get(e.bookingId);
-        if (b && b.status !== "cancelled") b.attendedSessions = (b.attendedSessions ?? 0) + e.sessions;
+        if (b && b.status !== "cancelled") {
+          b.attendedSessions = (b.attendedSessions ?? 0) + e.sessions;
+          b.attendance = [...(b.attendance ?? []), { at: e.at, sessions: e.sessions }];
+        }
         break;
       }
       case "incentive.granted":

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { cancelBooking, usePilot } from "@/pilot/store";
-import { lateCancelCharged, serviceById, usedOf } from "@/pilot/services";
+import { attendedIn, lateCancelCharged, monthOf, serviceById, usedOf } from "@/pilot/services";
 import { amount } from "@/lib/wallet";
 import { weeklyText } from "@/components/citizen/BookingPanel";
 import ServiceRating from "@/components/shared/ServiceRating";
@@ -47,7 +47,9 @@ function BookingCard({ b }: { b: Booking }) {
   const charged = sub ? false : lateCancelCharged(b, serviceById(b.serviceId));
   const used = usedOf(b);
   const reserved = Math.max(0, b.coveredShekel - used);
-  const attended = b.attendedSessions ?? 0;
+  // במנוי: המפגשים של החודש. הדירוג נפתח אחרי השתתפות כלשהי.
+  const attended = sub ? attendedIn(b, monthOf(new Date())) : b.attendedSessions ?? 0;
+  const everAttended = (b.attendedSessions ?? 0) > 0;
 
   return (
     <li className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
@@ -72,7 +74,7 @@ function BookingCard({ b }: { b: Booking }) {
       {b.status === "paused" ? <p className="text-base text-gray-800">{he.hospitalized}</p> : null}
 
       {/* דירוג: רק אחרי השתתפות */}
-      {attended > 0 && b.status !== "cancelled" ? <ServiceRating serviceId={b.serviceId} serviceName={b.serviceName} /> : null}
+      {everAttended && b.status !== "cancelled" ? <ServiceRating serviceId={b.serviceId} serviceName={b.serviceName} /> : null}
 
       {result ? (
         <p role="status" className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-base text-emerald-950">

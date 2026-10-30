@@ -72,6 +72,26 @@
       "type": "integer",
       "minimum": 0
     },
+    "attendance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "at",
+          "sessions"
+        ],
+        "additionalProperties": false
+      }
+    },
     "status": {
       "type": "string",
       "enum": [
