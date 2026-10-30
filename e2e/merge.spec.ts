@@ -336,3 +336,22 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   await ronit.goto("./hq/#/learning");
   await expect(ronit.getByText(/רישום דרישות למכרז/).first()).toBeVisible();
 });
+
+// אין רשת באולם: אחרי "הכנה לעבודה בלי אינטרנט", טעינה מחדש של שלוש האפליקציות בלי רשת.
+test("בלי אינטרנט: אחרי ההכנה, האזרחית, המלווה והאטלסים נטענים מחדש בלי רשת", async ({ page, context }) => {
+  await page.goto("./#/citizen");
+  await page.getByRole("button", { name: "הדגמה" }).click();
+  await page.getByRole("button", { name: /הכנה לעבודה בלי אינטרנט/ }).click();
+  await expect(page.getByText(/מוכן לעבודה בלי אינטרנט/)).toBeVisible({ timeout: 20000 });
+  await context.setOffline(true);
+  // ניווט אמיתי (לא רק החלפת #), כדי שהדף ייטען מהמטמון.
+  await page.goto("./?offline=1#/citizen");
+  await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("נשארו 374 נקודות");
+  await page.goto("./?offline=2#/coordinator");
+  await expect(page.getByText("לפנות היום").first()).toBeVisible();
+  await page.goto("./hq/?offline=3#/");
+  await expect(page.getByRole("link", { name: /לסל האישי/ }).first()).toBeVisible();
+  await page.goto("./field/?offline=4#/");
+  await expect(page.locator("main")).not.toBeEmpty();
+  await context.setOffline(false);
+});

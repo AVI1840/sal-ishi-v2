@@ -1,6 +1,8 @@
 // עבודה בלי אינטרנט (0.5): שומר את האפליקציה במטמון של הדפדפן.
 // דפים והגדרות: קודם רשת, ובלי רשת מהמטמון. קבצי בנייה (עם hash): קודם מטמון.
 // התחום הוא התיקייה של הקובץ, כך ש-/next/ ו-/ לא נוגעים זה בזה.
+// התאמה במטמון בלי Vary: שרת ששולח "Vary: Origin" היה מפיל את קבצי המודול (שנשלחים
+// עם Origin) בלי רשת, כי ההכנה מראש שמרה אותם בלי. קבצי בנייה עם hash לא משתנים.
 
 const CACHE = "sal-ishi-v05";
 
@@ -25,11 +27,11 @@ const networkFirst = async (request) => {
     if (res.ok) cache.put(request, res.clone());
     return res;
   } catch {
-    const hit = await cache.match(request, { ignoreSearch: true });
+    const hit = await cache.match(request, { ignoreSearch: true, ignoreVary: true });
     if (hit) return hit;
     if (request.mode === "navigate") {
       const dir = new URL("./", request.url).href;
-      return (await cache.match(dir)) || (await cache.match(dir + "index.html")) || Response.error();
+      return (await cache.match(dir, { ignoreVary: true })) || (await cache.match(dir + "index.html", { ignoreVary: true })) || Response.error();
     }
     return Response.error();
   }
@@ -37,10 +39,11 @@ const networkFirst = async (request) => {
 
 const cacheFirst = async (request) => {
   const cache = await caches.open(CACHE);
-  const hit = await cache.match(request);
+  const hit = await cache.match(request, { ignoreVary: true });
   if (hit) return hit;
   const res = await fetch(request);
-  if (res.ok) cache.put(request, res.clone());
+  // גיליון הגופנים של Google נטען בלי CORS (תשובה אטומה): שומרים גם אותו.
+  if (res.ok || res.type === "opaque") cache.put(request, res.clone());
   return res;
 };
 

@@ -33,5 +33,9 @@ export async function prepareOffline(): Promise<string> {
   for (const entry of performance.getEntriesByType("resource")) {
     if (entry.name.startsWith(location.origin)) await fetch(entry.name).catch(() => undefined);
   }
+  // גיליון הגופנים מ-Google: דרך ה-service worker, כדי שהעיצוב יישאר גם בלי רשת.
+  for (const link of document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href^="https://fonts."]')) {
+    await fetch(link.href, { mode: "no-cors" }).catch(() => undefined);
+  }
   return `מוכן לעבודה בלי אינטרנט: ${seen.size} קבצים נשמרו במכשיר. כדאי לפתוח פעם אחת את המטה והשטח עם רשת, ואז לבדוק במצב טיסה.`;
 }
