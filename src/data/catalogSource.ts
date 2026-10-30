@@ -71,6 +71,18 @@ function legacyCategory(code: string): 1 | 2 | 3 | 4 | 5 {
  * שכבת "המלצות וניסיון": במקום דירוג מומצא, ביקוש בפועל בשכונה ודירוג הספק.
  * 50 בסיס, ביקוש גבוה מוסיף 30, בינוני 15, נמוך 5, וכל נקודת דירוג מעל 3 מוסיפה 10.
  */
+/**
+ * מי מפעיל, כפי שהאזרח רואה. בתקן הקליטה לאזרח אין שם של ספק יחיד (פרטי ספק
+ * יחיד עוברים רק למטה, החלטה 28.10), ולכן מציגים את סוג המפעיל, בלי קוד.
+ */
+const PROVIDER_LABEL: Record<string, string> = {
+  authority: "מתנ\"ס או גוף ציבורי",
+  npo: "עמותה",
+  company: "חברה",
+  exempt: "מדריך עצמאי",
+  licensed: "איש מקצוע עצמאי",
+};
+
 export function socialProofScore(item: Pick<CitizenCatalogItem, "demand" | "supplierScore">): number {
   let score = 50;
   if (item.demand === "high") score += 30;
@@ -102,7 +114,7 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
       byId.set(item.serviceId, {
         id: item.serviceId,
         name: item.name,
-        provider: `${supplierTypes.get(item.supplierType)?.name ?? item.supplierType} (קוד ${item.supplierCode})`,
+        provider: PROVIDER_LABEL[item.supplierType] ?? supplierTypes.get(item.supplierType)?.name ?? "מפעיל מאושר",
         category: legacyCategory(item.categoryCode),
         subcategory: item.categoryName,
         neighborhood: home,

@@ -22,6 +22,7 @@ import CitizenHome from "@/pages/citizen/CitizenHome";
 import CitizenServices from "@/pages/citizen/CitizenServices";
 import CitizenServiceDetail from "@/pages/citizen/CitizenServiceDetail";
 import CitizenActivities from "@/pages/citizen/CitizenActivities";
+import CitizenNeeds from "@/pages/citizen/CitizenNeeds";
 import ServicesCatalog from "@/pages/citizen/ServicesCatalog";
 import CitizenChat from "@/pages/citizen/CitizenChat";
 import CitizenProfile from "@/pages/citizen/CitizenProfile";
@@ -84,6 +85,7 @@ export default function LegacyApp() {
                 <Route path="services" element={<CitizenServices />} />
                 <Route path="services/:id" element={<CitizenServiceDetail />} />
                 <Route path="activities" element={<CitizenActivities />} />
+                <Route path="needs" element={<CitizenNeeds />} />
                 <Route path="chat" element={CITIZEN_CHAT_ENABLED ? <CitizenChat /> : <Navigate to="/citizen" replace />} />
                 <Route path="profile" element={<CitizenProfile />} />
               </Route>

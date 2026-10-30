@@ -42,12 +42,20 @@ export interface PersonalPick {
   reason: string;
 }
 
+/** פרופיל עם מה שהאזרח סיפר בשאלון עכשיו. */
+type ToldProfile = PersonalProfile & { toldNow?: string };
+
+const LOVED_PHRASE: Record<string, string> = { שירה: "לשיר", בישול: "לבשל", "ללמוד ולקרוא": "ללמוד ולקרוא" };
+
 const loves = (p: PersonalProfile) => (p.gender === "male" ? "אוהב" : "אוהבת");
 
 /** הדברים שהאזרח סיפר, לפי הסדר: החלום, מה שהוא אוהב לעשות, תחומי העניין. */
-function said(p: PersonalProfile): { text: string; reason: string }[] {
-  const out: { text: string; reason: string }[] = [];
-  if (p.dream) out.push({ text: p.dream, reason: `סיפרת שהחלום שלך הוא ${p.dream}.` });
+function said(p: PersonalProfile): { text: string; reason: string; strong?: boolean }[] {
+  const out: { text: string; reason: string; strong?: boolean }[] = [];
+  // מה שסיפרה עכשיו בשאלון קודם לכל מה שהיה ידוע.
+  const now = (p as ToldProfile).toldNow;
+  if (now) out.push({ text: now, reason: `סיפרת עכשיו שאת${p.gender === "male" ? "ה" : ""} ${loves(p)} ${LOVED_PHRASE[now] ?? now}.`, strong: true });
+  if (p.dream) out.push({ text: p.dream, reason: `סיפרת שהחלום שלך הוא ${p.dream}.`, strong: true });
   for (const a of p.preferredActivities ?? []) out.push({ text: a, reason: `סיפרת שאת${p.gender === "male" ? "ה" : ""} ${loves(p)} ${a}.` });
   for (const i of p.interests ?? []) out.push({ text: i, reason: `סיפרת שמעניין אותך ${i}.` });
   return out;
@@ -78,7 +86,8 @@ export function personalRecommendations(p: PersonalProfile, results: MatchResult
     if (picks.length >= n) break;
     const re = serviceRegexFor(s.text);
     if (!re || usedReason.has(s.reason)) continue;
-    const hit = sorted.find((r) => re.test(r.service.name) && !usedService.has(r.service.id) && !usedCategory.has(String(r.service.category)));
+    // החלום ומה שסיפרה עכשיו לא נופלים בגלל כלל הגיוון. שאר מה שסיפרה: מתחום אחר.
+    const hit = sorted.find((r) => re.test(r.service.name) && !usedService.has(r.service.id) && (s.strong || !usedCategory.has(String(r.service.category))));
     if (hit) take(hit, s.reason);
   }
 
@@ -114,12 +123,13 @@ export function personalReasonFor(p: PersonalProfile, serviceName: string): stri
  * הפרופיל אחרי השאלון של האזרח ("לספר מה חשוב לי") או של הפגישה המשותפת.
  * מה שסיפר עכשיו קודם למה שהיה ידוע.
  */
-export function withAnswers(p: PersonalProfile, answers?: Record<string, string>): PersonalProfile {
+export function withAnswers(p: PersonalProfile, answers?: Record<string, string>): ToldProfile {
   if (!answers) return p;
   const loved = answers.loved ? [answers.loved] : [];
   const motivations = [...(answers.hard === "lonely" ? ["belonging" as const] : []), ...p.motivations];
   return {
     ...p,
+    ...(answers.loved ? { toldNow: answers.loved } : {}),
     preferredActivities: [...new Set([...loved, ...(p.preferredActivities ?? [])])],
     preferredFormat: (answers.with ?? answers.format ?? p.preferredFormat) as PersonalProfile["preferredFormat"],
     preferredHours: answers.hours ?? p.preferredHours,

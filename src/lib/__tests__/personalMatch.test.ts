@@ -46,5 +46,11 @@ describe("personalRecommendations", () => {
     expect(personalReasonFor(sarah, "מקהלה קהילתית")).toMatch(/^סיפרת ש/);
     const after = withAnswers(sarah, { loved: "ללמוד ולקרוא" });
     expect(after.preferredActivities[0]).toBe("ללמוד ולקרוא");
+    const withLearning = [...results, r("learn", "למידה לאורך החיים", 5, 40)];
+    const picks = personalRecommendations(after, withLearning);
+    expect(picks[0].result.service.id).toBe("learn");
+    expect(picks[0].reason).toBe("סיפרת עכשיו שאת אוהבת ללמוד ולקרוא.");
+    // החלום לא נופל בגלל מה שסיפרה עכשיו.
+    expect(picks[1].result.service.id).toBe("choir");
   });
 });
