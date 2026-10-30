@@ -54,7 +54,7 @@ function DemoMenu() {
         aria-expanded={open}
         aria-controls="demo-menu"
         onClick={() => setOpen(!open)}
-        className={cn("flex items-center gap-1.5 px-3 min-h-[32px] rounded-md text-xs font-semibold", open ? "bg-white text-[#0f172a]" : "text-white/90 hover:bg-white/10")}
+        className={cn("flex items-center gap-1.5 px-2 sm:px-3 min-h-[32px] rounded-md text-xs font-semibold whitespace-nowrap", open ? "bg-white text-[#0f172a]" : "text-white/90 hover:bg-white/10")}
       >
         <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden="true" /> הדגמה
       </button>
@@ -107,10 +107,11 @@ export default function DemoNav() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[60] bg-[#0f172a] text-white">
-      <div className="flex items-center justify-between gap-2 px-4 h-10 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 h-10 max-w-7xl mx-auto">
         <NavLink to="/" className="flex items-center gap-1.5 text-xs font-medium hover:opacity-80 transition-opacity shrink-0">
           <Wallet className="w-3.5 h-3.5 text-blue-300" aria-hidden="true" />
-          <span className="text-blue-300 font-bold">הסל האישי</span>
+          {/* בטלפון: רק הסמל, כדי שכל הדלתות ייכנסו בפס בלי גלילה. */}
+          <span className="sr-only sm:not-sr-only text-blue-300 font-bold">הסל האישי</span>
         </NavLink>
         <nav aria-label="שלוש הדלתות" className="flex items-center gap-0.5 min-w-0 overflow-x-auto" dir="rtl">
           {MODULES.map((mod) => {
@@ -122,11 +123,11 @@ export default function DemoNav() {
                 to={mod.to}
                 end={mod.end}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 min-h-[32px] rounded-md text-xs font-medium transition-colors",
+                  "flex items-center gap-1.5 px-2 sm:px-3 min-h-[32px] rounded-md text-xs font-medium whitespace-nowrap transition-colors",
                   isActive ? "bg-white/15 text-white" : "text-white/80 hover:text-white hover:bg-white/10",
                 )}
               >
-                <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                <Icon className="hidden sm:block w-3.5 h-3.5" aria-hidden="true" />
                 {mod.label}
               </NavLink>
             );

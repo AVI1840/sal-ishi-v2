@@ -162,7 +162,7 @@ test("חוט הזהב: שרה מצטרפת למקהלה, שמור, רונית ר
   await expect(first).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
 
   await page.goto("./#/citizen/services");
-  await expect(page.getByRole("heading", { level: 1, name: "השוק בשכונה שלך" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
   await page.getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
   await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
   await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
@@ -289,9 +289,9 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   await expect(rec).toContainText("מקהלה קהילתית");
   await expect(rec).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
   await expect(page.getByRole("button", { name: /להקריא/ }).first()).toBeVisible();
-  // 2:00 השוק בשכונה: המקהלה אצל המתנ"ס, 84 נקודות בחודש
+  // 2:00 השירותים בשכונה: המקהלה אצל המתנ"ס, 84 נקודות בחודש
   await page.goto("./#/citizen/services");
-  await expect(page.getByRole("heading", { level: 1, name: "השוק בשכונה שלך" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
   const card = page.getByRole("link", { name: /מקהלה קהילתית/ }).first();
   await expect(card).toContainText("84 נקודות בחודש");
   await expect(card).toContainText('המתנ"ס הקהילתי');
@@ -369,4 +369,36 @@ test("טקסט מוגדל בטלפון צר: בלי גלילה לצדדים", as
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await noHorizontalScroll(page);
   }
+});
+
+test("השירותים בשכונה: בהתאמה אישית למעלה, ואז לפי קטגוריה", async ({ page }) => {
+  await page.goto("./#/citizen/services");
+  await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
+  const personal = page.locator("section[aria-labelledby=foryou-h]");
+  await expect(personal.getByRole("heading", { level: 2, name: "שירותים בהתאמה אישית עבורך" })).toBeVisible();
+  await expect(personal.getByRole("link").first()).toContainText("מקהלה קהילתית");
+  const byCat = page.locator("section[aria-labelledby=bycat-h]");
+  await expect(byCat.getByRole("heading", { level: 2, name: "שירותים לפי קטגוריה" })).toBeVisible();
+  // ההתאמה האישית נשארת למעלה גם כשבוחרים קטגוריה.
+  await byCat.getByRole("button", { name: "הכל" }).isVisible();
+  const chips = byCat.getByRole("group", { name: "קטגוריה" }).getByRole("button");
+  await chips.nth(1).click();
+  await expect(personal.getByRole("link").first()).toContainText("מקהלה קהילתית");
+  expect(await byCat.getByRole("heading", { level: 3 }).count()).toBe(1);
+  // בחיפוש: גם מה שבהתאמה האישית מופיע בתוצאות.
+  await chips.first().click();
+  await byCat.getByRole("searchbox", { name: "חיפוש שירות" }).fill("מקהלה");
+  await expect(byCat.getByRole("link", { name: /מקהלה קהילתית/ })).toBeVisible();
+});
+
+test("הפס העליון בטלפון: כל הדלתות בתוך המסך, בלי חיתוך", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.goto("./#/citizen");
+  const nav = page.getByRole("navigation", { name: "שלוש הדלתות" });
+  for (const name of ["בית", "שרה", "רונית", "מטה", "ספקים"]) {
+    const box = (await nav.getByRole("link", { name, exact: true }).boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(360);
+  }
+  expect(await nav.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
 });

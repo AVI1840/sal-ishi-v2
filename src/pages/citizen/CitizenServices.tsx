@@ -1,7 +1,8 @@
 /**
- * CitizenServices: השוק בשכונה. כל שירות מאושר שמגיע לשכונה של האזרחית, מהאטלס
+ * CitizenServices: השירותים בשכונה. כל שירות מאושר שמגיע לשכונה של האזרחית, מהאטלס
  * (אותו קטלוג שהמלווה והמטה רואים): מה, מי מפעיל, איפה, מתי, וכמה זה עולה
- * מהארנק, ודירוג הספק. קודם מה שמתאים למה שסיפרה, אחר כך לפי תחום: בכל תחום
+ * מהארנק, ודירוג הספק. שלושה חלקים: השירותים בשכונה (הכותרת), שירותים בהתאמה
+ * אישית (מה שמתאים למה שסיפרה, תמיד למעלה), ושירותים לפי קטגוריה: בכל קטגוריה
  * עד 6 שירותים שמנוע ההתאמה התאים לה, ועד 9 ב"להראות עוד". התחומים שבחרה
  * קודם. רחב, אבל לא מעמיס. כללי ההתאמה הם של המנוע, בלי שינוי. בלי ציונים.
  */
@@ -46,7 +47,8 @@ function whenText(s: RealService): string | null {
   return isSubscription(s) ? weeklyText(slots[0]) : formatSlot(he, slots[0]);
 }
 
-function ServiceCard({ service, reason }: { service: RealService; reason?: string }) {
+function ServiceCard({ service, reason, level = 3 }: { service: RealService; reason?: string; level?: 3 | 4 }) {
+  const Title = level === 4 ? "h4" : "h3";
   const showImages = useShowImages();
   const { image, gradient } = showImages ? getServiceImageInfo(service) : { image: undefined, gradient: "" };
   const when = whenText(service);
@@ -64,7 +66,7 @@ function ServiceCard({ service, reason }: { service: RealService; reason?: strin
             </div>
           ) : null}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-gray-900 leading-tight">{service.name}</h3>
+            <Title className="text-base font-bold text-gray-900 leading-tight">{service.name}</Title>
             <span className="inline-block max-w-full mt-1 text-sm px-2 py-0.5 rounded-lg font-semibold bg-blue-50 text-[#1B3A5C]">{priceText(service)}</span>
           </div>
           <ChevronLeft className="w-5 h-5 text-gray-500 shrink-0 self-center" aria-hidden="true" />
@@ -130,8 +132,9 @@ export default function CitizenServices() {
 
   const q = query.trim();
   const shown = all.filter((s) => (domain === "all" || domainOf(s) === domain) && (!q || s.name.includes(q) || (s.subcategory ?? "").includes(q)));
-  const forYou = domain === "all" && !q ? shown.filter((s) => reasonOf.has(s.id)).sort((a, b) => [...reasonOf.keys()].indexOf(a.id) - [...reasonOf.keys()].indexOf(b.id)) : [];
-  const rest = shown.filter((s) => !forYou.includes(s));
+  // בהתאמה אישית: תמיד למעלה, בלי קשר לסינון. בקטגוריות הן לא חוזרות, חוץ מבחיפוש.
+  const forYou = all.filter((s) => reasonOf.has(s.id)).sort((a, b) => [...reasonOf.keys()].indexOf(a.id) - [...reasonOf.keys()].indexOf(b.id));
+  const rest = q ? shown : shown.filter((s) => !forYou.includes(s));
   const byRank = (a: RealService, b: RealService) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999);
   const groups = domains
     .map((d) => {
@@ -158,73 +161,77 @@ export default function CitizenServices() {
           <Search className="w-5 h-5 text-white/80" aria-hidden="true" />
           <span className="text-base font-bold text-white">סל אישי</span>
         </div>
-        <h1 className="text-3xl font-bold">השוק בשכונה שלך</h1>
+        <h1 className="text-3xl font-bold">השירותים בשכונה שלך</h1>
         <p className="text-lg text-white/85 mt-1">
           {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
         </p>
         <p className="text-base text-white/90 mt-2">נשארו בארנק שלך {amount(wallet.left)}</p>
       </div>
 
-      <main id="main" tabIndex={-1} className="px-6 pt-5 pb-6 space-y-5" data-read>
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" aria-hidden="true" />
-          <input
-            type="search"
-            aria-label="חיפוש בשוק"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="למשל: שירה, הליכה, טלפון"
-            className="w-full min-h-[52px] pr-11 pl-4 rounded-xl border border-gray-300 bg-white text-base placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1B3A5C]/30"
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-2" role="group" aria-label="תחום">
-          {[{ id: "all", name: "הכל" }, ...domains].map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              aria-pressed={domain === d.id}
-              onClick={() => setDomain(d.id)}
-              className={cn(
-                "min-h-[44px] px-4 rounded-full text-base font-semibold border",
-                domain === d.id ? "bg-[#1B3A5C] text-white border-[#1B3A5C]" : "bg-white text-gray-800 border-gray-300",
-              )}
-            >
-              {d.name}
-            </button>
-          ))}
-        </div>
-
-        <p className="sr-only" role="status" aria-live="polite">{shown.length} שירותים</p>
-
+      <main id="main" tabIndex={-1} className="px-6 pt-5 pb-6 space-y-8" data-read>
         {forYou.length ? (
           <section aria-labelledby="foryou-h">
-            <h2 id="foryou-h" className="text-xl font-bold text-gray-900 mb-3">בשבילך, לפי מה שסיפרת</h2>
+            <h2 id="foryou-h" className="text-2xl font-bold text-gray-900">שירותים בהתאמה אישית עבורך</h2>
+            <p className="text-base text-gray-700 mt-1 mb-3">לפי מה שסיפרת לנו ולמלווה.</p>
             <ul className="space-y-3">
               {forYou.map((s) => <ServiceCard key={s.id} service={s} reason={reasonOf.get(s.id)} />)}
             </ul>
           </section>
         ) : null}
 
-        {groups.map((g) => (
-          <section key={g.id} aria-labelledby={`d-${g.id}`}>
-            <h2 id={`d-${g.id}`} className="text-xl font-bold text-gray-900 mb-3">{g.name}</h2>
-            <ul className="space-y-3">
-              {g.items.map((s) => <ServiceCard key={s.id} service={s} />)}
-            </ul>
-            {g.total > g.items.length ? (
-              <button
-                type="button"
-                className="mt-3 w-full min-h-[48px] rounded-xl border border-[#1B3A5C] text-[#1B3A5C] text-base font-semibold"
-                onClick={() => setMore(new Set([...more, g.id]))}
-              >
-                להראות עוד {g.total - g.items.length} ב{g.name}
-              </button>
-            ) : null}
-          </section>
-        ))}
+        <section aria-labelledby="bycat-h" className="space-y-5">
+          <h2 id="bycat-h" className="text-2xl font-bold text-gray-900">שירותים לפי קטגוריה</h2>
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="חיפוש שירות"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="למשל: שירה, הליכה, טלפון"
+              className="w-full min-h-[52px] pr-11 pl-4 rounded-xl border border-gray-300 bg-white text-base placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1B3A5C]/30"
+            />
+          </div>
 
-        {shown.length === 0 ? <p className="text-base text-gray-800">לא מצאנו. אפשר לנסות מילה אחרת, או לבקש מהמלווה.</p> : null}
+          <div className="flex flex-wrap gap-2" role="group" aria-label="קטגוריה">
+            {[{ id: "all", name: "הכל" }, ...domains].map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                aria-pressed={domain === d.id}
+                onClick={() => setDomain(d.id)}
+                className={cn(
+                  "min-h-[44px] px-4 rounded-full text-base font-semibold border",
+                  domain === d.id ? "bg-[#1B3A5C] text-white border-[#1B3A5C]" : "bg-white text-gray-800 border-gray-300",
+                )}
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
+
+          <p className="sr-only" role="status" aria-live="polite">{shown.length} שירותים</p>
+
+          {groups.map((g) => (
+            <section key={g.id} aria-labelledby={`d-${g.id}`}>
+              <h3 id={`d-${g.id}`} className="text-xl font-bold text-gray-900 mb-3">{g.name}</h3>
+              <ul className="space-y-3">
+                {g.items.map((s) => <ServiceCard key={s.id} service={s} level={4} />)}
+              </ul>
+              {g.total > g.items.length ? (
+                <button
+                  type="button"
+                  className="mt-3 w-full min-h-[48px] rounded-xl border border-[#1B3A5C] text-[#1B3A5C] text-base font-semibold"
+                  onClick={() => setMore(new Set([...more, g.id]))}
+                >
+                  להראות עוד {g.total - g.items.length} ב{g.name}
+                </button>
+              ) : null}
+            </section>
+          ))}
+
+          {shown.length === 0 ? <p className="text-base text-gray-800">לא מצאנו. אפשר לנסות מילה אחרת, או לבקש מהמלווה.</p> : null}
+        </section>
 
         <p className="text-sm text-gray-600">{SUPPLIER_RATING_NOTE_CITIZEN}</p>
       </main>

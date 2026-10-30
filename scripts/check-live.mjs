@@ -14,7 +14,7 @@ const expected = process.argv[3] ?? execSync("git rev-parse --short HEAD").toStr
 const MUST = {
   "#/": ["משעות לתוצאות", "שלוש דלתות"],
   "#/citizen": ["נשארו", "שמור", "נוצל", "מקהלה קהילתית"],
-  "#/citizen/services": ["השוק בשכונה שלך"],
+  "#/citizen/services": ["השירותים בשכונה שלך", "שירותים בהתאמה אישית עבורך", "שירותים לפי קטגוריה"],
   "#/citizen/services/demoj-choir": ["להצטרף לקבוצה", "בחודש"],
   "#/coordinator": ["לפנות היום"],
   "#/executive": ["מה הוכרע במפגש 2", "₪760"],
