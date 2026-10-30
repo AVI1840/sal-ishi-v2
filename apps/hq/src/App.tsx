@@ -54,6 +54,9 @@ const GUIDE_STEPS = [
   { to: "/suppliers", title: "ספקים", text: "כל הספקים בפיילוטים. פרטי ספק יחיד נשמרים במטה ולא יוצאים ממנו." },
 ];
 
+/** בתוך מסגרת בכלי הראשי (אצל המלווה או במטה): בלי קישור החוצה "לסל האישי". */
+const embedded = typeof window !== "undefined" && window.self !== window.top;
+
 export default function App() {
   const hydrated = useHq((s) => s.hydrated);
   const hydrate = useHq((s) => s.hydrate);
@@ -78,7 +81,7 @@ export default function App() {
               preview ? (
                 <div className="demo-banner" role="note">
                   גרסת תצוגה לשותפים, לפני שימוש בפיילוטים. כל הנתונים סינתטיים.{" "}
-                  <a href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
+                  {embedded ? null : <a href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>}
                 </div>
               ) : isDemo ? (
                 <div className="demo-banner" role="note">מוצגים נתוני הדגמה סינתטיים.</div>
@@ -86,7 +89,7 @@ export default function App() {
             }
             headerMeta={
               <>
-                <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
+                {embedded ? null : <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>}
                 {preview ? <FeedbackButton /> : null}
                 <span>{jerusalem ? `פיילוט ירושלים, ${jerusalem} שכונות${pilots > 1 ? ` · ועוד ${pilots - 1} רשויות הדגמה להשוואה` : ""}` : `${pilots} פיילוטים`}</span>
                 <span aria-hidden="true">|</span>

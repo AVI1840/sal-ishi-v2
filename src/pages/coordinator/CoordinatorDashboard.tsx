@@ -9,6 +9,7 @@ import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
 import { CalendarCheck, ChevronLeft, Inbox, MapPinned, Users, Wallet } from "lucide-react";
 import { TodayTriage } from "@/components/companion/TodayTriage";
 import { NewInCaseload } from "@/components/companion/NewInCaseload";
+import { CaseloadPulse, RecentInCaseload } from "@/components/companion/CaseloadPulse";
 import { buildCaseload, triage } from "@/pilot/caseload";
 import { appSettings } from "@/pilot/settings";
 import { usePilot } from "@/pilot/store";
@@ -72,6 +73,11 @@ export default function CoordinatorDashboard() {
 
       {/* שיטת תעדוף אחת: לפי הכללים שבהגדרות */}
       <TodayTriage />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <CaseloadPulse />
+        <RecentInCaseload />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <section className="libi-card p-5" aria-labelledby="comm-h">

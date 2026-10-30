@@ -272,7 +272,7 @@ test("תפריט ההדגמה נסגר במעבר מסך", async ({ page }) => {
   await page.goto("./#/coordinator");
   await page.getByRole("button", { name: "הדגמה" }).click();
   await expect(page.locator("#demo-menu")).toBeVisible();
-  await page.getByRole("link", { name: "שרה", exact: true }).click();
+  await page.getByRole("link", { name: "סל אישי לאזרח" }).click();
   await expect(page.locator("#demo-menu")).toHaveCount(0);
 });
 
@@ -442,10 +442,24 @@ test("הפס העליון בטלפון: כל הדלתות בתוך המסך, ב�
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("./#/citizen");
   const nav = page.getByRole("navigation", { name: "שלוש הדלתות" });
-  for (const name of ["בית", "שרה", "רונית", "מטה", "ספקים"]) {
+  for (const name of ["בית", "סל אישי לאזרח", "מלווה", "מטה", "ספקים"]) {
     const box = (await nav.getByRole("link", { name, exact: true }).boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(360);
   }
   expect(await nav.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+});
+
+test("המלווה: שם, תפריט מקיף, והאטלס בתוך הכלי", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto("./#/coordinator");
+  const side = page.locator("#app-sidebar");
+  await expect(side.getByText("מלווה", { exact: true })).toBeVisible();
+  for (const n of ["היום שלי", "האזרחים שלי", "השירותים בשכונה", "הקהילה שלי", "אטלס השכונה"]) await expect(side.getByRole("link", { name: n })).toBeVisible();
+  await side.getByRole("link", { name: "אטלס השכונה" }).click();
+  const atlas = page.frameLocator("iframe[title='אטלס השכונה']");
+  await expect(atlas.getByText("הרשות שלי").first()).toBeVisible();
+  await expect(atlas.getByRole("link", { name: "לסל האישי" })).toHaveCount(0);
+  await page.goto("./#/executive/atlas");
+  await expect(page.frameLocator("iframe[title='אטלס המטה']").getByText(/פיילוט ירושלים, 5 שכונות/).first()).toBeVisible();
 });

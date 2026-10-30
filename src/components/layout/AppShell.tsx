@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Home, Users, Wallet, BarChart3, BookOpen, Menu, X, WifiOff, MapPinned, Store, ExternalLink } from "lucide-react";
+import { Home, Users, Wallet, BarChart3, BookOpen, Menu, X, WifiOff, MapPinned, Store, Map as MapIcon } from "lucide-react";
 import { appSettings } from "@/pilot/settings";
 import { useOnline } from "@/pilot/components/Frame";
 import { cn } from "@/lib/utils";
@@ -18,11 +18,14 @@ interface NavItem {
 const COORDINATOR_NAV: NavItem[] = [
   { to: "/coordinator", label: "היום שלי", icon: Home, end: true },
   { to: "/coordinator/patients", label: "האזרחים שלי", icon: Users },
+  { to: "/coordinator/services-map", label: "השירותים בשכונה", icon: BookOpen },
   { to: "/coordinator/community", label: "הקהילה שלי", icon: MapPinned },
+  { to: "/coordinator/atlas", label: "אטלס השכונה", icon: MapIcon },
 ];
 
 const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
+  { to: "/executive/atlas", label: "אטלס המטה", icon: MapIcon },
   { to: "/executive/catalog", label: "קטלוג סל", icon: BookOpen },
   { to: "/executive/algorithm", label: "אלגוריתם התאמה", icon: BarChart3 },
 ];
@@ -37,8 +40,8 @@ interface AppShellProps {
 
 export default function AppShell({ variant }: AppShellProps) {
   const nav = variant === "coordinator" ? COORDINATOR_NAV : variant === "executive" ? EXECUTIVE_NAV : PROVIDER_NAV;
-  const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי - מטה" : "פורטל ספקים";
-  const subtitle = variant === "coordinator" ? "לוח בקרה למלווה חברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
+  const title = variant === "coordinator" ? "מלווה" : variant === "executive" ? "סל אישי - מטה" : "פורטל ספקים";
+  const subtitle = variant === "coordinator" ? "סל אישי · לוח העבודה של המלווה החברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
   const { pathname } = useLocation();
   // בטלפון התפריט נפתח בכפתור ולא מכסה את התוכן (0.5: המלווה עובדת מהנייד).
   const [open, setOpen] = useState(false);
@@ -102,18 +105,6 @@ export default function AppShell({ variant }: AppShellProps) {
         </nav>
 
         <div className="border-t border-border p-3 space-y-2">
-          {/* האטלס: אותו קטלוג, אצל הרשות (שטח) ובמטה */}
-          {variant !== "provider" && (
-          <a
-            href={variant === "executive" ? "./hq/" : "./field/"}
-            className="flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors border border-border"
-          >
-            <MapPinned className="w-4 h-4" aria-hidden="true" />
-            <span>{variant === "executive" ? "אטלס וקטלוג - מטה" : "אטלס השכונה (שטח)"}</span>
-            <ExternalLink className="w-3.5 h-3.5 mr-auto text-muted-foreground" aria-hidden="true" />
-          </a>
-          )}
-
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent transition-colors">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-glow text-primary-foreground flex items-center justify-center text-sm font-semibold">
               {variant === "coordinator" ? appSettings.companion.name.charAt(0) : variant === "executive" ? "מט" : "ספ"}

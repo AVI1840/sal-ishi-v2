@@ -15,8 +15,9 @@ import type { Simulation } from "@/pilot/model";
 
 const MODULES = [
   { to: "/", label: "בית", icon: Wallet, end: true },
-  { to: "/citizen", label: "שרה", icon: Phone },
-  { to: "/coordinator", label: "רונית", icon: Heart },
+  // בטלפון: השם הקצר, כדי שכל הדלתות ייכנסו בפס.
+  { to: "/citizen", label: "סל אישי לאזרח", short: "לאזרח", icon: Phone },
+  { to: "/coordinator", label: "מלווה", icon: Heart },
   { to: "/executive", label: "מטה", icon: Building2 },
   { to: "/providers", label: "ספקים", icon: Users },
 ];
@@ -132,7 +133,14 @@ export default function DemoNav() {
                 )}
               >
                 <Icon className="hidden sm:block w-3.5 h-3.5" aria-hidden="true" />
-                {mod.label}
+                {"short" in mod && mod.short ? (
+                  <>
+                    <span className="sm:hidden" aria-hidden="true">{mod.short}</span>
+                    <span className="sr-only sm:not-sr-only">{mod.label}</span>
+                  </>
+                ) : (
+                  mod.label
+                )}
               </NavLink>
             );
           })}

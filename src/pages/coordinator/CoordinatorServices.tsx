@@ -8,6 +8,8 @@ import { Search, MapPin, Phone, Clock, ExternalLink, ChevronDown, ChevronUp, Use
 import { cn } from "@/lib/utils";
 import { serviceCatalog, catalogAnalytics, type CatalogService, type ServiceDimensions } from "@/data/serviceCatalog";
 import { NEIGHBORHOODS_LIST } from "@/data/realServices";
+import { appSettings } from "@/pilot/settings";
+import { servicesFor } from "@/pilot/services";
 import { UnmetDemandPanel } from "@/components/atlas/UnmetDemandPanel";
 
 // ─── Category icons (lucide, not emoji) ─────────────────────────
@@ -178,7 +180,10 @@ function ServiceRow({ service, isSelected, onSelect }: { service: CatalogService
 
 export default function CoordinatorServices() {
   const [query, setQuery] = useState("");
-  const [neighborhood, setNeighborhood] = useState("הכל");
+  // ברירת המחדל: השכונה של המלווה (אותם מספרים כמו בשוק של האזרח ואצל המטה).
+  const home = appSettings.companion.neighborhood ?? "פסגת זאב";
+  const [neighborhood, setNeighborhood] = useState(home);
+  const forHome = servicesFor(home);
   const [category, setCategory] = useState(0);
   const [sector, setSector] = useState("all");
   const [cost, setCost] = useState("all");
@@ -203,8 +208,10 @@ export default function CoordinatorServices() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900">קטלוג שירותים</h1>
-        <p className="text-sm text-gray-600 mt-0.5">{catalogAnalytics.total} שירותים מהקטלוג המאושר · {NEIGHBORHOODS_LIST.length - 1} שכונות · ניתוח מימדי</p>
+        <h1 className="text-xl font-bold text-gray-900">השירותים בשכונה</h1>
+        <p className="text-sm text-gray-600 mt-0.5">
+          {home}: {forHome.length} שירותים לתושבים, {forHome.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור · בכל הרשות: {catalogAnalytics.total} שירותים ב-{NEIGHBORHOODS_LIST.length - 1} שכונות
+        </p>
       </div>
 
       <UnmetDemandPanel />

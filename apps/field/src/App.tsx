@@ -47,6 +47,9 @@ const GUIDE_STEPS = [
   { to: "/submit", title: "אישור ושליחה", text: "הגשה, אישור ודחייה עם נימוק, ייצוא חבילת פיילוט למטה ו-Excel לוועדה." },
 ];
 
+/** בתוך מסגרת בכלי הראשי (אצל המלווה או במטה): בלי קישור החוצה "לסל האישי". */
+const embedded = typeof window !== "undefined" && window.self !== window.top;
+
 export default function App() {
   const hydrated = useField((s) => s.hydrated);
   const hydrate = useField((s) => s.hydrate);
@@ -74,7 +77,7 @@ export default function App() {
             }
             headerMeta={
               <>
-                <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
+                {embedded ? null : <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>}
                 {preview ? <FeedbackButton /> : null}
                 <span>{authority || "רשות לא הוגדרה"}</span>
                 <span aria-hidden="true">|</span>

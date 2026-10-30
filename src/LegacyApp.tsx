@@ -41,6 +41,7 @@ import CoordinatorServices from "@/pages/coordinator/CoordinatorServices";
 import CoordinatorAgents from "@/pages/coordinator/CoordinatorAgents";
 import ExecutiveOverview from "@/pages/executive/ExecutiveOverview";
 import ProviderDashboard from "@/pages/providers/ProviderDashboard";
+import AtlasFrame from "@/pages/shared/AtlasFrame";
 import NotFound from "@/pages/NotFound";
 import ScopePage from "@/pages/ScopePage";
 
@@ -105,6 +106,7 @@ export default function LegacyApp() {
                 <Route path="bookings" element={<CoordinatorBookings />} />
                 <Route path="services-map" element={<CoordinatorServices />} />
                 <Route path="community" element={<CoordinatorCommunity />} />
+                <Route path="atlas" element={<AtlasFrame which="field" />} />
                 {/* עמודי ה-AI וה"אייג'נטים" רק בגרסת ההאקתון (תשובות כתובות מראש) */}
                 <Route path="agents" element={<Navigate to="/coordinator" replace />} />
               </Route>
@@ -119,6 +121,7 @@ export default function LegacyApp() {
                 <Route index element={<ExecutiveOverview />} />
                 <Route path="catalog" element={<ServicesCatalog />} />
                 <Route path="algorithm" element={<CoordinatorAlgorithm />} />
+                <Route path="atlas" element={<AtlasFrame which="hq" />} />
                 <Route path="agents" element={SHOW_DEMO_LAYERS ? <CoordinatorAgents /> : <Navigate to="/executive" replace />} />
               </Route>
 
