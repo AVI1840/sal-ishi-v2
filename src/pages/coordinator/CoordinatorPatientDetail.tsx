@@ -17,6 +17,7 @@ import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
 import { CITIZENS, TIMELINE_EVENTS, NUDGES, AI_RECOMMENDATIONS } from "@/data/mockData";
 import { MOTIVATION_LABELS, BARRIER_LABELS, STRENGTH_LABELS, READINESS_LABELS } from "@/data/types";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { personalRecommendations } from "@/lib/personalMatch";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PersonActions } from "@/components/companion/PersonActions";
@@ -35,10 +36,13 @@ export default function CoordinatorPatientDetail() {
   const recommendations = AI_RECOMMENDATIONS.filter((r) => r.citizenId === citizen.id);
 
   // Matched services from the real engine (no legacy SERVICES array)
-  const matchedServices = useMemo(
-    () => matchServicesForCitizen(citizen, { topN: 5 }),
-    [citizen]
-  );
+  // מה שהאזרח סיפר קודם (כמו אצלו), ואחריו שאר ההתאמות של המנוע עם הפירוק המלא.
+  const matchedServices = useMemo(() => {
+    const all = matchServicesForCitizen(citizen, { topN: 500, minScore: 0 });
+    const first = personalRecommendations(citizen, all, 3).map((p) => p.result);
+    const rest = all.filter((r) => !first.includes(r));
+    return [...first, ...rest].slice(0, 5);
+  }, [citizen]);
 
   return (
     <div className="space-y-6">

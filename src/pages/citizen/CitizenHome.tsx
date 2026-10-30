@@ -17,7 +17,8 @@ import { matchServicesForCitizen, type MatchResult } from "@/lib/matchingEngine"
 import { usePilot } from "@/pilot/store";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
-import { useCitizen, useWallet } from "@/pilot/citizen/common";
+import { useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
+import { personalRecommendations } from "@/lib/personalMatch";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -43,10 +44,14 @@ export default function CitizenHome() {
   const usedPct = wallet.total ? Math.round((wallet.used / wallet.total) * 100) : 0;
   const tiers = catalogState.seed.settings.copay_tiers;
 
-  const recommended = useMemo(
-    () => matchServicesForCitizen(citizen, { topN: 3, walletLeft: wallet.left * (catalogState.seed.settings.points_per_shekel || 1) }),
-    [citizen, wallet.left],
+  // מה שחשוב לה קודם: ההמלצה הראשונה ממה שסיפרה (החלום, מה שהיא אוהבת), כל אחת מתחום אחר.
+  const personal = usePersonalProfile();
+  const picks = useMemo(
+    () => personalRecommendations(personal, matchServicesForCitizen(personal, { topN: 500, minScore: 0, walletLeft: wallet.left * (catalogState.seed.settings.points_per_shekel || 1) }), 3),
+    [personal, wallet.left],
   );
+  const recommended = picks.map((p) => p.result);
+  const reasonOf = (id: string) => picks.find((p) => p.result.service.id === id)?.reason;
   const activities = derived.bookings
     .filter((b) => b.citizenId === citizen.id && b.status !== "cancelled")
     .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt))
@@ -145,7 +150,7 @@ export default function CitizenHome() {
                         </div>
                       </div>
                       <div className="px-4 pb-3 pt-1">
-                        <PersonalReasonCard result={result} firstName={firstName} showLayers={false} />
+                        <PersonalReasonCard result={result} firstName={firstName} reason={reasonOf(result.service.id)} showLayers={false} />
                       </div>
                     </>
                   ) : (
@@ -166,7 +171,7 @@ export default function CitizenHome() {
                           <MapPin className="w-4 h-4" aria-hidden="true" />{result.service.neighborhood}
                         </p>
                         <div className="mt-2">
-                          <PersonalReasonCard result={result} firstName={firstName} showLayers={false} />
+                          <PersonalReasonCard result={result} firstName={firstName} reason={reasonOf(result.service.id)} showLayers={false} />
                         </div>
                       </div>
                     </div>

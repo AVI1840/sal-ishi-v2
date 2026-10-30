@@ -20,6 +20,8 @@ interface Props {
   result: MatchResult;
   /** citizen first name - used to personalise the hook */
   firstName?: string;
+  /** נימוק אישי לאזרח ("סיפרת ש..."), במקום הסיבה הראשונה של המנוע */
+  reason?: string;
   /** show the full 5-layer breakdown when expanded (default true) */
   showLayers?: boolean;
   className?: string;
@@ -42,6 +44,7 @@ function personalise(reason: string, firstName?: string): string {
 export function PersonalReasonCard({
   result,
   firstName,
+  reason,
   showLayers = true,
   className,
 }: Props) {
@@ -50,7 +53,7 @@ export function PersonalReasonCard({
   // מול האזרח (בלי פירוט השכבות): הסיבות בשפה שלו, בלי תיוג ובלי כפתור בתוך הכרטיס.
   const explanations = showLayers ? result.explanations.filter(Boolean) : citizenReasons(result.explanations);
   // First reason is the hook - shown collapsed
-  const hookReason = explanations[0] ?? "מתאים לפרופיל שלך";
+  const hookReason = reason ?? explanations[0] ?? "מתאים לפרופיל שלך";
   // Rest shown on expand (may overlap with hook - dedupe)
   const extraReasons = explanations.slice(1);
 
@@ -60,7 +63,7 @@ export function PersonalReasonCard({
       <div className="px-4 py-3 flex items-start gap-2.5">
         <CheckCircle className="w-4 h-4 text-[#1B3A5C] mt-0.5 shrink-0" />
         <p className="text-sm text-[#1B3A5C] font-medium leading-snug flex-1">
-          {personalise(hookReason, firstName)}
+          {reason ? reason : personalise(hookReason, firstName)}
         </p>
         {/* Toggle button - only if there's more to show */}
         {showLayers && (

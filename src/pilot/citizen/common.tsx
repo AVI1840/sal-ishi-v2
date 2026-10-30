@@ -8,12 +8,21 @@ import { useT } from "../i18n";
 import { appSettings } from "../settings";
 import { usePilot } from "../store";
 import { monthlyWalletShekel, spentThisMonth } from "../services";
+import { withAnswers } from "@/lib/personalMatch";
 
 /** האזרחית של ההדגמה, עם מה שסיפרה שחשוב לה. */
 export function useCitizen(): { profile: PersonalProfile; firstName: string; interests: string[] } {
   const { derived } = usePilot();
   const profile = useMemo(() => CITIZENS.find((c) => c.id === appSettings.citizen.persona_id) ?? CITIZENS[0], []);
   return { profile, firstName: profile.name.split(" ")[0], interests: derived.interests.get(profile.id) ?? [] };
+}
+
+/** האזרחית עם מה שסיפרה בשאלון ("לספר מה חשוב לי") או בפגישה המשותפת. */
+export function usePersonalProfile(): PersonalProfile {
+  const { derived } = usePilot();
+  const { profile } = useCitizen();
+  const answers = derived.answers.get(profile.id);
+  return useMemo(() => withAnswers(profile, answers), [profile, answers]);
 }
 
 export function useWallet() {

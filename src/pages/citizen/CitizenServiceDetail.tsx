@@ -21,7 +21,8 @@ import { he } from "@/pilot/i18n/he";
 import { createRequest, usePilot } from "@/pilot/store";
 import { isProduct, priceOf } from "@/pilot/services";
 import { complementLine, ruleText } from "@/pilot/citizen/Service";
-import { reasonKey, useCitizen, useWallet } from "@/pilot/citizen/common";
+import { reasonKey, useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
+import { personalReasonFor } from "@/lib/personalMatch";
 
 const LANG_MAP: Record<string, string> = {
   hebrew: "עברית", arabic: "ערבית", russian: "רוסית", english: "אנגלית",
@@ -53,14 +54,15 @@ export default function CitizenServiceDetail() {
   const service = realServices.find((s) => s.id === id);
   const { derived } = usePilot();
   const { profile: citizen } = useCitizen();
+  const personal = usePersonalProfile();
   const wallet = useWallet();
   const showImages = useShowImages();
 
   const matchResult = useMemo(() => {
     if (!service) return null;
-    const all = matchServicesForCitizen(citizen, { topN: 500, minScore: 0 });
+    const all = matchServicesForCitizen(personal, { topN: 500, minScore: 0 });
     return all.find((r) => r.service.id === service.id) ?? null;
-  }, [service, citizen]);
+  }, [service, personal]);
 
   if (!service) {
     return (
@@ -78,7 +80,9 @@ export default function CitizenServiceDetail() {
 
   // תנאי השירות בלי שורת הביטול: הביטול מוסבר בשפה פשוטה בכרטיס נפרד.
   const terms = termLines(service).filter((t) => t.term !== "ביטול" && t.term !== "אי-הגעה" && t.term !== "פתיחה");
-  const reasons = citizenReasons(matchResult?.explanations ?? []).slice(0, 4);
+  // קודם מה שהיא סיפרה ("סיפרת ש..."), ואחר כך סיבות נוספות בשפה פשוטה.
+  const told = personalReasonFor(personal, service.name);
+  const reasons = [...(told ? [told] : []), ...citizenReasons(matchResult?.explanations ?? [])].slice(0, 4);
   const price = priceOf(service);
   const complement = complementLine(he, price);
   const mine = (kind: string) => derived.requests.find((r) => r.citizenId === citizen.id && r.serviceId === service.id && r.kind === kind && (r.status === "open" || r.status === "approved"));

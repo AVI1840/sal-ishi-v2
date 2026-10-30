@@ -187,6 +187,10 @@ const SPECS_J: Spec[] = [
   { key: "b-cooking", n: 4, type: "T27", sup: "S-005", fit: A, price: 120, pattern: C, base: 13, status: "אושר", name: "סדנת בישול בריא קבוצתית", fp: WALK_AND_AID },
   { key: "b-support", n: 4, type: "T32", sup: "S-005", fit: A, price: 240, pattern: C, base: 13, status: "אושר", name: "קבוצת תמיכה נושאית", fp: WALK_AND_AID },
   { key: "b-smart", n: 4, type: "T40", sup: "S-007", fit: A, price: 280, pattern: C, base: 12, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
+
+  // פסגת זאב: מקהלה קהילתית, "חוט הזהב" של ההדגמה (שרה רוצה לחזור לשיר). בסוף
+  // הרשימה, כדי לא לשנות את המספרים האקראיים של שאר השירותים.
+  { key: "choir", n: 0, type: "T03", sup: "S-001", fit: G, price: 80, pattern: C, base: 16, status: "אושר", name: "מקהלה קהילתית", fp: fp(WALK_AND_AID, { goals: ["belonging", "meaning"], evidenceLevel: "medium" }) },
 ];
 
 interface Variant {

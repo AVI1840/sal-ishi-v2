@@ -14,7 +14,9 @@ import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import type { VisitKind } from "@/pilot/model";
 import { book, logVisit, setHospitalized, usePilot } from "@/pilot/store";
-import { cancelRuleOf, monthlyWalletShekel, priceOf, recommend, slotsFor, spentThisMonth } from "@/pilot/services";
+import { cancelRuleOf, monthlyWalletShekel, priceOf, serviceById, slotsFor, spentThisMonth } from "@/pilot/services";
+import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { personalRecommendations, withAnswers } from "@/lib/personalMatch";
 import { appSettings } from "@/pilot/settings";
 import { describe } from "@/pilot/companion/Log";
 import { Decide } from "./TodayTriage";
@@ -153,9 +155,15 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
   const baseline = citizen.id === appSettings.citizen.persona_id ? (state.simulation.walletEmpty ? total : appSettings.citizen.baseline_spent_this_month) : 0;
   const used = Math.min(total, spentThisMonth(derived.bookings, citizen.id, baseline));
 
+  // אותה המלצה שהאזרח רואה: קודם מה שסיפר (לשרה: המקהלה), אחר כך תחומים אחרים.
   const options = useMemo(() => {
     const booked = new Set(bookings.map((b) => b.serviceId));
-    return recommend(citizen, derived.interests.get(citizen.id) ?? [], booked).filter((s) => !s.gatedByCompanion).slice(0, 3);
+    const profile = withAnswers(citizen, derived.answers.get(citizen.id));
+    const results = matchServicesForCitizen(profile, { topN: 500, minScore: 0 }).filter((r) => !booked.has(r.service.id));
+    return personalRecommendations(profile, results, 6)
+      .map((p) => serviceById(p.result.service.id))
+      .filter((s): s is RealService => Boolean(s) && !s!.gatedByCompanion)
+      .slice(0, 3);
   }, [citizen, derived, bookings]);
 
   const toggle = (p: typeof panel) => setPanel(panel === p ? null : p);
