@@ -105,7 +105,6 @@ const DOMAINS: Domain[] = [
       { icon: Coins, label: "יציבות כלכלית", services: [
         { name: "ייעוץ למיצוי זכויות", level: "regional", linkedIds: ["srv_004","srv_066","srv_079","srv_101"] },
         { name: "ניהול תקציב אישי", level: "regional" },
-        { name: "ייעוץ משפטי בסיסי", level: "local", linkedIds: ["srv_052"] },
         { name: "סיוע בירוקרטי", level: "local", linkedIds: ["srv_004","srv_092"] },
       ]},
       { icon: HeartHandshake, label: "חוסן נפשי", services: [
@@ -115,10 +114,8 @@ const DOMAINS: Domain[] = [
         { name: "פיתוח עמידות נפשית", level: "national" },
       ]},
       { icon: Lock, label: "עצמאות יומיומית", services: [
-        { name: "שירותי עזר ביתיים", level: "local", linkedIds: ["srv_041","srv_065","srv_080"] },
         { name: "ליווי לרופאים ומוסדות", level: "local", linkedIds: ["srv_046","srv_071"] },
         { name: "חברה לשעה - מתנדבים", level: "local", linkedIds: ["srv_048","srv_098"] },
-        { name: "הכנה למעברי חיים", level: "national", linkedIds: ["srv_057"] },
       ]},
     ],
   },

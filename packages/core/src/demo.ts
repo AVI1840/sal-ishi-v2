@@ -206,10 +206,7 @@ const SPECS_J: Spec[] = [
   { key: "ai", n: 0, type: "T42", sup: "S-007", fit: G, price: 180, pattern: C, base: 12, status: "אושר", name: "בינה מלאכותית לוותיקים", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone", goals: ["curiosity", "independence"] }) },
   { key: "sleep", n: 0, type: "T30", sup: "S-006", fit: G, price: 140, pattern: C, base: 12, status: "אושר", name: "סדנת שינה ואורח חיים", fp: fp(WALK_AND_AID, { goals: ["health"], evidenceLevel: "high" }) },
   { key: "nutrition-course", n: 0, type: "T25", sup: "S-006", fit: G, price: 160, pattern: C, base: 12, status: "אושר", name: "קורס תזונה נכונה", fp: fp(WALK_AND_AID, { goals: ["health"] }) },
-  { key: "transitions", n: 0, type: "T39", sup: "S-006", fit: G, price: 150, pattern: C, base: 12, status: "אושר", name: "הכנה למעברי חיים", fp: fp(WALK_AND_AID, { goals: ["meaning"] }) },
-  { key: "legal", n: 0, type: "T35", sup: "S-006", fit: G, price: 200, pattern: C, base: 10, status: "אושר", mode: "individual", name: "ייעוץ משפטי בסיסי", fp: fp(AT_HOME, { goals: ["independence"] }) },
   { key: "finance", n: 0, type: "T36", sup: "S-006", fit: G, price: 180, pattern: C, base: 10, status: "אושר", mode: "individual", name: "ייעוץ כלכלי וניהול תקציב", fp: fp(AT_HOME, { goals: ["independence"] }) },
-  { key: "light-help", n: 0, type: "T38", sup: "S-002", fit: G, price: 60, pattern: C, base: 14, status: "אושר", mode: "home", delivery: "home", name: "עזרה קלה בבית: קניות וסידורים", fp: fp(AT_HOME, { goals: ["independence"] }) },
   { key: "tech-line", n: 0, type: "T46", sup: "S-007", fit: G, price: 60, pattern: C, base: 14, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "קו תמיכה טכנית בטלפון", fp: fp(BY_PHONE, { goals: ["independence"] }) },
   { key: "icecream", n: 0, type: "T49", sup: "S-008", fit: G, price: 25, pattern: C, base: 30, status: "אושר", copay: "qol", name: "שובר גלידה זוגי", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
 ];
