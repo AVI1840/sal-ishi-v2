@@ -96,7 +96,7 @@ test("מלווה: הזמנה בשם האזרחית עם אישור בעל פה, 
   await page.locator("input[name=behalf-service]").first().check();
   const order = page.getByRole("button", { name: "להזמין ולתעד את האישור" });
   await expect(order).toBeDisabled();
-  await page.getByRole("checkbox").check();
+  await page.getByRole("checkbox", { name: /שמע\/ה את הפרטים ואישר\/ה בעל פה/ }).check();
   await order.click();
   await expect(page.getByText("ההזמנה נרשמה, עם האישור בעל פה ביומן.")).toBeVisible();
   await expect(page.getByText("(הוזמן בשמו/ה)")).toBeVisible();
@@ -222,4 +222,23 @@ test("הקהילה שלי ושוק האזרחית: אותו מספר שירות�
   const main = await page.locator("main").innerText();
   expect(main).toContain(`בשוק של התושבים: ${citizen[1]}`);
   expect(main).toMatch(new RegExp(`שירותים מאושרים בשכונה\\s+${citizen[2]}`));
+});
+
+test("תמריצים: הצעה אישית רק למי שסומן, התמדה באישור המלווה, והנקודות בארנק", async ({ page, context }) => {
+  await page.goto("./#/citizen");
+  const give = page.locator("[aria-labelledby=give-title]");
+  await expect(give).toContainText("להוביל שירה בציבור במועדון השכונתי");
+  await expect(give).toContainText("40 נקודות על כל מפגש");
+
+  const companion = await context.newPage();
+  await companion.goto("./#/coordinator");
+  await companion.getByRole("button", { name: "הדגמה" }).click();
+  await companion.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
+  await companion.goto("./#/coordinator/patients/c1");
+  await expect(companion.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
+  await companion.getByRole("button", { name: /להעניק תמריץ התמדה/ }).click();
+  await expect(companion.getByText(/נוספו לשרה 20 נקודות/)).toBeVisible();
+
+  await page.goto("./#/citizen");
+  await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("כולל 20 נקודות שקיבלת כתמריץ");
 });

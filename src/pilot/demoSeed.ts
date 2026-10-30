@@ -28,6 +28,8 @@ export function seedDemo(): void {
     });
     events.push({ id: newId("ev"), at: ago(48), actor: "system", citizenId: "c1", synced: true, type: "attendance.reported", bookingId, sessions: 2 });
   }
+  // רונית סימנה ששרה מתאימה להעביר חוג (שירה): ההצעה "לתת לקהילה" מוצגת לה.
+  events.push({ id: newId("ev"), at: ago(96), actor: "companion", citizenId: "c1", synced: true, type: "incentive.eligibility", roles: ["teach"] });
   events.push({ id: newId("ev"), at: ago(3), actor: "citizen", citizenId: "p004", synced: true, type: "request.created", requestId: newId("rq"), kind: "callback" });
   const care = serviceById("demoj-care");
   if (care) {

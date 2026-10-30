@@ -49,6 +49,7 @@ export default function ExecutiveOverview() {
   const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
   const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
   const requests = derived.requests.length;
+  const incentivePoints = derived.incentives.reduce((n, i) => n + i.points, 0);
 
   return (
     <div className="space-y-6">
@@ -66,7 +67,7 @@ export default function ExecutiveOverview() {
         <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
         <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
         <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2) · ${proposals} הצעה`} />
-        <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}`} />
+        <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}${incentivePoints ? ` · ${incentivePoints} נקודות תמריץ` : ""}`} />
       </div>
 
       <section className="libi-card p-5" aria-labelledby="hoods-h">

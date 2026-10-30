@@ -30,6 +30,15 @@ export interface AppSettings {
   };
   /** יחידת התצוגה של הארנק. ראו src/lib/wallet.ts. */
   wallet?: { unit: "points" | "shekel"; simulated: boolean };
+  /** תמריצים בנקודות (הצעה). ראו src/lib/incentives.ts. */
+  incentives?: {
+    enabled: boolean;
+    rates: { volunteer_hour: number; teach_session: number; persistence_month: number; goal: number };
+    monthly_cap: number;
+    persistence_min_share: number;
+    status?: string;
+    funding_note?: string;
+  };
   /** תמחור שירות רציף: מנוי חודשי. הצעה. */
   pricing?: { subscription_units: string[]; sessions_per_month_default: number; status?: string };
   /** הצגת דירוג הספק (רכיבים: src/lib/supplierRating.ts). לא משנה את משקלות ההתאמה. */

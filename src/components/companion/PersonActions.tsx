@@ -19,6 +19,8 @@ import { cancelRuleOf, isSubscription, priceOf, serviceById, sessionsPerMonth, s
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { amount } from "@/lib/wallet";
 import { basketSentence } from "@/lib/basket";
+import { incentivesOn } from "@/lib/incentives";
+import { IncentivesPanel } from "./IncentivesPanel";
 import { catalogState } from "@/data/catalogSource";
 import { personalRecommendations, withAnswers } from "@/lib/personalMatch";
 import { appSettings } from "@/pilot/settings";
@@ -250,6 +252,8 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
           </button>
         </div>
       ) : null}
+
+      {incentivesOn() ? <IncentivesPanel citizenId={citizen.id} firstName={first} female={citizen.gender === "female" ? true : citizen.gender === "male" ? false : undefined} /> : null}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>

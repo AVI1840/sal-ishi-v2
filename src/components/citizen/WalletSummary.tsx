@@ -30,7 +30,7 @@ export function WalletSummary({ tone }: { tone: "dark" | "light" }) {
       <p className={cn("text-sm mt-2", muted)}>
         שמור {amount(w.reserved)}: הוזמן, עוד לא השתתפת. נוצל {amount(w.used)}: השתתפת.
       </p>
-      {w.bonus > 0 ? <p className={cn("text-sm font-semibold mt-1", dark ? "text-white" : "text-emerald-800")}>כולל {amount(w.bonus)} שקיבלת על מה שנתת לקהילה.</p> : null}
+      {w.bonus > 0 ? <p className={cn("text-sm font-semibold mt-1", dark ? "text-white" : "text-emerald-800")}>כולל {amount(w.bonus)} שקיבלת כתמריץ: על נתינה לקהילה ועל התמדה.</p> : null}
       {w.left === 0 ? <p className={cn("text-base font-semibold mt-2", dark ? "text-white" : "text-gray-900")} role="status">{he.walletEmpty}</p> : null}
       <p className={cn("text-sm mt-2", muted)}>
         {he.walletRenews}{" "}
