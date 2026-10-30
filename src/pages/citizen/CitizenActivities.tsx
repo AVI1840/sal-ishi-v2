@@ -10,7 +10,10 @@ import { cn } from "@/lib/utils";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { cancelBooking, usePilot } from "@/pilot/store";
-import { lateCancelCharged, serviceById } from "@/pilot/services";
+import { lateCancelCharged, serviceById, usedOf } from "@/pilot/services";
+import { amount } from "@/lib/wallet";
+import { weeklyText } from "@/components/citizen/BookingPanel";
+import ServiceRating from "@/components/shared/ServiceRating";
 import type { Booking } from "@/pilot/model";
 import { useCitizen } from "@/pilot/citizen/common";
 
@@ -24,11 +27,11 @@ const BADGE = {
   done: { cls: "bg-gray-100 text-gray-700 border-gray-200", Icon: CheckCircle2 },
 } as const;
 
-function StatusBadge({ status }: { status: keyof typeof BADGE }) {
+function StatusBadge({ status, text }: { status: keyof typeof BADGE; text?: string }) {
   const { cls, Icon } = BADGE[status];
   return (
     <span className={cn("inline-flex items-center gap-1 text-sm font-semibold px-2.5 py-1 rounded-lg border", cls)}>
-      <Icon className="w-4 h-4" aria-hidden="true" /> {he.status[status]}
+      <Icon className="w-4 h-4" aria-hidden="true" /> {text ?? he.status[status]}
     </span>
   );
 }
@@ -38,8 +41,13 @@ const secondary = "w-full min-h-[48px] bg-white border border-[#1B3A5C] text-[#1
 
 function BookingCard({ b }: { b: Booking }) {
   const [asking, setAsking] = useState(false);
-  const [result, setResult] = useState<{ charged: boolean; amount: number } | null>(null);
-  const charged = lateCancelCharged(b, serviceById(b.serviceId));
+  const [result, setResult] = useState<{ charged: boolean; refund: number } | null>(null);
+  const sub = b.mode === "subscription";
+  // עזיבת קבוצה לא מחויבת: מה שנוצל נשאר, השאר חוזר. בחד-פעמי: לפי כלל הביטול.
+  const charged = sub ? false : lateCancelCharged(b, serviceById(b.serviceId));
+  const used = usedOf(b);
+  const reserved = Math.max(0, b.coveredShekel - used);
+  const attended = b.attendedSessions ?? 0;
 
   return (
     <li className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
@@ -47,38 +55,50 @@ function BookingCard({ b }: { b: Booking }) {
         <CalendarCheck className="w-6 h-6 text-[#1B3A5C] shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-bold text-gray-900">{b.serviceName}</h3>
-          <p className="text-base text-gray-700 mt-0.5">{b.slot ? formatSlot(he, b.slot) : he.coordinated}</p>
-          <p className="text-sm text-gray-600 mt-0.5">{he.costLine(b.coveredShekel, b.copayShekel)}</p>
+          <p className="text-base text-gray-700 mt-0.5">{b.slot ? (sub ? weeklyText(b.slot) : formatSlot(he, b.slot)) : he.coordinated}</p>
+          <p className="text-sm text-gray-700 mt-0.5">
+            {sub ? `${amount(b.coveredShekel)} בחודש` : amount(b.coveredShekel)}
+            {b.copayShekel ? ` + ₪${b.copayShekel} ממך` : ""}
+            {b.status !== "cancelled" ? ` · שמור ${amount(reserved)} · נוצל ${amount(used)}` : ""}
+          </p>
+          {attended > 0 ? (
+            <p className="text-sm text-emerald-800 mt-0.5">
+              {sub ? `השתתפת ב-${attended === 1 ? "מפגש אחד" : `${attended} מפגשים`} מתוך ${b.sessionsPerMonth ?? 4} החודש.` : "השתתפת."}
+            </p>
+          ) : null}
         </div>
       </div>
-      <StatusBadge status={b.status} />
+      <StatusBadge status={b.status} text={sub && b.status === "booked" ? "פעיל" : undefined} />
       {b.status === "paused" ? <p className="text-base text-gray-800">{he.hospitalized}</p> : null}
+
+      {/* דירוג: רק אחרי השתתפות */}
+      {attended > 0 && b.status !== "cancelled" ? <ServiceRating serviceId={b.serviceId} serviceName={b.serviceName} /> : null}
 
       {result ? (
         <p role="status" className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-base text-emerald-950">
-          {he.cancelledTitle}. {result.charged ? he.cancelledNoRefund : he.cancelledRefund(result.amount)}
+          {sub ? "עזבת את הקבוצה." : `${he.cancelledTitle}.`} {result.charged ? he.cancelledNoRefund : result.refund > 0 ? he.cancelledRefund(result.refund) : ""}
         </p>
       ) : b.status === "booked" && !asking ? (
-        <button type="button" className={secondary} onClick={() => setAsking(true)} aria-label={`${he.cancel}: ${b.serviceName}`}>
-          {he.cancel}
+        <button type="button" className={secondary} onClick={() => setAsking(true)} aria-label={`${sub ? "לעזוב את הקבוצה" : he.cancel}: ${b.serviceName}`}>
+          {sub ? "לעזוב את הקבוצה" : he.cancel}
         </button>
       ) : b.status === "booked" && asking ? (
-        <div className="space-y-2" role="group" aria-label={he.cancelAsk(b.serviceName)}>
-          <p className="text-base font-bold text-gray-900">{he.cancelAsk(b.serviceName)}</p>
+        <div className="space-y-2" role="group" aria-label={sub ? `לעזוב את ${b.serviceName}?` : he.cancelAsk(b.serviceName)}>
+          <p className="text-base font-bold text-gray-900">{sub ? `לעזוב את ${b.serviceName}?` : he.cancelAsk(b.serviceName)}</p>
           <p className={cn("p-3 rounded-lg border text-base", charged ? "bg-amber-50 border-amber-200 text-amber-950" : "bg-blue-50 border-blue-200 text-gray-900")}>
-            {charged ? he.cancelLate : he.cancelFree}
+            {sub ? `מה שנוצל נשאר נוצל. ${amount(reserved)} חוזרות לארנק.` : charged ? he.cancelLate : he.cancelFree}
           </p>
           <button
             type="button"
             className="w-full min-h-[52px] bg-red-700 text-white rounded-xl text-lg font-bold"
             onClick={() => {
-              cancelBooking({ citizenId: b.citizenId, bookingId: b.id, charged, reason: charged ? "late" : "on_time", actor: "citizen" });
-              setResult({ charged, amount: b.coveredShekel });
+              cancelBooking({ citizenId: b.citizenId, bookingId: b.id, charged, reason: sub ? "left_group" : charged ? "late" : "on_time", actor: "citizen" });
+              setResult({ charged, refund: reserved });
             }}
           >
-            {he.cancelYes}
+            {sub ? "כן, לעזוב" : he.cancelYes}
           </button>
-          <button type="button" className={secondary} onClick={() => setAsking(false)}>{he.cancelNo}</button>
+          <button type="button" className={secondary} onClick={() => setAsking(false)}>{sub ? "לא, להישאר" : he.cancelNo}</button>
         </div>
       ) : null}
     </li>

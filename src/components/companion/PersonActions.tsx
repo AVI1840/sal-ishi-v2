@@ -14,9 +14,10 @@ import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import type { VisitKind } from "@/pilot/model";
 import { book, logVisit, setHospitalized, usePilot } from "@/pilot/store";
-import { cancelRuleOf, monthlyWalletShekel, priceOf, serviceById, slotsFor, spentThisMonth } from "@/pilot/services";
+import { cancelRuleOf, isSubscription, priceOf, serviceById, sessionsPerMonth, slotsFor, walletOf } from "@/pilot/services";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { amount } from "@/lib/wallet";
+import { basketSentence } from "@/lib/basket";
 import { catalogState } from "@/data/catalogSource";
 import { personalRecommendations, withAnswers } from "@/lib/personalMatch";
 import { appSettings } from "@/pilot/settings";
@@ -153,10 +154,8 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
   const events = state.events.filter((e) => e.citizenId === citizen.id).slice(-6).reverse();
 
   // הסל בשקלים: בדמות האזרחית, עם בסיס ההדגמה של החודש, כמו במסך שלה.
-  const total = monthlyWalletShekel();
-  const basketTotal = (catalogState.seed.settings as unknown as { total: number }).total;
-  const baseline = citizen.id === appSettings.citizen.persona_id ? (state.simulation.walletEmpty ? total : appSettings.citizen.baseline_spent_this_month) : 0;
-  const used = Math.min(total, spentThisMonth(derived.bookings, citizen.id, baseline));
+  // אותו ארנק כמו אצל האזרח: מהאירועים בלבד (שמור, נוצל, תמריצים).
+  const wallet = walletOf(derived.bookings, derived.incentives, citizen.id);
 
   // אותה המלצה שהאזרח רואה: קודם מה שסיפר (לשרה: המקהלה), אחר כך תחומים אחרים.
   const options = useMemo(() => {
@@ -181,8 +180,9 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
         <div>
           <h2 id="actions-h" className="text-base font-semibold text-foreground">פעולות בתיק</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            ארנק אישי: נשארו {amount(total - used)} מתוך {amount(total)}, בתוך סל של {basketTotal} נקודות (ליווי, קהילה ותפעול). {bookings.length} פעילויות פעילות.
+            ארנק אישי: נשארו {amount(wallet.left)} מתוך {amount(wallet.total + wallet.bonus)} · שמור {amount(wallet.reserved)} · נוצל {amount(wallet.used)}. {bookings.length === 1 ? "פעילות אחת" : `${bookings.length} פעילויות`}.
           </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{basketSentence()}.</p>
         </div>
         {hospitalized ? <span className="text-xs font-semibold px-2 py-1 rounded-md bg-warning-soft text-warning-foreground border border-border">באשפוז: הפעילויות מוקפאות</span> : null}
       </div>

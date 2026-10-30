@@ -12,7 +12,6 @@
   },
   "citizen": {
     "persona_id": "c1",
-    "baseline_spent_this_month": 100,
     "max_choices_per_step": 3,
     "default_language": "he",
     "languages": [
@@ -29,6 +28,13 @@
     ],
     "simulated": true,
     "unit_note": "תוספת 3 ומפגש 2: ארנק של 500 נקודות, נקודה = ₪1. בפיילוט ירושלים ייתכנו שוברים מודפסים עד המעבר לספק העל: אז unit = shekel. הארנק בכלי מדומה, ספר החשבונות אצל ספק העל."
+  },
+  "pricing": {
+    "subscription_units": [
+      "חודש"
+    ],
+    "sessions_per_month_default": 4,
+    "status": "הצעה: שירות רציף במנוי חודשי בנקודות, שמור בהצטרפות ונוצל לפי נוכחות מדווחת. חד-פעמי לפי יחידה. להכרעה במפגש 3"
   },
   "supplier_rating": {
     "show": true,

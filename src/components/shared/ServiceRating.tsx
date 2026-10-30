@@ -80,7 +80,7 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
       <div className="bg-green-50 border border-green-100 rounded-2xl p-4" dir="rtl">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold text-green-700">✅ הדירוג שלך נשמר</span>
-          <button onClick={handleEdit} className="text-xs text-green-600 underline">ערוך</button>
+          <button onClick={handleEdit} className="text-sm text-green-800 underline">ערוך</button>
         </div>
         <div className="flex gap-0.5 mb-2">
           {[1, 2, 3, 4, 5].map((s) => (
@@ -91,8 +91,8 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
           ))}
         </div>
         {existing.recommend !== null && (
-          <p className="text-xs text-green-600">
-            {existing.recommend ? "👍 ממליץ/ה לאחרים" : "👎 לא ממליץ/ה"}
+          <p className="text-sm text-green-800">
+            {existing.recommend ? "מומלץ לאחרים" : "לא מומלץ"}
           </p>
         )}
         {existing.text && (
@@ -111,7 +111,7 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
 
       {/* Stars */}
       <div>
-        <p className="text-xs text-gray-500 mb-2">כמה כוכבים היית נותן/ת?</p>
+        <p className="text-sm text-gray-700 mb-2">כמה כוכבים?</p>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((s) => (
             <button
@@ -132,7 +132,7 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
             </button>
           ))}
           {stars > 0 && (
-            <span className="mr-2 self-center text-xs text-gray-500">
+            <span className="mr-2 self-center text-sm text-gray-700">
               {["", "חלש", "בסדר", "טוב", "מצוין", "מושלם"][stars]}
             </span>
           )}
@@ -141,7 +141,7 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
 
       {/* Recommend */}
       <div>
-        <p className="text-xs text-gray-500 mb-2">היית ממליץ/ה לחבר?</p>
+        <p className="text-sm text-gray-700 mb-2">להמליץ לחברים?</p>
         <div className="flex gap-3">
           <button
             onClick={() => setRecommend(true)}
@@ -151,7 +151,7 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
                 : "border-gray-200 text-gray-600 hover:border-green-200"
             }`}
           >
-            <ThumbsUp className="w-4 h-4" /> כן, ממליץ/ה
+            <ThumbsUp className="w-4 h-4" aria-hidden="true" /> כן, להמליץ
           </button>
           <button
             onClick={() => setRecommend(false)}
@@ -161,14 +161,14 @@ export default function ServiceRating({ serviceId, serviceName, onSubmit }: Serv
                 : "border-gray-200 text-gray-600 hover:border-red-200"
             }`}
           >
-            <ThumbsDown className="w-4 h-4" /> לא ממש
+            <ThumbsDown className="w-4 h-4" aria-hidden="true" /> לא ממש
           </button>
         </div>
       </div>
 
       {/* Free text */}
       <div>
-        <p className="text-xs text-gray-500 mb-2">רוצה להוסיף משהו? (אופציונלי)</p>
+        <p className="text-sm text-gray-700 mb-2">רוצה להוסיף משהו? (אופציונלי)</p>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}

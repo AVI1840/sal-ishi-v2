@@ -6,12 +6,14 @@
  */
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
 import { BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
 import { communityFor } from "@/lib/community";
 import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
 import { statusText } from "@/lib/statusText";
+import { amount } from "@/lib/wallet";
 import { appSettings } from "@/pilot/settings";
 import { usePilot } from "@/pilot/store";
 
@@ -70,7 +72,7 @@ export default function ExecutiveOverview() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
-        <Card icon={Wallet} label="סל לאזרח בחודש" value={`${basket.total} נקודות`} sub={`${basket.personal_wallet} ארנק אישי · נקודה = ₪1`} />
+        <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
         <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו · ${proposals} הצעה, ממתין להכרעה`} />
         <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${bookings} הזמנות · ${requests} בקשות למלווה`} />
       </div>
@@ -123,29 +125,7 @@ export default function ExecutiveOverview() {
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <section className="libi-card p-5" aria-labelledby="basket-h">
-          <h2 id="basket-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
-            <Wallet className="w-5 h-5 text-primary" aria-hidden="true" /> הרכב הסל לאזרח בחודש
-          </h2>
-          <ul className="space-y-1.5 text-sm">
-            {[
-              ["ארנק אישי (האזרח בוחר בשוק)", basket.personal_wallet],
-              ["ליווי (מלווה חברתית)", basket.companion],
-              ["קהילה", basket.community],
-              ["תפעול", basket.overhead],
-            ].map(([label, n]) => (
-              <li key={label as string} className="flex items-center justify-between">
-                <span className="text-foreground">{label}</span>
-                <span className="font-semibold text-foreground">{n} נקודות</span>
-              </li>
-            ))}
-            <li className="flex items-center justify-between border-t border-border pt-1.5 font-bold">
-              <span>סך הכל</span>
-              <span>{basket.total} נקודות</span>
-            </li>
-          </ul>
-          <p className="text-xs text-muted-foreground mt-3">מההגדרות (מפגש 2). הארנק בכלי מדומה: הנקודות החיות וספר החשבונות אצל ספק העל.</p>
-        </section>
+        <BasketBreakdown headingId="basket-h" />
 
         <section className="libi-card p-5" aria-labelledby="engine-h">
           <div className="flex items-center justify-between mb-3">

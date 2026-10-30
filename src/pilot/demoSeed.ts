@@ -1,10 +1,11 @@
 /**
  * נקודת ההתחלה של ההדגמה: כמה אירועים בדויים, כדי שהמלווה תראה תיק חי
- * (בקשה לשיחה, בקשה לשירות מותנה, אשפוז) ולשרה תהיה פעילות אחת קיימת.
+ * (בקשה לשיחה, בקשה לשירות מותנה, אשפוז) ולשרה תהיה פעילות אחת קיימת, עם
+ * נוכחות מדווחת. היתרה בארנק נגזרת מהאירועים האלה בלבד. התאריכים יחסיים להיום.
  * רק ב-mode: demo, ופעם אחת אחרי כל איפוס.
  */
 
-import { serviceById, priceOf, slotsFor } from "./services";
+import { isSubscription, priceOf, serviceById, sessionsPerMonth, slotsFor } from "./services";
 import type { PilotEvent } from "./model";
 import { isDemo } from "./settings";
 import { getPilot, newId, replaceEvents } from "./store";
@@ -16,12 +17,16 @@ export function seedDemo(): void {
   const events: PilotEvent[] = [];
   const club = serviceById("demoj-club");
   if (club) {
+    // שרה חברה במועדון השכונתי (מנוי חודשי), והספק דיווח על שני מפגשים: חצי שמור, חצי נוצל.
     const price = priceOf(club);
+    const bookingId = newId("bk");
     events.push({
       id: newId("ev"), at: ago(72), actor: "citizen", citizenId: "c1", synced: true,
-      type: "booking.created", bookingId: newId("bk"), serviceId: club.id, serviceName: club.name,
-      slot: slotsFor(club)[1] ?? null, coveredShekel: price.covered, copayShekel: price.copay,
+      type: "booking.created", bookingId, serviceId: club.id, serviceName: club.name,
+      slot: slotsFor(club)[0] ?? null, coveredShekel: price.covered, copayShekel: price.copay,
+      mode: isSubscription(club) ? "subscription" : "single", sessionsPerMonth: sessionsPerMonth(),
     });
+    events.push({ id: newId("ev"), at: ago(48), actor: "system", citizenId: "c1", synced: true, type: "attendance.reported", bookingId, sessions: 2 });
   }
   events.push({ id: newId("ev"), at: ago(3), actor: "citizen", citizenId: "p004", synced: true, type: "request.created", requestId: newId("rq"), kind: "callback" });
   const care = serviceById("demoj-care");

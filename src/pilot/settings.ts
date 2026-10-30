@@ -22,13 +22,16 @@ export interface AppSettings {
   program: { pilot_participants: number; pilot_participants_source: string };
   citizen: {
     persona_id: string;
-    baseline_spent_this_month: number;
+    /** מבוטל ב-0.6: היתרה נגזרת מהאירועים בלבד. */
+    baseline_spent_this_month?: number;
     max_choices_per_step: number;
     default_language: string;
     languages: string[];
   };
   /** יחידת התצוגה של הארנק. ראו src/lib/wallet.ts. */
   wallet?: { unit: "points" | "shekel"; simulated: boolean };
+  /** תמחור שירות רציף: מנוי חודשי. הצעה. */
+  pricing?: { subscription_units: string[]; sessions_per_month_default: number; status?: string };
   /** הצגת דירוג הספק (רכיבים: src/lib/supplierRating.ts). לא משנה את משקלות ההתאמה. */
   supplier_rating?: { show: boolean; components?: string[]; status?: string };
   companion: {

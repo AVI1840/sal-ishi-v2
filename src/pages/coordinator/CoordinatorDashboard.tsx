@@ -5,6 +5,7 @@
  */
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
 import { CalendarCheck, ChevronLeft, Inbox, MapPinned, Users, Wallet } from "lucide-react";
 import { TodayTriage } from "@/components/companion/TodayTriage";
 import { buildCaseload, triage } from "@/pilot/caseload";
@@ -91,26 +92,7 @@ export default function CoordinatorDashboard() {
           </ul>
         </section>
 
-        <section className="libi-card p-5" aria-labelledby="basket-h">
-          <h2 id="basket-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
-            <Wallet className="w-5 h-5 text-primary" aria-hidden="true" /> הסל לכל אזרח בחודש
-          </h2>
-          <p className="text-3xl font-bold text-foreground">{s.total} נקודות</p>
-          <ul className="mt-3 space-y-1.5 text-sm">
-            {[
-              ["ארנק אישי (מה שהאזרח רואה ובוחר)", s.personal_wallet],
-              ["ליווי (המלווה)", s.companion],
-              ["קהילה", s.community],
-              ["תפעול", s.overhead],
-            ].map(([label, n]) => (
-              <li key={label as string} className="flex items-center justify-between">
-                <span className="text-foreground">{label}</span>
-                <span className="font-semibold text-foreground">{n}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-muted-foreground mt-3">נקודה = ₪1. מההגדרות (מפגש 2). הארנק בכלי מדומה: הנקודות החיות אצל ספק העל.</p>
-        </section>
+        <BasketBreakdown headingId="basket-h" />
       </div>
     </div>
   );

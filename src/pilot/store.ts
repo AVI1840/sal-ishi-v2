@@ -5,13 +5,13 @@
  */
 
 import { useSyncExternalStore } from "react";
-import { EMPTY_SIMULATION, derive, type Actor, type Derived, type Lang, type OnBehalf, type PilotEvent, type PilotState, type RequestKind, type Simulation, type VisitKind } from "./model";
+import { EMPTY_SIMULATION, derive, type Actor, type BookingMode, type Derived, type IncentiveReason, type IncentiveRole, type Lang, type OnBehalf, type PilotEvent, type PilotState, type RequestKind, type Simulation, type VisitKind } from "./model";
 
 /**
  * מפתח לכל גרסה: השורש (0.4), /next/ (0.5) ו-/merge/ (0.6) חולקים את אותו מקור
  * באתר, ולכן כל אחת שומרת בנפרד, ומצב ההדגמה לא זולג ביניהן.
  */
-export const STORAGE_KEY = "sal-ishi-pilot-v06-merge";
+export const STORAGE_KEY = "sal-ishi-pilot-v061-merge";
 
 const INITIAL: PilotState = { schema: 1, events: [], simulation: EMPTY_SIMULATION, lang: "he", textScale: 1 };
 
@@ -96,6 +96,9 @@ export function book(p: {
   copayShekel: number;
   actor: Actor;
   onBehalf?: OnBehalf;
+  /** subscription: מנוי חודשי (שירות רציף). ברירת מחדל: single. */
+  mode?: BookingMode;
+  sessionsPerMonth?: number;
 }): string {
   const bookingId = newId("bk");
   record({ type: "booking.created", bookingId, ...p });
@@ -104,6 +107,20 @@ export function book(p: {
 
 export function cancelBooking(p: { citizenId: string; bookingId: string; charged: boolean; reason: string; actor: Actor; onBehalf?: OnBehalf }) {
   record({ type: "booking.cancelled", ...p });
+}
+
+/** נוכחות שהספק דיווח (בפיילוט: מספק העל). הופכת "שמור" ל"נוצל". */
+export function reportAttendance(p: { citizenId: string; bookingId: string; sessions?: number }) {
+  record({ type: "attendance.reported", actor: "system", citizenId: p.citizenId, bookingId: p.bookingId, sessions: p.sessions ?? 1 });
+}
+
+/** תמריץ בנקודות, באישור המלווה. */
+export function grantIncentive(p: { citizenId: string; reason: IncentiveReason; points: number; note?: string }) {
+  record({ type: "incentive.granted", actor: "companion", ...p });
+}
+
+export function setEligibility(citizenId: string, roles: IncentiveRole[]) {
+  record({ type: "incentive.eligibility", actor: "companion", citizenId, roles });
 }
 
 export function createRequest(p: { citizenId: string; kind: RequestKind; serviceId?: string; serviceName?: string; note?: string; actor: Actor }): string {

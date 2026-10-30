@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle2, CloudOff, Download, RefreshCw } from "lucide-react";
 import { downloadBytes, todayStamp } from "@sal-ishi/ui";
 import { formatSlot, STRINGS } from "../i18n";
+import { amount } from "@/lib/wallet";
 import type { PilotEvent } from "../model";
 import { useOnline, useTitle } from "../components/Frame";
 import { pendingSync, usePilot } from "../store";
@@ -11,11 +12,21 @@ import { usePersonName } from "./CompanionShell";
 const ACTOR = { citizen: "האזרח/ית", companion: "המלווה", system: "המערכת" } as const;
 const VISIT = { home: "ביקור בבית", phone: "שיחת טלפון", no_answer: "לא נענה" } as const;
 const DECISION = { approved: "אושר", rejected: "לא אושר", done: "טופל" } as const;
+export const INCENTIVE = { volunteer: "התנדבות בקהילה", teach: "הדרכת חוג או הרצאה", persistence: "התמדה", goal: "עמידה ביעד אישי" } as const;
+export const ROLE = { volunteer: "התנדבות", teach: "הדרכת חוג או הרצאה" } as const;
 
 export function describe(e: PilotEvent): string {
   switch (e.type) {
     case "booking.created":
-      return `הזמנה: ${e.serviceName}${e.slot ? `, ${formatSlot(STRINGS.he, e.slot)}` : ""}. מהסל ₪${e.coveredShekel}, השתתפות ₪${e.copayShekel}.`;
+      return e.mode === "subscription"
+        ? `הצטרפות: ${e.serviceName}. ${amount(e.coveredShekel)} בחודש מהארנק${e.copayShekel ? `, השתתפות ₪${e.copayShekel}` : ""}.`
+        : `הזמנה: ${e.serviceName}${e.slot ? `, ${formatSlot(STRINGS.he, e.slot)}` : ""}. ${amount(e.coveredShekel)} מהארנק${e.copayShekel ? `, השתתפות ₪${e.copayShekel}` : ""}.`;
+    case "attendance.reported":
+      return e.sessions === 1 ? "הספק דיווח על השתתפות במפגש." : `הספק דיווח על השתתפות ב-${e.sessions} מפגשים.`;
+    case "incentive.granted":
+      return `תמריץ: ${amount(e.points)} על ${INCENTIVE[e.reason]}${e.note ? ` (${e.note})` : ""}.`;
+    case "incentive.eligibility":
+      return e.roles.length ? `סומן/ה כמתאים/ה ל${e.roles.map((r) => ROLE[r]).join(" ול")}.` : "הסימון לתמריצים הוסר.";
     case "booking.cancelled":
       return `ביטול הזמנה${e.charged ? " (מאוחר, מחויב)" : " (בלי חיוב)"}.`;
     case "request.created":

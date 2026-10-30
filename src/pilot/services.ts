@@ -9,6 +9,7 @@ import { realServices, servesNeighborhood, type RealService } from "@/data/realS
 import type { PersonalProfile } from "@/data/types";
 import { suggestByDomain } from "@/lib/suggestions";
 import type { Booking } from "./model";
+import { appSettings } from "./settings";
 
 const settings = () => catalogState.seed.settings;
 
@@ -104,16 +105,88 @@ export function lateCancelCharged(b: Booking, s: RealService | undefined, now = 
   return new Date(b.slot).getTime() - now.getTime() < rule.noticeHours * 3600000;
 }
 
-/** כמה כבר יצא מהארנק החודש: בסיס ההדגמה ועוד ההזמנות הפעילות. */
-export function spentThisMonth(bookings: Booking[], citizenId: string, baseline: number, now = new Date()): number {
+// ── שמור ונוצל ──────────────────────────────────────────────
+// מודל החשכ"ל: משלמים על נוכחות מדווחת. בהזמנה הסכום "שמור" בארנק, ואחרי
+// דיווח הספק הוא "נוצל". במנוי חודשי: הסכום לחודש מתחלק למפגשים. היתרה נגזרת
+// מהאירועים בלבד: אין סכום פתיחה בקוד.
+
+/** כמה נוצל בפועל מהזמנה אחת, לפי הנוכחות שדווחה. */
+export function usedOf(b: Booking): number {
+  const attended = b.attendedSessions ?? 0;
+  if (attended <= 0) return 0;
+  if (b.mode === "subscription") {
+    const per = b.coveredShekel / (b.sessionsPerMonth ?? sessionsPerMonth());
+    return Math.min(b.coveredShekel, Math.round(per * attended));
+  }
+  return b.coveredShekel;
+}
+
+export interface WalletState {
+  total: number;
+  /** נקודות שהתווספו מתמריצים החודש. */
+  bonus: number;
+  /** שמור: הוזמן, עוד לא דווחה נוכחות. */
+  reserved: number;
+  /** נוצל: נוכחות מדווחת, או ביטול מאוחר שמחויב. */
+  used: number;
+  left: number;
+}
+
+export function walletOf(bookings: Booking[], incentives: { citizenId: string; points: number; at: string }[], citizenId: string, now = new Date()): WalletState {
   const month = now.toISOString().slice(0, 7);
-  return (
-    baseline +
-    bookings
-      .filter((b) => b.citizenId === citizenId && b.createdAt.slice(0, 7) === month)
-      .filter((b) => b.status !== "cancelled" || b.charged)
-      .reduce((sum, b) => sum + b.coveredShekel, 0)
-  );
+  const total = monthlyWalletShekel();
+  const bonus = incentives.filter((i) => i.citizenId === citizenId && i.at.slice(0, 7) === month).reduce((n, i) => n + i.points, 0);
+  let reserved = 0;
+  let used = 0;
+  for (const b of bookings) {
+    if (b.citizenId !== citizenId || b.createdAt.slice(0, 7) !== month) continue;
+    const u = usedOf(b);
+    if (b.status === "cancelled") {
+      // ביטול: מה שנוצל נשאר נוצל. ביטול מאוחר מחויב: גם השאר.
+      used += b.charged ? b.coveredShekel : u;
+      continue;
+    }
+    used += u;
+    reserved += Math.max(0, b.coveredShekel - u);
+  }
+  return { total, bonus, reserved, used, left: Math.max(0, total + bonus - reserved - used) };
+}
+
+/** תאימות: כמה יצא מהארנק החודש (שמור ונוצל). */
+export function spentThisMonth(bookings: Booking[], citizenId: string, _baseline = 0, now = new Date()): number {
+  const w = walletOf(bookings, [], citizenId, now);
+  return w.reserved + w.used;
+}
+
+// ── תמחור לאזרח ─────────────────────────────────────────────
+
+/** מפגשים בחודש במנוי (ברירת מחדל: פעם בשבוע). מההגדרות. */
+export const sessionsPerMonth = () => appSettings.pricing?.sessions_per_month_default ?? 4;
+
+/** שירות רציף שמוזמן כמנוי חודשי: יחידת המחיר היא חודש. */
+export const isSubscription = (s: RealService) => !isProduct(s) && (appSettings.pricing?.subscription_units ?? ["חודש"]).includes(s.unit ?? "");
+
+const UNIT_PREP: Record<string, string> = {
+  מפגש: "למפגש",
+  סבב: "לסבב מפגשים",
+  סדנה: "לסדנה",
+  ביקור: "לביקור",
+  כרטיס: "לכרטיס",
+  סיור: "לסיור",
+  שובר: "לשובר",
+  טיפול: "לטיפול",
+  מוצר: "",
+};
+
+/** "84 נקודות בחודש, כ-4 מפגשים" או "74 נקודות למפגש". */
+export function priceLabel(s: RealService, amount: (n: number) => string, short = false): string {
+  const p = priceOf(s);
+  if (p.state === "full") return "";
+  const base = p.unknown ? amount(p.total) : amount(p.covered);
+  const copay = !p.unknown && p.copay > 0 ? ` + ₪${p.copay} ממך` : "";
+  if (isSubscription(s)) return short ? `${base} בחודש${copay}` : `${base} בחודש${copay}, כ-${sessionsPerMonth()} מפגשים`;
+  const prep = UNIT_PREP[s.unit ?? ""] ?? (s.unit ? `ל${s.unit}` : "");
+  return `${base}${prep ? ` ${prep}` : ""}${copay}`;
 }
 
 /** סדר התחומים לפי מה שהאזרח אמר שחשוב לו. */

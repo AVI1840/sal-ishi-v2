@@ -10,7 +10,7 @@ import { Phone, MapPin, Heart, Wallet, Calendar, ChevronLeft, CheckCircle, Clock
 import { Link } from "react-router-dom";
 import { MOTIVATION_LABELS } from "@/data/types";
 import { ProgressBar } from "@/components/shared/ProgressBar";
-import { amount, walletFootnote } from "@/lib/wallet";
+import { WalletSummary } from "@/components/citizen/WalletSummary";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { usePilot } from "@/pilot/store";
@@ -63,12 +63,7 @@ export default function CitizenProfile() {
             <Wallet className="w-4 h-4 text-[#1B3A5C]" aria-hidden="true" />
             <h2 className="text-base font-semibold text-gray-900">הארנק שלך לחודש {he.monthNames[new Date().getMonth()]}</h2>
           </div>
-          <p className="text-3xl font-bold text-[#1B3A5C] mb-1">
-            נשארו {amount(wallet.left)} <span className="text-base font-normal text-gray-700">מתוך {amount(wallet.total)}</span>
-          </p>
-          <ProgressBar value={wallet.used} max={wallet.total} tone="primary" size="sm" />
-          <p className="text-sm text-gray-700 mt-2">{he.walletRenews} בכל שירות כתוב כמה הוא עולה.</p>
-          <p className="text-xs text-gray-600 mt-1">{walletFootnote()}</p>
+          <WalletSummary tone="light" />
         </div>
 
         {/* Motivations */}

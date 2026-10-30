@@ -14,16 +14,16 @@ import { cn } from "@/lib/utils";
 import { realServices } from "@/data/realServices";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { citizenReasons } from "@/lib/citizenReasons";
-import ServiceRating from "@/components/shared/ServiceRating";
 import { BookingPanel } from "@/components/citizen/BookingPanel";
-import { needsCompanion, termLines } from "@/lib/serviceTerms";
+import { needsCompanion } from "@/lib/serviceTerms";
 import { he } from "@/pilot/i18n/he";
 import { createRequest, usePilot } from "@/pilot/store";
-import { isProduct, priceOf } from "@/pilot/services";
+import { isProduct, isSubscription, priceLabel, priceOf } from "@/pilot/services";
 import { complementLine, ruleText } from "@/pilot/citizen/Service";
 import { reasonKey, useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 import { personalReasonFor } from "@/lib/personalMatch";
 import { amount } from "@/lib/wallet";
+import { catalogState } from "@/data/catalogSource";
 
 const LANG_MAP: Record<string, string> = {
   hebrew: "עברית", arabic: "ערבית", russian: "רוסית", english: "אנגלית",
@@ -37,6 +37,13 @@ const ACCESS_MAP: Record<string, string> = {
 
 const CATEGORY_ICON: Record<number, typeof Heart> = {
   1: Heart, 2: Activity, 3: Users, 4: Laptop, 5: Wrench,
+};
+
+const HOW: Record<string, string> = {
+  group: "בקבוצה, במקום קבוע בשכונה.",
+  individual: "פגישה אישית עם איש מקצוע.",
+  home: "מגיעים עד הבית.",
+  remote: "בטלפון או במחשב, מהבית.",
 };
 
 const actionPrimary = "w-full min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold hover:bg-[#15304d] transition-colors flex items-center justify-center gap-2";
@@ -80,11 +87,12 @@ export default function CitizenServiceDetail() {
   const imgInfo = getServiceImageInfo(service);
 
   // תנאי השירות בלי שורת הביטול: הביטול מוסבר בשפה פשוטה בכרטיס נפרד.
-  const terms = termLines(service).filter((t) => t.term !== "ביטול" && t.term !== "אי-הגעה" && t.term !== "פתיחה");
   // קודם מה שהיא סיפרה ("סיפרת ש..."), ואחר כך סיבות נוספות בשפה פשוטה.
   const told = personalReasonFor(personal, service.name);
   const reasons = [...(told ? [told] : []), ...citizenReasons(matchResult?.explanations ?? [])].slice(0, 4);
   const price = priceOf(service);
+  // התחום לפי ההחלטה (חמשת תחומי הליבה), ולא תווית הקטגוריה הישנה.
+  const domainName = catalogState.seed.core_categories.find((c) => c.id === service.coreCategoryId)?.name ?? "איכות חיים";
   const complement = complementLine(he, price);
   const mine = (kind: string) => derived.requests.find((r) => r.citizenId === citizen.id && r.serviceId === service.id && r.kind === kind && (r.status === "open" || r.status === "approved"));
   const gateRequest = mine("gated_service");
@@ -93,7 +101,6 @@ export default function CitizenServiceDetail() {
   const tooExpensive = !price.unknown && price.covered > wallet.left;
   const needsClaim = price.state === "full" || price.state === "prior_claim" || price.state === "varies";
   const claimOpen = Boolean(mine("claim_help"));
-  const booked = derived.bookings.some((b) => b.citizenId === citizen.id && b.serviceId === service.id && b.status !== "cancelled");
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6" dir="rtl">
@@ -127,7 +134,7 @@ export default function CitizenServiceDetail() {
             </div>
             <div className="absolute top-3 right-3">
               <span className="text-[10px] px-2 py-1 rounded-lg bg-black/30 backdrop-blur text-white/80 font-medium">
-                {service.categoryLabel}
+                {domainName}
               </span>
             </div>
           </div>
@@ -141,7 +148,7 @@ export default function CitizenServiceDetail() {
               <div>
                 <h1 className="text-lg font-bold">{service.name}</h1>
                 <p className="text-sm text-white/90 mt-0.5">{service.provider}</p>
-                <p className="text-xs text-white/80 mt-1">{service.categoryLabel}</p>
+                <p className="text-xs text-white/80 mt-1">{domainName}</p>
               </div>
             </div>
           </div>
@@ -153,8 +160,7 @@ export default function CitizenServiceDetail() {
             <Wallet className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> {he.cost}
           </h2>
           <p className="text-base text-gray-900">
-            {complement ?? (price.unknown ? he.costUnknown(price.total) : he.costLine(price.covered, price.copay))}
-            {service.unit ? <span className="text-gray-600"> ({he.perUnit(service.unit)})</span> : null}
+            {complement ?? priceLabel(service, amount)}
           </p>
           <p className="text-sm text-gray-700">נשארו בארנק שלך החודש {amount(wallet.left)} מתוך {amount(wallet.total)}.</p>
         </section>
@@ -163,28 +169,24 @@ export default function CitizenServiceDetail() {
         {!isProduct(service) && (
           <section aria-labelledby="cancel-h" className="bg-white rounded-xl p-5 border border-gray-200 space-y-1">
             <h2 id="cancel-h" className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <CalendarX className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> {he.cancelTitle}
+              <CalendarX className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> {isSubscription(service) ? "אם רוצים לעזוב" : he.cancelTitle}
             </h2>
-            {ruleText(he, service).map((line) => (
+            {(isSubscription(service) ? ["אפשר לעזוב בכל חודש. מה שלא נוצל חוזר לארנק."] : ruleText(he, service)).map((line) => (
               <p key={line} className="text-base text-gray-800">{line}</p>
             ))}
           </section>
         )}
 
-        {/* תנאי השירות לפי מודל התשלום */}
-        {terms.length > 0 && (
-          <section aria-labelledby="terms-h" className="bg-white rounded-xl p-4 border border-gray-100">
-            <h2 id="terms-h" className="text-sm font-semibold text-gray-700 mb-2">תנאי השירות</h2>
-            <dl className="space-y-1.5">
-              {terms.map((t) => (
-                <div key={t.term} className="flex gap-3 text-sm">
-                  <dt className="w-24 shrink-0 font-medium text-gray-700">{t.term}</dt>
-                  <dd className="text-gray-700">{t.text}</dd>
-                </div>
-              ))}
-            </dl>
+        {/* איך זה עובד, בשפה פשוטה. בלי מונחים פנימיים (שעות ביחידה, חלוקת העלות). */}
+        {service.serviceMode ? (
+          <section aria-labelledby="how-h" className="bg-white rounded-xl p-4 border border-gray-100">
+            <h2 id="how-h" className="text-base font-semibold text-gray-900 mb-1">איך זה עובד</h2>
+            <p className="text-base text-gray-800">
+              {HOW[service.serviceMode] ?? ""}
+              {service.capacityLimited ? " יש מספר מקומות מוגבל, ואם מלא נכנסים לרשימת המתנה." : ""}
+            </p>
           </section>
-        )}
+        ) : null}
 
         {/* Details: רק כשיש פרטים בקטלוג */}
         {(service.address || service.days || service.phone || service.website) && (
@@ -264,8 +266,7 @@ export default function CitizenServiceDetail() {
           </div>
         )}
 
-        {/* דירוג: רק למי שכבר הזמינה את השירות */}
-        {booked && <ServiceRating serviceId={service.id} serviceName={service.name} />}
+        {/* דירוג: רק אחרי השתתפות, ב"הפעילויות שלי" */}
 
         {/* מה אפשר לעשות עכשיו */}
         <div className="space-y-3 pt-2">

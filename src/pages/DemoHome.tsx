@@ -84,7 +84,7 @@ export default function DemoHome() {
         </div>
         <div className="relative bg-black/20 border-t border-white/10">
           <dl className="max-w-5xl mx-auto px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
-            <div><dt className="text-sm text-white/80">סל לאזרח בחודש</dt><dd className="text-2xl font-bold">{s.total} נקודות</dd><dd className="text-xs text-white/80">{s.personal_wallet} מהן בארנק האישי</dd></div>
+            <div><dt className="text-sm text-white/80">סל לאזרח בחודש</dt><dd className="text-2xl font-bold">₪{s.total}</dd><dd className="text-xs text-white/80">{s.personal_wallet} נקודות בארנק האישי</dd></div>
             <div><dt className="text-sm text-white/80">שירותים מאושרים</dt><dd className="text-2xl font-bold">{realServices.length}</dd><dd className="text-xs text-white/80">בקטלוג ההדגמה</dd></div>
             <div><dt className="text-sm text-white/80">שכונות באטלס</dt><dd className="text-2xl font-bold">{catalogState.neighborhoods}</dd><dd className="text-xs text-white/80">ירושלים</dd></div>
             <div><dt className="text-sm text-white/80">משתתפים בפיילוט</dt><dd className="text-2xl font-bold">{appSettings.program.pilot_participants}</dd><dd className="text-xs text-white/80">פסגת זאב [לאמת]</dd></div>

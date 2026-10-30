@@ -7,7 +7,7 @@ import type { PersonalProfile } from "@/data/types";
 import { useT } from "../i18n";
 import { appSettings } from "../settings";
 import { usePilot } from "../store";
-import { monthlyWalletShekel, spentThisMonth } from "../services";
+import { walletOf, type WalletState } from "../services";
 import { withAnswers } from "@/lib/personalMatch";
 
 /** האזרחית של ההדגמה, עם מה שסיפרה שחשוב לה. */
@@ -25,13 +25,13 @@ export function usePersonalProfile(): PersonalProfile {
   return useMemo(() => withAnswers(profile, answers), [profile, answers]);
 }
 
-export function useWallet() {
+/** הארנק של האזרחית: נגזר מהאירועים בלבד (שמור, נוצל, תמריצים). */
+export function useWallet(): WalletState {
   const { state, derived } = usePilot();
   const { profile } = useCitizen();
-  const total = monthlyWalletShekel();
-  const baseline = state.simulation.walletEmpty ? total : appSettings.citizen.baseline_spent_this_month;
-  const used = Math.min(total, spentThisMonth(derived.bookings, profile.id, baseline));
-  return { total, used, left: Math.max(0, total - used) };
+  const w = walletOf(derived.bookings, derived.incentives, profile.id);
+  // הדמיה של "הארנק של החודש נגמר" (תפריט ההדגמה).
+  return state.simulation.walletEmpty ? { ...w, used: w.total + w.bonus - w.reserved, left: 0 } : w;
 }
 
 /** כותרת המסך: מקבלת פוקוס במעבר מסך, כדי שקורא המסך יודיע איפה אנחנו. */

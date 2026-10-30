@@ -19,8 +19,9 @@ import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 import { personalRecommendations } from "@/lib/personalMatch";
-import { amount, walletFootnote } from "@/lib/wallet";
-import { priceOf, serviceById } from "@/pilot/services";
+import { amount } from "@/lib/wallet";
+import { WalletSummary } from "@/components/citizen/WalletSummary";
+import { priceLabel, priceOf, serviceById } from "@/pilot/services";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -29,14 +30,13 @@ const getGreeting = () => {
   return "ערב טוב";
 };
 
-/** התווית על כרטיס ההמלצה: כמה זה עולה מהארנק, ומה ממך (אם יש). */
+/** התווית על כרטיס ההמלצה: כמה זה עולה מהארנק, בחודש או ליחידה. */
 export function copayBadge(result: MatchResult): { text: string; tone: "free" | "part" } {
   const s = serviceById(result.service.id);
   if (!s) return { text: "", tone: "free" };
   const price = priceOf(s);
-  if (price.state !== "none" && price.state !== "missing") return { text: "השלמה למממן אחר", tone: "part" };
-  if (price.unknown) return { text: "המחיר בבדיקה", tone: "part" };
-  return price.copay === 0 ? { text: amount(price.covered), tone: "free" } : { text: `${amount(price.covered)} + ₪${price.copay} ממך`, tone: "part" };
+  if (price.state !== "none" && price.state !== "missing") return { text: "משלים מממן אחר", tone: "part" };
+  return { text: priceLabel(s, amount, true), tone: price.copay === 0 ? "free" : "part" };
 }
 
 export default function CitizenHome() {
@@ -45,7 +45,6 @@ export default function CitizenHome() {
   const { profile: citizen, firstName } = useCitizen();
   const wallet = useWallet();
   const month = he.monthNames[new Date().getMonth()];
-  const usedPct = wallet.total ? Math.round((wallet.used / wallet.total) * 100) : 0;
 
   // מה שחשוב לה קודם: ההמלצה הראשונה ממה שסיפרה (החלום, מה שהיא אוהבת), כל אחת מתחום אחר.
   const personal = usePersonalProfile();
@@ -74,15 +73,7 @@ export default function CitizenHome() {
 
         <div className="mt-6 bg-white/10 rounded-xl p-4" aria-labelledby="wallet-title">
           <p id="wallet-title" className="text-base text-white/90">הארנק שלך לחודש {month}</p>
-          <p className="text-4xl font-bold mt-1">
-            נשארו {amount(wallet.left)} <span className="text-lg font-normal text-white/85">מתוך {amount(wallet.total)}</span>
-          </p>
-          <div className="mt-3 h-3 bg-white/25 rounded-full overflow-hidden" role="img" aria-label={he.walletUsedBar(wallet.used, wallet.total)}>
-            <div className="h-full bg-white rounded-full" style={{ width: `${usedPct}%` }} />
-          </div>
-          {wallet.left === 0 ? <p className="text-base font-semibold text-white mt-2" role="status">{he.walletEmpty}</p> : null}
-          <p className="text-sm text-white/85 mt-2">{he.walletRenews} בכל שירות כתוב כמה הוא עולה.</p>
-          <p className="text-xs text-white/80 mt-1">{walletFootnote()}</p>
+          <div className="mt-1"><WalletSummary tone="dark" /></div>
         </div>
       </div>
 

@@ -20,7 +20,8 @@ import { SUPPLIER_RATING_NOTE_CITIZEN } from "@/lib/supplierRating";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { usePilot } from "@/pilot/store";
-import { isCoordinated, isProduct, priceOf, servicesFor, slotsFor } from "@/pilot/services";
+import { isCoordinated, isProduct, isSubscription, priceLabel, priceOf, servicesFor, slotsFor } from "@/pilot/services";
+import { weeklyText } from "@/components/citizen/BookingPanel";
 import { whereText } from "@/pilot/citizen/Service";
 import { usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 
@@ -35,14 +36,14 @@ function domainOf(s: RealService): string {
 function priceText(s: RealService): string {
   const p = priceOf(s);
   if (p.state === "full") return `${p.funder ?? he.otherFunder} מממן`;
-  if (p.unknown) return "המחיר בבדיקה";
-  return p.copay === 0 ? amount(p.covered) : `${amount(p.covered)} + ₪${p.copay} ממך`;
+  return priceLabel(s, amount, true);
 }
 
 function whenText(s: RealService): string | null {
   if (isProduct(s)) return null;
   const slots = slotsFor(s);
-  return isCoordinated(s) || slots.length === 0 ? he.coordinated : formatSlot(he, slots[0]);
+  if (isCoordinated(s) || slots.length === 0) return he.coordinated;
+  return isSubscription(s) ? weeklyText(slots[0]) : formatSlot(he, slots[0]);
 }
 
 function ServiceCard({ service, reason }: { service: RealService; reason?: string }) {

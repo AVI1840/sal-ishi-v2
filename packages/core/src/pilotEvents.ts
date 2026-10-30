@@ -5,7 +5,12 @@
 
 import { z } from "zod";
 
-export const PILOT_EVENTS_SCHEMA_ID = "sal-ishi.pilot-events/1.0";
+/**
+ * 1.1 (0.6): הזמנה כמנוי חודשי או חד-פעמית, דיווח נוכחות מהספק (שמור מול נוצל),
+ * ותמריצים. תוספות בלבד: קובץ 1.0 עדיין נקרא.
+ */
+export const PILOT_EVENTS_SCHEMA_ID = "sal-ishi.pilot-events/1.1";
+export const PILOT_EVENTS_SCHEMA_IDS = ["sal-ishi.pilot-events/1.0", PILOT_EVENTS_SCHEMA_ID] as const;
 
 export const actorSchema = z.enum(["citizen", "companion", "system"]);
 
@@ -29,6 +34,11 @@ const base = {
 /** claim_help: עזרה בהגשה למממן אחר (משימת מיצוי למלווה, סל משלים בלבד). */
 export const requestKindSchema = z.enum(["callback", "gated_service", "claim_help"]);
 export const visitKindSchema = z.enum(["home", "phone", "no_answer"]);
+/** subscription: שירות רציף, מנוי חודשי שמתחדש (אפשר לעזוב). single: מועד אחד, סדנה, ביקור או מוצר. */
+export const bookingModeSchema = z.enum(["subscription", "single"]);
+/** תמריץ: התנדבות בקהילה, הדרכת חוג או הרצאה, התמדה, עמידה ביעד אישי. */
+export const incentiveReasonSchema = z.enum(["volunteer", "teach", "persistence", "goal"]);
+export const incentiveRoleSchema = z.enum(["volunteer", "teach"]);
 
 export const pilotEventSchema = z.discriminatedUnion("type", [
   z.object({
@@ -38,9 +48,17 @@ export const pilotEventSchema = z.discriminatedUnion("type", [
     serviceId: z.string().describe("מזהה השירות בתקן קליטת המפעילים"),
     serviceName: z.string(),
     slot: z.string().nullable().describe("מועד, או null כשהמפעיל מתאם מועד"),
-    coveredShekel: z.number().describe("מהסל, להמחשה. הסכום המחייב אצל הספק"),
+    coveredShekel: z.number().describe("מהסל, להמחשה. במנוי: הסכום לחודש. הסכום המחייב אצל הספק"),
     copayShekel: z.number(),
+    mode: bookingModeSchema.optional().describe("ברירת מחדל: single"),
+    sessionsPerMonth: z.number().int().positive().optional().describe("במנוי: מפגשים בחודש, לחלוקת הסכום לפי נוכחות"),
   }),
+  /** נוכחות מדווחת על ידי הספק (דרך ספק העל): הופכת סכום "שמור" ל"נוצל". */
+  z.object({ ...base, type: z.literal("attendance.reported"), bookingId: z.string(), sessions: z.number().int().positive() }),
+  /** תמריץ בנקודות, באישור המלווה. מתווסף לארנק. */
+  z.object({ ...base, type: z.literal("incentive.granted"), reason: incentiveReasonSchema, points: z.number().positive(), note: z.string().optional() }),
+  /** המלווה מסמנת למה האזרח מתאים לתת לקהילה. רשימה ריקה: לא מוצע. */
+  z.object({ ...base, type: z.literal("incentive.eligibility"), roles: z.array(incentiveRoleSchema) }),
   z.object({ ...base, type: z.literal("booking.cancelled"), bookingId: z.string(), charged: z.boolean(), reason: z.string() }),
   z.object({
     ...base,
@@ -67,7 +85,7 @@ export const pilotEventSchema = z.discriminatedUnion("type", [
 ]);
 
 export const pilotEventsFileSchema = z.object({
-  schema: z.literal(PILOT_EVENTS_SCHEMA_ID),
+  schema: z.enum(PILOT_EVENTS_SCHEMA_IDS),
   exportedAt: z.string(),
   source: z.literal("sal-ishi-pilot"),
   events: z.array(pilotEventSchema),
@@ -86,6 +104,10 @@ export const bookingSchema = z.object({
   onBehalf: onBehalfSchema.optional(),
   coveredShekel: z.number(),
   copayShekel: z.number(),
+  mode: bookingModeSchema.optional(),
+  sessionsPerMonth: z.number().int().positive().optional(),
+  /** מפגשים שהספק דיווח עליהם. */
+  attendedSessions: z.number().int().nonnegative().optional(),
   status: z.enum(["booked", "cancelled", "paused"]),
   cancelledAt: z.string().optional(),
   charged: z.boolean().optional(),
@@ -123,6 +145,9 @@ export type Booking = z.infer<typeof bookingSchema>;
 export type BookingStatus = Booking["status"];
 export type PilotRequest = z.infer<typeof requestSchema>;
 export type Visit = z.infer<typeof visitSchema>;
+export type BookingMode = z.infer<typeof bookingModeSchema>;
+export type IncentiveReason = z.infer<typeof incentiveReasonSchema>;
+export type IncentiveRole = z.infer<typeof incentiveRoleSchema>;
 
 /** שדות שאסור שיופיעו באירוע: מזהים אישיים ופרטי קשר. נבדק בבדיקות. */
 export const PILOT_FORBIDDEN_KEYS = ["name", "fullName", "phone", "email", "address", "idNumber", "teudatZehut", "birthDate"] as const;

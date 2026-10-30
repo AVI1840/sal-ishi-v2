@@ -9,7 +9,8 @@ import { STRINGS } from "../i18n";
 import { appSettings, isDemo } from "../settings";
 import { book, updateInterests, usePilot } from "../store";
 import { useReadAloud } from "../speech";
-import { monthlyWalletShekel, priceOf, spentThisMonth } from "../services";
+import { monthlyWalletShekel, priceOf, walletOf } from "../services";
+import { amount } from "@/lib/wallet";
 import { DEMO_ANSWERS, QUESTIONS, interestsFrom, profileFor } from "../questionnaire";
 import { whySentence } from "../why";
 import { useCaseload } from "./CompanionShell";
@@ -82,8 +83,9 @@ export default function CompanionSession() {
   const profile = profileFor(id, Object.keys(answers).length ? answers : undefined);
   const active = derived.bookings.filter((b) => b.citizenId === id && b.status !== "cancelled");
   const total = monthlyWalletShekel();
-  const baseline = id === appSettings.citizen.persona_id ? appSettings.citizen.baseline_spent_this_month : 0;
-  const spent = spentThisMonth(derived.bookings, id, baseline);
+  // אותו ארנק כמו אצל האזרח: מהאירועים בלבד.
+  const w = walletOf(derived.bookings, derived.incentives, id);
+  const spent = w.reserved + w.used - w.bonus;
   const left = Math.max(0, total - spent);
   const rules = selectionRules();
 
@@ -163,7 +165,7 @@ export default function CompanionSession() {
         <h1>הסל נבחר</h1>
         <Alert tone="success" live>
           <p>
-            נרשמו {pickedItems.length} שירותים בשביל {person.name}. נשאר בסל החודש ₪{Math.max(0, left - pickedCost)}.
+            נרשמו {pickedItems.length} שירותים בשביל {person.name}. נשאר בארנק החודש {amount(Math.max(0, left - pickedCost))}.
           </p>
         </Alert>
         <ul className="p-list">
@@ -191,13 +193,13 @@ export default function CompanionSession() {
 
       <section className="p-wallet" aria-label="בדיקת תקציב" style={{ position: "sticky", top: 0, zIndex: 5 }}>
         <p>
-          נבחר החודש ₪{pickedCost} מתוך ₪{left} שנשארו (סל של ₪{total}).
+          נבחר החודש {amount(pickedCost)} מתוך {amount(left)} שנשארו (ארנק של {amount(total)}).
         </p>
-        <div className="p-progress" role="img" aria-label={`נבחר ₪${pickedCost} מתוך ₪${left}`}>
+        <div className="p-progress" role="img" aria-label={`נבחר ${amount(pickedCost)} מתוך ${amount(left)}`}>
           <span style={{ width: `${left ? Math.min(100, Math.round((pickedCost / left) * 100)) : 100}%` }} />
         </div>
         <p className="p-small" role="status">
-          {over ? `מעבר לסל של החודש ב-₪${pickedCost - left}. כדאי להוריד שירות.` : `נשאר אחרי הבחירה: ₪${left - pickedCost}`}
+          {over ? `מעבר לארנק של החודש ב-${amount(pickedCost - left)}. כדאי להוריד שירות.` : `נשאר אחרי הבחירה: ${amount(left - pickedCost)}`}
         </p>
       </section>
 
@@ -282,7 +284,7 @@ export default function CompanionSession() {
         לחזור לשאלון
       </button>
       <p className="p-muted p-small">
-        המחירים מחירי דמה. סכום הסל (₪{total}) וההשתתפות מההגדרות.
+        המחירים מחירי דמה. סכום הארנק ({amount(total)}) וההשתתפות מההגדרות.
       </p>
     </>
   );

@@ -5,7 +5,7 @@ import { applyCatalogs, buildDemoCatalogs } from "@/data/catalogSource";
 import { defaultSeed } from "@sal-ishi/core";
 import { derive, type PilotEvent } from "../model";
 import { buildCaseload, reasonsFor, triage, PERSONA_PERSON } from "../caseload";
-import { cancelRuleOf, lateCancelCharged, priceOf, recommend, serviceById, slotsFor, spentThisMonth } from "../services";
+import { cancelRuleOf, lateCancelCharged, priceOf, recommend, serviceById, slotsFor, walletOf } from "../services";
 import { he } from "../i18n/he";
 import { ar } from "../i18n/ar";
 import { ru } from "../i18n/ru";
@@ -52,19 +52,24 @@ describe("derive: המצב נגזר מהאירועים", () => {
 });
 
 describe("ארנק ומחיר בשקלים", () => {
-  it("ביטול בזמן מחזיר לסל, ביטול מאוחר מחויב לא מחזיר", () => {
+  it("היתרה מהאירועים בלבד: שמור, נוצל, ביטול בזמן חוזר, ביטול מאוחר מחויב", () => {
     const month = new Date().toISOString();
     const base = { citizenId: "c1", serviceId: "s", serviceName: "x", slot: null, createdBy: "citizen" as const, copayShekel: 0, createdAt: month };
-    const spent = spentThisMonth(
+    const w = walletOf(
       [
         { ...base, id: "1", coveredShekel: 100, status: "booked" },
         { ...base, id: "2", coveredShekel: 40, status: "cancelled", charged: false },
         { ...base, id: "3", coveredShekel: 30, status: "cancelled", charged: true },
+        // מנוי חודשי: 4 מפגשים, השתתפה ב-2: חצי נוצל וחצי שמור.
+        { ...base, id: "4", coveredShekel: 126, status: "booked", mode: "subscription", sessionsPerMonth: 4, attendedSessions: 2 },
       ],
+      [{ citizenId: "c1", points: 20, at: month }],
       "c1",
-      100,
     );
-    expect(spent).toBe(230);
+    expect(w.used).toBe(30 + 63);
+    expect(w.reserved).toBe(100 + 63);
+    expect(w.bonus).toBe(20);
+    expect(w.left).toBe(500 + 20 - 93 - 163);
   });
 
   it("המחיר מתחלק לסל ולאזרח לפי הקטלוג", () => {

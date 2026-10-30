@@ -11,7 +11,17 @@ import type { Booking, PilotEvent, PilotRequest, Visit } from "@sal-ishi/core";
 
 // הטיפוסים נגזרים מהסכמה בליבה (packages/core/src/pilotEvents.ts), שממנה נגזר גם
 // ה-JSON Schema לספק. כך המסכים, הסנכרון והתקן לא נפרדים.
-export type { Actor, Booking, BookingStatus, OnBehalf, PilotEvent, PilotEventType, RequestKind, Visit, VisitKind } from "@sal-ishi/core";
+export type { Actor, Booking, BookingMode, BookingStatus, IncentiveReason, IncentiveRole, OnBehalf, PilotEvent, PilotEventType, RequestKind, Visit, VisitKind } from "@sal-ishi/core";
+import type { IncentiveReason, IncentiveRole } from "@sal-ishi/core";
+
+/** תמריץ שהוענק (נקודות שנוספו לארנק). */
+export interface Incentive {
+  citizenId: string;
+  reason: IncentiveReason;
+  points: number;
+  note?: string;
+  at: string;
+}
 export type Request = PilotRequest;
 
 /** מצבי קצה שמציג ההדגמה מפעיל בלחיצה. לא נשמרים כאירועים. */
@@ -43,6 +53,9 @@ export interface Derived {
   /** תשובות השאלון המשותף לפי אזרח. */
   answers: Map<string, Record<string, string>>;
   reviews: { citizenId: string; serviceId: string; verdict: string; at: string }[];
+  incentives: Incentive[];
+  /** למה האזרח מתאים לתת לקהילה (המלווה מסמנת). */
+  eligibility: Map<string, IncentiveRole[]>;
 }
 
 /** גוזר את המצב מהאירועים, בסדר שבו נרשמו. */
@@ -54,6 +67,8 @@ export function derive(events: PilotEvent[]): Derived {
   const interests = new Map<string, string[]>();
   const answers = new Map<string, Record<string, string>>();
   const reviews: Derived["reviews"] = [];
+  const incentives: Incentive[] = [];
+  const eligibility = new Map<string, IncentiveRole[]>();
   for (const e of events) {
     switch (e.type) {
       case "booking.created":
@@ -68,8 +83,22 @@ export function derive(events: PilotEvent[]): Derived {
           onBehalf: e.onBehalf,
           coveredShekel: e.coveredShekel,
           copayShekel: e.copayShekel,
+          mode: e.mode ?? "single",
+          sessionsPerMonth: e.sessionsPerMonth,
+          attendedSessions: 0,
           status: hospitalized.has(e.citizenId) ? "paused" : "booked",
         });
+        break;
+      case "attendance.reported": {
+        const b = bookings.get(e.bookingId);
+        if (b && b.status !== "cancelled") b.attendedSessions = (b.attendedSessions ?? 0) + e.sessions;
+        break;
+      }
+      case "incentive.granted":
+        incentives.push({ citizenId: e.citizenId, reason: e.reason, points: e.points, note: e.note, at: e.at });
+        break;
+      case "incentive.eligibility":
+        eligibility.set(e.citizenId, e.roles);
         break;
       case "booking.cancelled": {
         const b = bookings.get(e.bookingId);
@@ -114,7 +143,7 @@ export function derive(events: PilotEvent[]): Derived {
         break;
     }
   }
-  return { bookings: [...bookings.values()], requests: [...requests.values()], visits, hospitalized, interests, answers, reviews };
+  return { bookings: [...bookings.values()], requests: [...requests.values()], visits, hospitalized, interests, answers, reviews, incentives, eligibility };
 }
 
 export const EMPTY_SIMULATION: Simulation = { offline: false, walletEmpty: false, companionAway: false, noServices: false };

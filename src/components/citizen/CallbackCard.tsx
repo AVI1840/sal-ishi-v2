@@ -17,9 +17,9 @@ export function CallbackCard() {
 
   return (
     <section id="help" className="bg-[#1B3A5C] rounded-xl p-5 text-white scroll-mt-16" aria-labelledby="help-title" data-no-read>
-      <h2 id="help-title" className="text-xl font-bold">צריכה עזרה?</h2>
+      <h2 id="help-title" className="text-xl font-bold">{profile.gender === "male" ? "צריך עזרה?" : "צריכה עזרה?"}</h2>
       <p className="text-base text-white/90 mt-1" role={open ? "status" : undefined}>
-        {open ? he.callbackSent(away ? cover_name : name) : away ? he.companionAway(name, cover_name) : `${name}, המלווה שלך, תתקשר אלייך.`}
+        {open ? he.callbackSent(away ? cover_name : name) : away ? he.companionAway(name, cover_name) : `${name}, המלווה שלך, תתקשר בקרוב.`}
       </p>
       {!open ? (
         <button

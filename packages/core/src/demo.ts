@@ -190,7 +190,7 @@ const SPECS_J: Spec[] = [
 
   // פסגת זאב: מקהלה קהילתית, "חוט הזהב" של ההדגמה (שרה רוצה לחזור לשיר). בסוף
   // הרשימה, כדי לא לשנות את המספרים האקראיים של שאר השירותים.
-  { key: "choir", n: 0, type: "T03", sup: "S-001", fit: G, price: 80, pattern: C, base: 16, status: "אושר", name: "מקהלה קהילתית", fp: fp(WALK_AND_AID, { goals: ["belonging", "meaning"], evidenceLevel: "medium" }) },
+  { key: "choir", n: 0, type: "T08", sup: "S-001", fit: G, price: 80, pattern: C, base: 16, status: "אושר", name: "מקהלה קהילתית", fp: fp(WALK_AND_AID, { goals: ["belonging", "meaning"], evidenceLevel: "medium" }) },
 ];
 
 interface Variant {

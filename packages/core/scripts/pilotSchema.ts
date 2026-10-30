@@ -21,10 +21,10 @@ function toJson(schema: ZodTypeAny, id: string, title: string, description: stri
 
 export const PILOT_SCHEMA_FILES: { file: string; text: () => string }[] = [
   {
-    file: dir("pilot-events-1.0.schema.json"),
-    text: () => toJson(pilotEventsFileSchema, "urn:sal-ishi:pilot-events:1.0", "pilot events 1.0", `אירועים מחוויית האזרח והמלווה: הזמנה, ביטול, בקשה, החלטת מלווה, ביקור, אשפוז. ${PRIVACY}`),
+    file: dir("pilot-events-1.1.schema.json"),
+    text: () => toJson(pilotEventsFileSchema, "urn:sal-ishi:pilot-events:1.1", "pilot events 1.1", `אירועים מחוויית האזרח והמלווה: הזמנה (מנוי חודשי או חד-פעמית), ביטול, נוכחות מדווחת, בקשה, החלטת מלווה, ביקור, אשפוז ותמריצים. ${PRIVACY}`),
   },
-  { file: dir("booking-1.0.schema.json"), text: () => toJson(bookingSchema, "urn:sal-ishi:booking:1.0", "booking 1.0", `הזמנה, כפי שהיא נגזרת מהאירועים. ${PRIVACY}`) },
+  { file: dir("booking-1.1.schema.json"), text: () => toJson(bookingSchema, "urn:sal-ishi:booking:1.1", "booking 1.1", `הזמנה, כפי שהיא נגזרת מהאירועים: מנוי או חד-פעמית, שמור ונוצל לפי נוכחות. ${PRIVACY}`) },
   { file: dir("request-1.0.schema.json"), text: () => toJson(requestSchema, "urn:sal-ishi:request:1.0", "request 1.0", `בקשה למלווה: שיחזרו אליי או שירות מותנה. ${PRIVACY}`) },
   { file: dir("visit-1.0.schema.json"), text: () => toJson(visitSchema, "urn:sal-ishi:visit:1.0", "visit 1.0", `רישום ביקור או שיחה של המלווה. ${PRIVACY}`) },
   {

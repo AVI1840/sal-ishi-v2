@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Phone, Heart, Building2, Users, Wallet, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isDemo } from "@/pilot/settings";
-import { setSimulation, usePilot } from "@/pilot/store";
+import { appSettings, isDemo } from "@/pilot/settings";
+import { reportAttendance, setSimulation, usePilot } from "@/pilot/store";
 import { resetDemo } from "@/pilot/reset";
 import { prepareOffline } from "@/pilot/offline";
 import type { Simulation } from "@/pilot/model";
@@ -31,7 +31,7 @@ const SWITCHES: { key: keyof Simulation; label: string }[] = [
 function DemoMenu() {
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const { state } = usePilot();
+  const { state, derived } = usePilot();
   const navigate = useNavigate();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -73,6 +73,17 @@ function DemoMenu() {
           </button>
           <button type="button" className="w-full min-h-[44px] rounded-lg border border-[#1B3A5C]/40 text-[#1B3A5C] text-sm font-semibold" onClick={async () => setMsg(await prepareOffline())}>
             הכנה לעבודה בלי אינטרנט
+          </button>
+          <button
+            type="button"
+            className="w-full min-h-[44px] rounded-lg border border-[#1B3A5C]/40 text-[#1B3A5C] text-sm font-semibold"
+            onClick={() => {
+              const active = derived.bookings.filter((b) => b.citizenId === appSettings.citizen.persona_id && b.status === "booked");
+              for (const b of active) reportAttendance({ citizenId: b.citizenId, bookingId: b.id });
+              setMsg(active.length ? `הספק דיווח: שרה השתתפה במפגש (${active.length === 1 ? "פעילות אחת" : `${active.length} פעילויות`}). "שמור" הפך ל"נוצל".` : "אין לשרה פעילות פעילה לדווח עליה.");
+            }}
+          >
+            הספק מדווח נוכחות של שרה
           </button>
           <fieldset className="space-y-1">
             <legend className="text-sm font-semibold mb-1">מצבי קצה</legend>
