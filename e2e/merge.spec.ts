@@ -195,15 +195,24 @@ test("חוט הזהב: שרה מצטרפת למקהלה, שמור, רונית ר
   await expect(choir.getByText(/דרג את מקהלה קהילתית/)).toBeVisible();
 });
 
-test("לספר מה חשוב לי: ארבע שאלות, וההמלצות מתעדכנות", async ({ page }) => {
+test("מה חשוב לי: הפרופיל מהקליטה כבר מסומן, שרה מעדכנת, ההמלצות ורונית מתעדכנות", async ({ page }) => {
   await page.goto("./#/citizen/needs");
-  for (const label of ["ללמוד ולקרוא", "בקבוצה קטנה", "בבוקר", "להיות לבד"]) {
-    await page.getByLabel(label).check();
-    await page.getByRole("button", { name: /להמשיך|לשמור/ }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "מה חשוב לי" })).toBeVisible();
+  // מהקליטה: מה שסיפרה לרונית כבר מסומן.
+  await expect(page.getByRole("button", { name: "לשיר ולשמוע מוזיקה", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "להכיר אנשים חדשים", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "אני חוששת ליפול" })).toBeVisible();
+  for (const h of ["מה נותן לי משמעות", "החלום שלי", "מה אני אוהבת לעשות", "מה הייתי רוצה בחצי השנה הקרובה", "עם מי טוב לי", "מתי נוח לי", "באיזו שפה", "איפה נוח לי", "מה יעזור לי לצאת", "מה אני יכולה לתת"]) {
+    await expect(page.getByRole("heading", { level: 2, name: h })).toBeVisible();
   }
-  await expect(page.getByText("ההמלצות עודכנו לפי מה שסיפרת.")).toBeVisible();
+  await page.getByRole("button", { name: "ללמוד ולקרוא", exact: true }).click();
+  await page.getByRole("button", { name: /לשמור שינוי אחד ולראות המלצות/ }).click();
+  await expect(page.getByText(/ההמלצות עודכנו לפי מה שסיפרת/)).toBeVisible();
   await expect(page.getByText("סיפרת עכשיו שאת אוהבת ללמוד ולקרוא.")).toBeVisible();
   await expect(page.getByText(/מקהלה קהילתית/)).toBeVisible();
+  await page.goto("./#/coordinator/patients/c1");
+  await page.getByRole("tab", { name: /תוכנית/ }).click();
+  await expect(page.getByText(/עדכנ\/ה בעצמ\/ה: מה אוהב\/ת/)).toBeVisible();
 });
 
 test("מספרים: בלי טענות לא מבוססות בדף הבית, אצל המלווה ובמטה", async ({ page }) => {

@@ -3,6 +3,7 @@
  * מה האזרח סיפר, תוכנית אישית (אותה המלצה שהאזרח רואה, עם הפירוק המלא),
  * ציר זמן מיומן האירועים, וחוזקות. כלים של המלווה: לא מוצגים לאזרח.
  */
+import { GIVE, GOALS, HELP, MEANING, intakeAnswers, parseList } from "@/lib/intakeProfile";
 import { useParams, Link } from "react-router-dom";
 import { useMemo } from "react";
 import {
@@ -39,6 +40,20 @@ export default function CoordinatorPatientDetail() {
   const timeline = state.events.filter((e) => e.citizenId === citizen.id).slice().reverse();
   const answers = derived.answers.get(citizen.id);
   const told = withAnswers(citizen, answers);
+  // הפרופיל מהקליטה ומה שהאזרח עדכן ("מה חשוב לי"), בשפה פשוטה.
+  const intake = intakeAnswers(citizen);
+  const now = answers && "activities" in answers ? { ...intake, ...answers } : intake;
+  const labelsOf = (opts: { id: string; label: string }[], v?: string) => parseList(v).map((id) => opts.find((o) => o.id === id)?.label ?? id).join(", ");
+  const profileLines: [string, string][] = (
+    [
+      ["מה נותן משמעות", labelsOf(MEANING, now.motivations)],
+      ["יעדים לחצי שנה", labelsOf(GOALS, now.goals)],
+      ["מה יעזור לצאת", labelsOf(HELP, now.help)],
+      ["מה יכול/ה לתת", labelsOf(GIVE, now.give)],
+    ] as [string, string][]
+  ).filter(([, v]) => v);
+  const SECTION: Record<string, string> = { motivations: "מה נותן משמעות", dream: "החלום", activities: "מה אוהב/ת", goals: "יעדים", format: "עם מי", hours: "מתי", days: "כמה פעמים", languages: "שפה", where: "איפה", help: "מה יעזור לצאת", give: "מה יכול/ה לתת" };
+  const changedNow = answers && "activities" in answers ? Object.keys(SECTION).filter((k) => (answers[k] ?? "") !== (intake[k] ?? "")).map((k) => SECTION[k]) : [];
 
   // Matched services from the real engine (no legacy SERVICES array)
   // מה שהאזרח סיפר קודם (כמו אצלו), ואחריו שאר ההתאמות של המנוע עם הפירוק המלא.
@@ -228,9 +243,17 @@ export default function CoordinatorPatientDetail() {
                   {citizen.meaningStatement ? (<div><dt className="text-muted-foreground">במילים שלה/ו</dt><dd className="text-foreground">"{citizen.meaningStatement}"</dd></div>) : null}
                   <div><dt className="text-muted-foreground">אוהב/ת לעשות</dt><dd className="text-foreground">{told.preferredActivities.join(", ")}</dd></div>
                   <div><dt className="text-muted-foreground">נוח</dt><dd className="text-foreground">{told.preferredHours}</dd></div>
+                  {profileLines.map(([k, v]) => (
+                    <div key={k}><dt className="text-muted-foreground">{k}</dt><dd className="text-foreground">{v}</dd></div>
+                  ))}
                 </dl>
+                {changedNow.length ? (
+                  <p className="text-sm text-foreground mt-3 p-2 rounded-lg bg-accent">
+                    {citizen.name.split(" ")[0]} עדכנ/ה בעצמ/ה: {changedNow.join(", ")}.
+                  </p>
+                ) : null}
                 <p className="text-xs text-muted-foreground mt-3">
-                  {answers ? "עודכן מהשאלון \"לספר מה חשוב לי\" או מהפגישה המשותפת." : "עוד לא מילא/ה את השאלון. אפשר בפגישה המשותפת."}
+                  {answers ? "מהקליטה, עם מה שעודכן ב\"מה חשוב לי\" או בפגישה המשותפת." : "מהקליטה. עוד לא עודכן ב\"מה חשוב לי\"."}
                 </p>
               </div>
 

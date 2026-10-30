@@ -8,6 +8,7 @@
 import { MOTIVATION_LABELS, type PersonalProfile } from "@/data/types";
 import type { MatchResult } from "@/lib/matchingEngine";
 import { citizenReasons } from "@/lib/citizenReasons";
+import { applyIntakeAnswers } from "@/lib/intakeProfile";
 
 /** מילים במה שהאזרח סיפר, מול שמות שירותים בקטלוג. */
 const ACTIVITY_TO_SERVICE: [RegExp, RegExp][] = [
@@ -20,6 +21,11 @@ const ACTIVITY_TO_SERVICE: [RegExp, RegExp][] = [
   [/הליכה|ספורט|כושר|תנועה|גוף/, /התעמלות|הליכה|כוח ושיווי/],
   [/יצירה|ציור|יצירתי/, /יצירה/],
   [/התנדב|לעזור/, /התנדבות/],
+  [/שחי|בריכה|מים/, /מים|בריכה|שחייה/],
+  [/ריקוד|לרקוד/, /ריקוד/],
+  [/הרצא/, /הרצאות|למידה לאורך החיים/],
+  [/טיול|סיור/, /סיורים|טיולים/],
+  [/גינון|גינה/, /גינ/],
 ];
 
 /** מה שחשוב לאזרח, בשפה שלו, לנימוק כשאין התאמה למשהו שסיפר במפורש. */
@@ -45,7 +51,7 @@ export interface PersonalPick {
 /** פרופיל עם מה שהאזרח סיפר בשאלון עכשיו. */
 type ToldProfile = PersonalProfile & { toldNow?: string };
 
-const LOVED_PHRASE: Record<string, string> = { שירה: "לשיר", בישול: "לבשל", "ללמוד ולקרוא": "ללמוד ולקרוא" };
+const LOVED_PHRASE: Record<string, string> = { שירה: "לשיר", בישול: "לבשל", "ללמוד ולקרוא": "ללמוד ולקרוא", שיחות: "לדבר עם אנשים", הליכה: "ללכת", שחייה: "לשחות", ריקוד: "לרקוד", יצירה: "ליצור", הרצאות: "לשמוע הרצאות", טיולים: "לטייל", משחק: "משחקי חשיבה", גינון: "לגנן", נכדים: "לבלות עם הנכדים", התנדבות: "לעזור לאחרים" };
 
 const loves = (p: PersonalProfile) => (p.gender === "male" ? "אוהב" : "אוהבת");
 
@@ -125,6 +131,8 @@ export function personalReasonFor(p: PersonalProfile, serviceName: string): stri
  */
 export function withAnswers(p: PersonalProfile, answers?: Record<string, string>): ToldProfile {
   if (!answers) return p;
+  // הפרופיל המלא (0.6.2): הקליטה עם המלווה ומה שהאזרח עדכן באזור האישי.
+  if ("activities" in answers || "goals" in answers || "motivations" in answers) return applyIntakeAnswers(p, answers);
   const loved = answers.loved ? [answers.loved] : [];
   const motivations = [...(answers.hard === "lonely" ? ["belonging" as const] : []), ...p.motivations];
   return {

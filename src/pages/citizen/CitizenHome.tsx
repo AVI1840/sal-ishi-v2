@@ -88,7 +88,7 @@ export default function CitizenHome() {
           <div className="grid grid-cols-2 gap-3">
             <Link to="/citizen/needs" className="flex flex-col items-center justify-center gap-1 min-h-[72px] bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all text-center">
               <Heart className="w-6 h-6 text-[#1B3A5C]" aria-hidden="true" />
-              <span className="text-base font-bold text-gray-900">לספר מה חשוב לי</span>
+              <span className="text-base font-bold text-gray-900">מה חשוב לי</span>
             </Link>
             <a href="#help" className="flex flex-col items-center justify-center gap-1 min-h-[72px] bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all text-center"
               onClick={(e) => { e.preventDefault(); document.getElementById("help")?.scrollIntoView({ behavior: "smooth" }); }}>
