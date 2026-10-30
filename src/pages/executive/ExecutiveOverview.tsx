@@ -8,8 +8,24 @@ import { count } from "@/lib/hebrew";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
-import { Activity, Award, BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
+import { Activity, Award, Bot, BookOpen, CheckCircle2, ChevronLeft, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+// ציר הזמן של התכנית, ומגמות. המגמות הן נתוני הדגמה עד שספק העל מעביר דוח מצטבר.
+const TIMELINE_STEPS = [
+  { label: "נייר מדיניות", status: "done" },
+  { label: "מחקר", status: "done" },
+  { label: "סדנה", status: "done" },
+  { label: "אפיון", status: "active" },
+  { label: "פיילוט", status: "active" },
+  { label: "הכרעות מפגש 3", status: "pending" },
+  { label: "מכרז אינטגרטור", status: "pending" },
+  { label: "הרחבה", status: "pending" },
+  { label: "הטמעה", status: "pending" },
+] as const;
+const ENGAGEMENT = [{ m: "מאי", v: 42 }, { m: "יוני", v: 48 }, { m: "יולי", v: 52 }, { m: "אוג", v: 55 }, { m: "ספט", v: 56 }, { m: "אוק", v: 58 }];
+const ENROLLMENT = [{ m: "מאי", v: 120 }, { m: "יוני", v: 160 }, { m: "יולי", v: 200 }, { m: "אוג", v: 240 }, { m: "ספט", v: 265 }, { m: "אוק", v: 286 }];
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
 import { DECIDED_PRINCIPLES_MEETING_2, DEMO_JERUSALEM, buildDemoAuthority, isDecided, penetration, ruleKeys, settingLabel, statusNote, timeToFirstService, utilization } from "@sal-ishi/core";
 import { communityFor } from "@/lib/community";
@@ -113,12 +129,73 @@ export default function ExecutiveOverview() {
         </p>
       </div>
 
+      {/* ציר זמן התכנית */}
+      <section className="libi-card p-5" aria-labelledby="timeline-h">
+        <h2 id="timeline-h" className="text-base font-semibold text-foreground mb-6">ציר הזמן של התכנית</h2>
+        <ol className="grid grid-cols-3 sm:grid-cols-9 gap-y-4 gap-x-2 relative">
+          <span className="hidden sm:block absolute top-4 right-4 left-4 h-0.5 bg-gradient-to-l from-success via-primary to-muted" aria-hidden="true" />
+          {TIMELINE_STEPS.map((step, i) => (
+            <li key={step.label} className="flex flex-col items-center relative z-10">
+              <span className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2", step.status === "done" ? "bg-success text-success-foreground border-success" : step.status === "active" ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border")}>
+                {step.status === "done" ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : i + 1}
+              </span>
+              <span className="text-xs text-foreground mt-2 text-center max-w-[76px]">{step.label}</span>
+              <span className="sr-only">{step.status === "done" ? "הושלם" : step.status === "active" ? "עכשיו" : "בהמשך"}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* סוכני המערכת */}
+      <Link to="/executive/agents" className="libi-card p-5 flex items-center gap-4 hover:border-primary/40">
+        <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <Bot className="w-7 h-7" aria-hidden="true" />
+        </span>
+        <span className="flex-1">
+          <span className="block text-base font-semibold text-foreground">סוכני המערכת</span>
+          <span className="block text-sm text-muted-foreground">מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל שמתזמר. להריץ ולראות תוצאה.</span>
+        </span>
+        <ChevronLeft className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+      </Link>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
         <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
         <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2 ו-28.10) · ${proposals} הצעה`} />
         <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}${incentivePoints ? ` · ${incentivePoints} נקודות תמריץ` : ""}`} />
       </div>
+
+      {/* מגמות */}
+      <section className="libi-card p-5" aria-labelledby="trends-h">
+        <h2 id="trends-h" className="text-base font-semibold text-foreground">מגמות</h2>
+        <p className="text-xs text-muted-foreground mb-4">נתוני הדגמה, עד שספק העל מעביר דוח מצטבר</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>div]:overflow-hidden [&>div]:min-w-0">
+          <div>
+            <p className="text-sm text-foreground mb-2">מעורבות: % מהמשתתפים שפעילים בחודש</p>
+            <ResponsiveContainer width="100%" height={150}>
+              <LineChart data={ENGAGEMENT}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="m" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} domain={[30, 70]} />
+                <Tooltip />
+                <Line type="monotone" dataKey="v" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <p className="text-sm text-foreground mb-2">משתתפים בפיילוט (מצטבר)</p>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={ENROLLMENT}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="m" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="v" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
 
       <section className="libi-card p-5" aria-labelledby="hoods-h">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -129,7 +206,7 @@ export default function ExecutiveOverview() {
             פערים וחלופות באטלס המטה <ExternalLink className="w-4 h-4" aria-hidden="true" />
           </a>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="טבלת שכונות">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-right text-muted-foreground">
@@ -174,7 +251,7 @@ export default function ExecutiveOverview() {
         <p className="text-sm text-muted-foreground mb-3">
           מהדיווח המצטבר של השטח, חודש {kpiMonth}. מיצוי מול יעד {pctOf(Number(settings.utilization_target))} ודגל אדום {pctOf(Number(settings.red_flag_avg))} (מפגש 2). אותן פונקציות כמו באטלס המטה.
         </p>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="טבלת מדדי השטח">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-right text-muted-foreground">

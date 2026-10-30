@@ -5,7 +5,9 @@
  * הספק). דירוג הספק מוצג עם הרכיבים שלו. תשלומים, יתרות והזמנות אצל ספק העל.
  */
 import { useMemo, useState } from "react";
-import { CheckCircle2, AlertTriangle, FileJson, Info, ClipboardCheck, BarChart3 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { CheckCircle2, AlertTriangle, FileJson, Info, ClipboardCheck, BarChart3, Building2, ListChecks, Target, MapPin, Languages, Accessibility, Phone } from "lucide-react";
+import { DELIVERY_LABEL, SUPPLIER_TYPE_LABEL, opportunities } from "@/lib/supplierView";
 import { buildCaseload } from "@/pilot/caseload";
 import { attendedIn, monthOf, usedOf } from "@/pilot/services";
 import { reportAttendance, usePilot } from "@/pilot/store";
@@ -20,7 +22,8 @@ const quarterText = (q: string) => q.replace(/^(\d{4})-Q(\d)$/, "רבעון $2, 
 export default function ProviderDashboard() {
   const data = useMemo(() => buildDemoAuthority(DEMO_JERUSALEM), []);
   const suppliers = data.suppliers;
-  const [code, setCode] = useState(suppliers[0]?.code ?? "");
+  const [params] = useSearchParams();
+  const [code, setCode] = useState(() => (suppliers.some((s) => s.code === params.get("code")) ? params.get("code")! : suppliers[0]?.code ?? ""));
   const supplier = suppliers.find((s) => s.code === code);
   const hoodName = (id: string) => data.neighborhoods.find((n) => n.id === id)?.name ?? id;
   const all = data.services.filter((s) => s.supplierCode === code);
@@ -56,6 +59,16 @@ export default function ProviderDashboard() {
       return { name: r.s.name, participants: act.reduce((n, a) => n + a.uniqueParticipants, 0), sessions: act.reduce((n, a) => n + a.sessions, 0) };
     })
     .filter((x) => x.participants > 0 || x.sessions > 0);
+
+  const gaps = opportunities(data, code);
+  const toReport = bookings.filter((b) => b.status === "booked" && (b.mode === "subscription" ? attendedIn(b, month) < (b.sessionsPerMonth ?? 4) : !b.attendedSessions)).length;
+  const notReady = rows.filter((r) => !r.ready);
+  const next: string[] = [
+    ...notReady.slice(0, 3).map((r) => `להשלים ב"${r.s.name}": ${r.missing.length ? r.missing.join(", ") : r.entry.reason ?? r.entry.status}`),
+    ...(toReport ? [`לדווח נוכחות ל-${toReport} הצטרפויות פתוחות`] : []),
+    ...gaps.filter((g) => g.canExpand).slice(0, 2).map((g) => `להרחיב "${g.what}" ל${g.neighborhood}: ${g.why}`),
+  ];
+  const modes = [...new Set(services.map((s) => DELIVERY_LABEL[s.deliveryMode] ?? s.deliveryMode))];
 
   return (
     <div className="space-y-6">
@@ -95,7 +108,57 @@ export default function ProviderDashboard() {
         {supplier ? <p className="text-sm text-muted-foreground">שפות: {supplier.languages.join(", ")} · נגיש: {supplier.accessible ? "כן" : "לא"}</p> : null}
       </div>
 
-      <div className="libi-card overflow-x-auto" tabIndex={0} role="region" aria-label="שירותי הספק">
+      <nav aria-label="בדף הזה" className="flex flex-wrap gap-2 text-sm">
+        {[
+          ["#prov-profile", "הפרופיל"],
+          ["#prov-next", "מה לעשות עכשיו"],
+          ["#prov-services", "השירותים והתקן"],
+          ["#market-h", "הצטרפויות ונוכחות"],
+          ["#prov-gaps", "הזדמנויות בשכונות"],
+        ].map(([href, label]) => (
+          <a key={href} href={href} onClick={(e) => { e.preventDefault(); document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="min-h-[40px] inline-flex items-center px-3 rounded-full border border-border bg-white text-foreground hover:border-primary">
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section id="prov-profile" className="libi-card p-5" aria-labelledby="prof-h">
+          <h2 id="prof-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+            <Building2 className="w-5 h-5 text-primary" aria-hidden="true" /> הפרופיל של הספק
+          </h2>
+          {supplier ? (
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div><dt className="text-muted-foreground">סוג</dt><dd className="text-foreground font-medium">{SUPPLIER_TYPE_LABEL[supplier.type] ?? supplier.type}</dd></div>
+              <div><dt className="text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5" aria-hidden="true" /> שכונות</dt><dd className="text-foreground font-medium">{supplier.neighborhoods.map(hoodName).join(", ") || "-"}</dd></div>
+              <div><dt className="text-muted-foreground flex items-center gap-1"><Languages className="w-3.5 h-3.5" aria-hidden="true" /> שפות</dt><dd className="text-foreground font-medium">{supplier.languages.join(", ")}</dd></div>
+              <div><dt className="text-muted-foreground flex items-center gap-1"><Accessibility className="w-3.5 h-3.5" aria-hidden="true" /> נגישות</dt><dd className="text-foreground font-medium">{supplier.accessible ? "נגיש" : "לא נגיש (חוסם חלק מהמשתתפים)"}</dd></div>
+              <div><dt className="text-muted-foreground">איפה ניתן השירות</dt><dd className="text-foreground font-medium">{modes.join(", ") || "-"}</dd></div>
+              <div><dt className="text-muted-foreground flex items-center gap-1"><Phone className="w-3.5 h-3.5" aria-hidden="true" /> איש קשר</dt><dd className="text-foreground font-medium">{supplier.contact?.phone || supplier.contact?.email ? "קיים, אצל ספק העל" : "חסר: להשלים אצל ספק העל"}</dd></div>
+            </dl>
+          ) : null}
+        </section>
+
+        <section id="prov-next" className="libi-card p-5" aria-labelledby="next-h">
+          <h2 id="next-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+            <ListChecks className="w-5 h-5 text-primary" aria-hidden="true" /> מה לעשות עכשיו
+          </h2>
+          {next.length ? (
+            <ol className="space-y-2 text-sm list-decimal pr-5">
+              {next.map((n) => <li key={n} className="text-foreground">{n}</li>)}
+            </ol>
+          ) : (
+            <p className="text-sm text-foreground flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" /> הכל מעודכן. כל השירותים בתקן ואין נוכחות פתוחה.</p>
+          )}
+          <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+            <div className="rounded-lg bg-muted/50 p-2"><div className="text-lg font-bold text-foreground">{bookings.filter((b) => b.status === "booked").length}</div><div className="text-xs text-foreground">הצטרפויות פעילות</div></div>
+            <div className="rounded-lg bg-muted/50 p-2"><div className="text-lg font-bold text-foreground">{toReport}</div><div className="text-xs text-foreground">נוכחות לדווח</div></div>
+            <div className="rounded-lg bg-muted/50 p-2"><div className="text-lg font-bold text-foreground">{gaps.length}</div><div className="text-xs text-foreground">הזדמנויות</div></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="prov-services" className="libi-card overflow-x-auto" tabIndex={0} role="region" aria-label="שירותי הספק">
         <table className="w-full text-sm">
           <thead className="bg-muted/60">
             <tr>
@@ -197,6 +260,27 @@ export default function ProviderDashboard() {
           <p className="text-xs text-muted-foreground mt-2">מהדיווח המצטבר לאטלס (נתוני הדגמה).</p>
         </section>
       ) : null}
+
+      <section id="prov-gaps" className="libi-card p-5" aria-labelledby="gaps-h">
+        <h2 id="gaps-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <Target className="w-5 h-5 text-primary" aria-hidden="true" /> הזדמנויות בשכונות שלך
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">מה חסר בשכונות שבהן הספק פועל: בקשות של מלוות שאין להן מענה, ותחומים מתחת לרצפה. למעלה: מה שהספק כבר יודע לתת.</p>
+        {gaps.length ? (
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {gaps.slice(0, 8).map((g) => (
+              <li key={`${g.neighborhood}-${g.what}-${g.why}`} className={cn("rounded-lg border p-3 text-sm", g.canExpand ? "border-primary/50 bg-accent/40" : "border-border bg-white")}>
+                <span className="block font-semibold text-foreground">{g.what} · {g.neighborhood}</span>
+                <span className="block text-muted-foreground">{g.why}</span>
+                {g.canExpand ? <span className="block text-xs font-semibold text-primary mt-1">כבר נותנים את זה: אפשר להרחיב</span> : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">אין פערים פתוחים בשכונות של הספק.</p>
+        )}
+        <p className="text-xs text-muted-foreground mt-2">נתוני הדגמה. הצעה להרחבה עוברת דרך המטה וספק העל.</p>
+      </section>
 
       <div className="libi-card p-4 space-y-1">
         <p className="text-sm font-semibold text-foreground">איך נבנה דירוג הספק</p>

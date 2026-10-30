@@ -43,6 +43,8 @@ import ProviderDashboard from "@/pages/providers/ProviderDashboard";
 import AtlasFrame from "@/pages/shared/AtlasFrame";
 import BasketLibrary from "@/pages/executive/BasketLibrary";
 import NotFound from "@/pages/NotFound";
+import ExecutiveAgents from "@/pages/executive/ExecutiveAgents";
+import ExecutiveSuppliers from "@/pages/executive/ExecutiveSuppliers";
 import ScopePage from "@/pages/ScopePage";
 
 // National / Inter-ministerial Prototype (lazy-loaded)
@@ -120,9 +122,10 @@ export default function LegacyApp() {
               <Route path="/executive" element={<AppShell variant="executive" />}>
                 <Route index element={<ExecutiveOverview />} />
                 <Route path="catalog" element={<BasketLibrary />} />
+                <Route path="suppliers" element={<ExecutiveSuppliers />} />
                 <Route path="algorithm" element={<CoordinatorAlgorithm />} />
                 <Route path="atlas" element={<AtlasFrame which="hq" />} />
-                <Route path="agents" element={SHOW_DEMO_LAYERS ? <CoordinatorAgents /> : <Navigate to="/executive" replace />} />
+                <Route path="agents" element={SHOW_DEMO_LAYERS ? <CoordinatorAgents /> : <ExecutiveAgents />} />
               </Route>
 
               {/* Provider Portal */}

@@ -141,7 +141,7 @@ test("נגישות: axe בלי ליקויים חמורים במסכים המאו
     "./", "./#/scope", "./#/citizen", "./#/citizen/services", `./#/citizen/services/${SERVICE}`, "./#/citizen/activities",
     "./#/citizen/profile", "./#/coordinator", "./#/coordinator/patients/c1", "./#/coordinator/patients/c2/session",
     "./#/coordinator/patients/c1/review", "./#/providers",
-    "./#/citizen/needs", "./#/coordinator/community", "./#/coordinator/patients", "./#/executive", "./#/executive/algorithm", "./#/executive/catalog",
+    "./#/citizen/needs", "./#/coordinator/community", "./#/coordinator/patients", "./#/executive", "./#/executive/algorithm", "./#/executive/catalog", "./#/executive/suppliers", "./#/executive/agents",
   ];
   // בלי אנימציית הכניסה, כדי ש-axe ימדוד ניגודיות על הצבעים הסופיים.
   await page.emulateMedia({ reducedMotion: "reduce" });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Home, Users, Wallet, BarChart3, BookOpen, Menu, X, WifiOff, MapPinned, Store, Map as MapIcon } from "lucide-react";
+import { Home, Users, Wallet, BarChart3, BookOpen, Menu, X, WifiOff, MapPinned, Store, Map as MapIcon, Bot } from "lucide-react";
 import { appSettings } from "@/pilot/settings";
 import { useOnline } from "@/pilot/components/Frame";
 import { cn } from "@/lib/utils";
@@ -27,11 +27,13 @@ const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
   { to: "/executive/atlas", label: "אטלס המטה", icon: MapIcon },
   { to: "/executive/catalog", label: "ספריית הסל", icon: BookOpen },
+  { to: "/executive/suppliers", label: "ניהול ספקים", icon: Store },
   { to: "/executive/algorithm", label: "אלגוריתם התאמה", icon: BarChart3 },
+  { to: "/executive/agents", label: "סוכני המערכת", icon: Bot },
 ];
 
 const PROVIDER_NAV: NavItem[] = [
-  { to: "/providers", label: "קליטה לפי התקן", icon: Store, end: true },
+  { to: "/providers", label: "הדף של הספק", icon: Store, end: true },
 ];
 
 interface AppShellProps {
