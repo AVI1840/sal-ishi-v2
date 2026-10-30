@@ -16,6 +16,8 @@ import type { VisitKind } from "@/pilot/model";
 import { book, logVisit, setHospitalized, usePilot } from "@/pilot/store";
 import { cancelRuleOf, monthlyWalletShekel, priceOf, serviceById, slotsFor, spentThisMonth } from "@/pilot/services";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { amount } from "@/lib/wallet";
+import { catalogState } from "@/data/catalogSource";
 import { personalRecommendations, withAnswers } from "@/lib/personalMatch";
 import { appSettings } from "@/pilot/settings";
 import { describe } from "@/pilot/companion/Log";
@@ -152,6 +154,7 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
 
   // הסל בשקלים: בדמות האזרחית, עם בסיס ההדגמה של החודש, כמו במסך שלה.
   const total = monthlyWalletShekel();
+  const basketTotal = (catalogState.seed.settings as unknown as { total: number }).total;
   const baseline = citizen.id === appSettings.citizen.persona_id ? (state.simulation.walletEmpty ? total : appSettings.citizen.baseline_spent_this_month) : 0;
   const used = Math.min(total, spentThisMonth(derived.bookings, citizen.id, baseline));
 
@@ -178,7 +181,7 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
         <div>
           <h2 id="actions-h" className="text-base font-semibold text-foreground">פעולות בתיק</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            הסל החודש: נשארו ₪{total - used} מתוך ₪{total}. {bookings.length} פעילויות פעילות.
+            ארנק אישי: נשארו {amount(total - used)} מתוך {amount(total)}, בתוך סל של {basketTotal} נקודות (ליווי, קהילה ותפעול). {bookings.length} פעילויות פעילות.
           </p>
         </div>
         {hospitalized ? <span className="text-xs font-semibold px-2 py-1 rounded-md bg-warning-soft text-warning-foreground border border-border">באשפוז: הפעילויות מוקפאות</span> : null}

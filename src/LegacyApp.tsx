@@ -30,6 +30,7 @@ import CoordinatorDashboard from "@/pages/coordinator/CoordinatorDashboard";
 import CoordinatorPatients from "@/pages/coordinator/CoordinatorPatients";
 import CoordinatorPatientDetail from "@/pages/coordinator/CoordinatorPatientDetail";
 import CoordinatorPilotScreen, { CompanionRedirect } from "@/pages/coordinator/CoordinatorPilotScreen";
+import CoordinatorCommunity from "@/pages/coordinator/CoordinatorCommunity";
 import CoordinatorAlgorithm from "@/pages/coordinator/CoordinatorAlgorithm";
 import CoordinatorIntake from "@/pages/coordinator/CoordinatorIntake";
 import CoordinatorDeterioration from "@/pages/coordinator/CoordinatorDeterioration";
@@ -103,6 +104,7 @@ export default function LegacyApp() {
                 <Route path="actions" element={<CoordinatorActions />} />
                 <Route path="bookings" element={<CoordinatorBookings />} />
                 <Route path="services-map" element={<CoordinatorServices />} />
+                <Route path="community" element={<CoordinatorCommunity />} />
                 {/* עמודי ה-AI וה"אייג'נטים" רק בגרסת ההאקתון (תשובות כתובות מראש) */}
                 <Route path="agents" element={<Navigate to="/coordinator" replace />} />
               </Route>

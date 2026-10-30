@@ -1,13 +1,13 @@
 /**
  * CitizenServices: השוק בשכונה. כל שירות מאושר שמגיע לשכונה של האזרחית, מהאטלס
  * (אותו קטלוג שהמלווה והמטה רואים): מה, מי מפעיל, איפה, מתי, וכמה זה עולה
- * מהארנק. קודם מה שמתאים למה שסיפרה, אחר כך לפי תחום.
- *
- * בלי דירוג ספקים (אצל ספק העל) ובלי "מומלץ לפי דירוג". בלי ציונים.
+ * מהארנק, ודירוג הספק. קודם מה שמתאים למה שסיפרה, אחר כך לפי תחום: בכל תחום
+ * עד 6 שירותים שמנוע ההתאמה התאים לה, ועד 9 ב"להראות עוד". התחומים שבחרה
+ * קודם. רחב, אבל לא מעמיס. כללי ההתאמה הם של המנוע, בלי שינוי. בלי ציונים.
  */
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Clock, MapPin, Search, Sparkles, UserCheck } from "lucide-react";
+import { Award, ChevronLeft, Clock, MapPin, Search, Sparkles, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RealService } from "@/data/realServices";
 import { catalogState } from "@/data/catalogSource";
@@ -16,6 +16,7 @@ import { useShowImages } from "@/hooks/use-visual-mode";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { personalRecommendations } from "@/lib/personalMatch";
 import { amount } from "@/lib/wallet";
+import { SUPPLIER_RATING_NOTE_CITIZEN } from "@/lib/supplierRating";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { usePilot } from "@/pilot/store";
@@ -24,6 +25,8 @@ import { whereText } from "@/pilot/citizen/Service";
 import { usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 
 const QOL = "qol";
+const MAX_SHOWN = 6;
+const MAX_MORE = 9;
 
 function domainOf(s: RealService): string {
   return s.coreCategoryId ?? QOL;
@@ -76,6 +79,11 @@ function ServiceCard({ service, reason }: { service: RealService; reason?: strin
               <Clock className="w-4 h-4 shrink-0" aria-hidden="true" /> {when}
             </p>
           ) : null}
+          {service.supplierScore ? (
+            <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
+              <Award className="w-4 h-4 shrink-0 text-amber-700" aria-hidden="true" /> דירוג הספק {service.supplierScore.toFixed(1)} מתוך 5
+            </p>
+          ) : null}
           {service.gatedByCompanion ? (
             <p className="text-sm text-violet-900 mt-1 flex items-center gap-1">
               <UserCheck className="w-4 h-4 shrink-0" aria-hidden="true" /> נפתח יחד עם המלווה
@@ -96,24 +104,38 @@ export default function CitizenServices() {
   const [domain, setDomain] = useState<string>("all");
 
   const all = useMemo(() => servicesFor(profile.neighborhood), [profile.neighborhood]);
-  const picks = useMemo(() => {
+  // סדר המנוע (כללי ההתאמה כמו שהם): לפי הציון שלו בכל תחום.
+  const ranked = useMemo(() => {
     const ids = new Set(all.map((s) => s.id));
-    const results = matchServicesForCitizen(profile, { topN: 500, minScore: 0 }).filter((r) => ids.has(r.service.id));
-    return personalRecommendations(profile, results, 3);
+    return matchServicesForCitizen(profile, { topN: 500, minScore: 0 }).filter((r) => ids.has(r.service.id));
   }, [all, profile]);
+  const rank = useMemo(() => new Map(ranked.map((r, i) => [r.service.id, i])), [ranked]);
+  const picks = useMemo(() => personalRecommendations(profile, ranked, 3), [profile, ranked]);
+  const chosen = usePilot().derived.interests.get(profile.id) ?? [];
+  const [more, setMore] = useState<Set<string>>(new Set());
   const reasonOf = new Map(picks.map((p) => [p.result.service.id, p.reason]));
 
   const domains = useMemo(() => {
     const present = new Set(all.map(domainOf));
     const core = catalogState.seed.core_categories.filter((c) => present.has(c.id)).map((c) => ({ id: c.id, name: c.name }));
-    return present.has(QOL) ? [...core, { id: QOL, name: "איכות חיים" }] : core;
-  }, [all]);
+    const list = present.has(QOL) ? [...core, { id: QOL, name: "איכות חיים" }] : core;
+    // התחומים שבחרה ("לספר מה חשוב לי") קודם.
+    return [...list.filter((d) => chosen.includes(d.id)), ...list.filter((d) => !chosen.includes(d.id))];
+  }, [all, chosen]);
 
   const q = query.trim();
   const shown = all.filter((s) => (domain === "all" || domainOf(s) === domain) && (!q || s.name.includes(q) || (s.subcategory ?? "").includes(q)));
   const forYou = domain === "all" && !q ? shown.filter((s) => reasonOf.has(s.id)).sort((a, b) => [...reasonOf.keys()].indexOf(a.id) - [...reasonOf.keys()].indexOf(b.id)) : [];
   const rest = shown.filter((s) => !forYou.includes(s));
-  const groups = domains.map((d) => ({ ...d, items: rest.filter((s) => domainOf(s) === d.id) })).filter((g) => g.items.length);
+  const byRank = (a: RealService, b: RealService) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999);
+  const groups = domains
+    .map((d) => {
+      const items = rest.filter((s) => domainOf(s) === d.id).sort(byRank);
+      // בחיפוש: הכל. אחרת עד 6, ועד 9 ב"להראות עוד".
+      const cap = q ? items.length : more.has(d.id) ? MAX_MORE : MAX_SHOWN;
+      return { ...d, items: items.slice(0, cap), total: Math.min(items.length, q ? items.length : MAX_MORE) };
+    })
+    .filter((g) => g.items.length);
 
   if (simulation.noServices) {
     return (
@@ -133,7 +155,7 @@ export default function CitizenServices() {
         </div>
         <h1 className="text-3xl font-bold">השוק בשכונה שלך</h1>
         <p className="text-lg text-white/85 mt-1">
-          {profile.neighborhood} · {all.length} שירותים מאושרים
+          {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
         </p>
         <p className="text-base text-white/90 mt-2">נשארו בארנק שלך {amount(wallet.left)}</p>
       </div>
@@ -185,10 +207,21 @@ export default function CitizenServices() {
             <ul className="space-y-3">
               {g.items.map((s) => <ServiceCard key={s.id} service={s} />)}
             </ul>
+            {g.total > g.items.length ? (
+              <button
+                type="button"
+                className="mt-3 w-full min-h-[48px] rounded-xl border border-[#1B3A5C] text-[#1B3A5C] text-base font-semibold"
+                onClick={() => setMore(new Set([...more, g.id]))}
+              >
+                להראות עוד {g.total - g.items.length} ב{g.name}
+              </button>
+            ) : null}
           </section>
         ))}
 
         {shown.length === 0 ? <p className="text-base text-gray-800">לא מצאנו. אפשר לנסות מילה אחרת, או לבקש מהמלווה.</p> : null}
+
+        <p className="text-sm text-gray-600">{SUPPLIER_RATING_NOTE_CITIZEN}</p>
       </main>
     </div>
   );

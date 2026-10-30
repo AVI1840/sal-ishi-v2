@@ -29,6 +29,8 @@ export interface AppSettings {
   };
   /** יחידת התצוגה של הארנק. ראו src/lib/wallet.ts. */
   wallet?: { unit: "points" | "shekel"; simulated: boolean };
+  /** הצגת דירוג הספק (רכיבים: src/lib/supplierRating.ts). לא משנה את משקלות ההתאמה. */
+  supplier_rating?: { show: boolean; components?: string[]; status?: string };
   companion: {
     name: string;
     caseload_size: number;

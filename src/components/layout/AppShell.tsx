@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen, Menu, X, WifiOff } from "lucide-react";
+import { Home, Users, Wallet, BarChart3, BookOpen, Menu, X, WifiOff, MapPinned, Store, ExternalLink } from "lucide-react";
+import { appSettings } from "@/pilot/settings";
 import { useOnline } from "@/pilot/components/Frame";
 import { cn } from "@/lib/utils";
 
@@ -12,14 +13,12 @@ interface NavItem {
   end?: boolean;
 }
 
+// הדגמה: שלושה מסכים שמספרים את הסיפור. שאר המסכים (קליטה, משימות, הזמנות,
+// ניטור, שירותים ממופים) נשארים בכתובת ישירה ולא נמחקו.
 const COORDINATOR_NAV: NavItem[] = [
-  { to: "/coordinator", label: "דף הבית", icon: Home, end: true },
-  { to: "/coordinator/patients", label: "אזרחים", icon: Users },
-  { to: "/coordinator/services-map", label: "שירותים ממופים", icon: Activity },
-  { to: "/coordinator/deterioration", label: "ניטור הידרדרות", icon: Bell, badge: 4 },
-  { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
-  { to: "/coordinator/actions", label: "משימות", icon: FileText },
-  { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
+  { to: "/coordinator", label: "היום שלי", icon: Home, end: true },
+  { to: "/coordinator/patients", label: "האזרחים שלי", icon: Users },
+  { to: "/coordinator/community", label: "הקהילה שלי", icon: MapPinned },
 ];
 
 const EXECUTIVE_NAV: NavItem[] = [
@@ -29,7 +28,7 @@ const EXECUTIVE_NAV: NavItem[] = [
 ];
 
 const PROVIDER_NAV: NavItem[] = [
-  { to: "/providers", label: "דשבורד", icon: Home, end: true },
+  { to: "/providers", label: "קליטה לפי התקן", icon: Store, end: true },
 ];
 
 interface AppShellProps {
@@ -38,7 +37,7 @@ interface AppShellProps {
 
 export default function AppShell({ variant }: AppShellProps) {
   const nav = variant === "coordinator" ? COORDINATOR_NAV : variant === "executive" ? EXECUTIVE_NAV : PROVIDER_NAV;
-  const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי - ניהולי" : "פורטל ספקים";
+  const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי - מטה" : "פורטל ספקים";
   const subtitle = variant === "coordinator" ? "לוח בקרה למלווה חברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
   const { pathname } = useLocation();
   // בטלפון התפריט נפתח בכפתור ולא מכסה את התוכן (0.5: המלווה עובדת מהנייד).
@@ -103,35 +102,28 @@ export default function AppShell({ variant }: AppShellProps) {
         </nav>
 
         <div className="border-t border-border p-3 space-y-2">
-          {/* External: SAL-ISHI-SIUD link for coordinator only */}
-          {variant === "coordinator" && (
-            <a
-              href="https://avi1840.github.io/SAL-ISHI-SIUD/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-border/50"
-            >
-              <Activity className="w-3.5 h-3.5" />
-              <span>דשבורד SDI/RDI מפורט</span>
-              <span className="text-[9px] mr-auto text-muted-foreground/50">↗</span>
-            </a>
-          )}
+          {/* האטלס: אותו קטלוג, אצל הרשות (שטח) ובמטה */}
+          <a
+            href={variant === "executive" ? "./hq/" : "./field/"}
+            className="flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors border border-border"
+          >
+            <MapPinned className="w-4 h-4" aria-hidden="true" />
+            <span>{variant === "executive" ? "אטלס וקטלוג - מטה" : "אטלס השכונה (שטח)"}</span>
+            <ExternalLink className="w-3.5 h-3.5 mr-auto text-muted-foreground" aria-hidden="true" />
+          </a>
 
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent transition-colors">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-glow text-primary-foreground flex items-center justify-center text-sm font-semibold">
-              {variant === "coordinator" ? "רל" : variant === "executive" ? "מנ" : "ספ"}
+              {variant === "coordinator" ? appSettings.companion.name.charAt(0) : variant === "executive" ? "מט" : "ספ"}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-foreground truncate">
-                {variant === "coordinator" ? "רונית לוי" : variant === "executive" ? "מנהל בכיר" : "מתנ״ס פסגת זאב"}
+                {variant === "coordinator" ? appSettings.companion.name : variant === "executive" ? "מטה התכנית" : "מתנ״ס פסגת זאב"}
               </div>
               <div className="text-[11px] text-muted-foreground truncate">
-                {variant === "coordinator" ? "מלווה חברתית" : variant === "executive" ? "סמנכ״ל" : "ספק שירות"}
+                {variant === "coordinator" ? "מלווה חברתית · פסגת זאב" : variant === "executive" ? "ביטוח לאומי ומשרד הרווחה" : "ספק שירות"}
               </div>
             </div>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-background hover:text-destructive transition-colors" aria-label="יציאה">
-              <LogOut className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </aside>
