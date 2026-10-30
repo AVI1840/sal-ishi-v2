@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { catalogState } from "@/data/catalogSource";
 import { Activity, Heart, Users, MapPin, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SERVICES, CITIZENS } from "@/data/mockData";
+import { CITIZENS } from "@/data/mockData";
+import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { servicesFor } from "@/pilot/services";
 
 interface Layer {
   id: string;
@@ -14,7 +16,6 @@ interface Layer {
 }
 
 export default function CoordinatorAlgorithm() {
-  // משקלות מאומתות מנתוני פיילוט פסגת זאב
   // ברירת המחדל מההגדרות (seed 0.4, תוספת 3): מניעה 30, רצון 30, התאמה ליכולות 25, זמינות 15, המלצות 0.
   const w = catalogState.seed.settings.matching_weights as Record<string, number>;
   const pct = (k: string) => Math.round((w[k] ?? 0) * 100);
@@ -34,11 +35,22 @@ export default function CoordinatorAlgorithm() {
     setLayers(layers.map((l) => l.id === id ? { ...l, weight: value } : l));
   };
 
-  // Simple scoring simulation
-  const scoredServices = SERVICES.map((s) => ({
-    ...s,
-    score: Math.round(50 + Math.random() * 45),
-  })).sort((a, b) => b.score - a.score);
+  // תצוגה מקדימה אמיתית: מנוע ההתאמה עצמו, על הקטלוג של השכונה, עם המשקלות שבסליידרים.
+  // ההשוואה היא מול המשקלות שהוכרעו בהגדרות (30/30/25/15/0).
+  const [personaIdx, setPersonaIdx] = useState(0);
+  const persona = CITIZENS[personaIdx];
+  const weightsOf = (ls: { id: string; weight: number }[]) => {
+    const get = (id: string) => (ls.find((l) => l.id === id)?.weight ?? 0) / 100;
+    return { prevention: get("prevention"), motivation: get("motivation"), profileFit: get("profile"), socialProof: get("social"), proximity: get("proximity") };
+  };
+  const ids = useMemo(() => new Set(servicesFor(persona.neighborhood).map((x) => x.id)), [persona.neighborhood]);
+  const rankWith = (weights: ReturnType<typeof weightsOf>) => matchServicesForCitizen(persona, { topN: 500, minScore: 0, weights }).filter((r) => ids.has(r.service.id));
+  const baseline = useMemo(() => {
+    const def = { prevention: w.prevention ?? 0, motivation: w.motivation ?? 0, profileFit: w.profileFit ?? 0, socialProof: w.socialProof ?? 0, proximity: w.proximity ?? 0 };
+    return new Map(rankWith(def).map((r, i) => [r.service.id, i]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persona, ids]);
+  const scoredServices = rankWith(weightsOf(layers)).slice(0, 8).map((r, i) => ({ id: r.service.id, name: r.service.name, score: Math.round(r.totalScore), move: (baseline.get(r.service.id) ?? i) - i }));
 
   return (
     <div className="space-y-6">
@@ -91,7 +103,6 @@ export default function CoordinatorAlgorithm() {
           })}
 
           <div className="flex gap-3 pt-4 border-t border-border">
-            <button className="h-10 px-5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">שמור</button>
             <button className="h-10 px-5 bg-muted text-muted-foreground rounded-xl text-sm font-medium hover:bg-accent transition-colors" onClick={() => setLayers(layers.map((l, i) => ({ ...l, weight: DEFAULT_LAYER_WEIGHTS[i] })))}>
               איפוס לברירת מחדל
             </button>
@@ -102,12 +113,16 @@ export default function CoordinatorAlgorithm() {
         <div className="libi-card p-5">
           <h3 className="text-base font-semibold text-foreground mb-2">תצוגה מקדימה</h3>
           <div className="bg-muted/30 rounded-lg p-3 mb-4 border border-border/50">
-            <div className="text-xs text-muted-foreground">אזרח לדוגמה</div>
-            <div className="text-sm font-semibold text-foreground mt-0.5">{CITIZENS[2].name}</div>
-            <div className="text-xs text-muted-foreground">{CITIZENS[2].age}, {CITIZENS[2].city}</div>
+            <label className="text-xs text-muted-foreground" htmlFor="persona">אזרח לדוגמה (הדמויות של ההדגמה)</label>
+            <select id="persona" value={personaIdx} onChange={(e) => setPersonaIdx(Number(e.target.value))} className="mt-1 w-full min-h-[40px] rounded-lg border border-border bg-white px-2 text-sm">
+              {CITIZENS.slice(0, 3).map((c, i) => (
+                <option key={c.id} value={i}>{c.name}, {c.age}, {c.neighborhood}</option>
+              ))}
+            </select>
+            <div className="text-xs text-muted-foreground mt-1">החלום: {persona.dream}</div>
           </div>
 
-          <h4 className="text-xs font-medium text-muted-foreground mb-3">שירותים ממוינים לפי ציון</h4>
+          <h4 className="text-xs font-medium text-muted-foreground mb-3">8 הראשונים בקטלוג של {persona.neighborhood}, מהמנוע</h4>
           <div className="space-y-2">
             {scoredServices.slice(0, 6).map((service, i) => (
               <div key={service.id} className="flex items-center gap-2">
@@ -115,6 +130,11 @@ export default function CoordinatorAlgorithm() {
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium text-foreground truncate">{service.name}</div>
                 </div>
+                {service.move !== 0 ? (
+                  <span className={cn("text-[11px] font-bold tabular-nums", service.move > 0 ? "text-success" : "text-destructive")} aria-label={service.move > 0 ? `עלה ${service.move} מקומות` : `ירד ${-service.move} מקומות`}>
+                    {service.move > 0 ? `+${service.move}` : service.move}
+                  </span>
+                ) : null}
                 <div className="flex items-center gap-2">
                   <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full bg-primary" style={{ width: `${service.score}%` }} />
@@ -126,7 +146,7 @@ export default function CoordinatorAlgorithm() {
           </div>
 
           <div className="mt-4 p-3 bg-info-soft rounded-lg border border-info/20">
-            <p className="text-xs text-info">הציון מתעדכן בזמן אמת לפי השקלולים שבחרת</p>
+            <p className="text-xs text-info">אותו מנוע שהאזרח והמלווה רואים. הסימון +/- הוא השינוי במקום מול המשקלות שהוכרעו. השינוי כאן להדגמה בלבד: המשקלות נקבעים בהגדרות, באטלס המטה.</p>
           </div>
         </div>
       </div>

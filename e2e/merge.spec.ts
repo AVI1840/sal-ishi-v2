@@ -472,3 +472,33 @@ test("המלווה: שם, תפריט מקיף, והאטלס בתוך הכלי", 
   await page.goto("./#/executive/atlas");
   await expect(page.frameLocator("iframe[title='אטלס המטה']").getByText(/פיילוט ירושלים, 5 שכונות/).first()).toBeVisible();
 });
+
+test("מטה וספקים: מדדים מהשטח, ספריית הסל, אלגוריתם אמיתי, והספק מדווח נוכחות מהפורטל", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.goto("./#/executive");
+  await expect(page.getByRole("heading", { name: "מדדי הפיילוט לפי שכונה" })).toBeVisible();
+  await expect(page.locator("section[aria-labelledby=kpi-h] tbody tr")).toHaveCount(5);
+  await expect(page.getByRole("heading", { name: "התקציב החודשי של הפיילוט" })).toBeVisible();
+  await page.goto("./#/executive/catalog");
+  await expect(page.getByRole("heading", { level: 1, name: "ספריית הסל מול השטח" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: /^ריקוד/ }).first()).toBeVisible();
+  await page.goto("./#/executive/algorithm");
+  await expect(page.getByText(/8 הראשונים בקטלוג של פסגת זאב/)).toBeVisible();
+  // בלי Math.random: אותה רשימה בכל טעינה.
+  const first = await page.locator(".libi-card").last().innerText();
+  await page.reload();
+  expect(await page.locator(".libi-card").last().innerText()).toBe(first);
+
+  // שרה מצטרפת, והספק (המתנ"ס) רואה ומדווח.
+  await page.goto("./#/citizen/services/demoj-choir");
+  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+  await page.goto("./#/providers");
+  await expect(page.getByText("גרסה 1.2").first()).toBeVisible();
+  const market = page.locator("section[aria-labelledby=market-h]");
+  await expect(market.getByRole("row", { name: /שרה כ\. מקהלה קהילתית/ })).toBeVisible();
+  await market.getByRole("button", { name: "לדווח נוכחות: שרה כ., מקהלה קהילתית" }).click();
+  await expect(market.getByRole("row", { name: /מקהלה קהילתית/ })).toContainText("1 מתוך 4");
+  await page.goto("./#/citizen/activities");
+  await expect(page.locator("li").filter({ hasText: "מקהלה קהילתית" })).toContainText("נוצל 21 נקודות");
+});

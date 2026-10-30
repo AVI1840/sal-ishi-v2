@@ -23,7 +23,6 @@ import CitizenServices from "@/pages/citizen/CitizenServices";
 import CitizenServiceDetail from "@/pages/citizen/CitizenServiceDetail";
 import CitizenActivities from "@/pages/citizen/CitizenActivities";
 import CitizenNeeds from "@/pages/citizen/CitizenNeeds";
-import ServicesCatalog from "@/pages/citizen/ServicesCatalog";
 import CitizenChat from "@/pages/citizen/CitizenChat";
 import CitizenProfile from "@/pages/citizen/CitizenProfile";
 import CoordinatorDashboard from "@/pages/coordinator/CoordinatorDashboard";
@@ -42,6 +41,7 @@ import CoordinatorAgents from "@/pages/coordinator/CoordinatorAgents";
 import ExecutiveOverview from "@/pages/executive/ExecutiveOverview";
 import ProviderDashboard from "@/pages/providers/ProviderDashboard";
 import AtlasFrame from "@/pages/shared/AtlasFrame";
+import BasketLibrary from "@/pages/executive/BasketLibrary";
 import NotFound from "@/pages/NotFound";
 import ScopePage from "@/pages/ScopePage";
 
@@ -119,7 +119,7 @@ export default function LegacyApp() {
               {/* Executive Dashboard */}
               <Route path="/executive" element={<AppShell variant="executive" />}>
                 <Route index element={<ExecutiveOverview />} />
-                <Route path="catalog" element={<ServicesCatalog />} />
+                <Route path="catalog" element={<BasketLibrary />} />
                 <Route path="algorithm" element={<CoordinatorAlgorithm />} />
                 <Route path="atlas" element={<AtlasFrame which="hq" />} />
                 <Route path="agents" element={SHOW_DEMO_LAYERS ? <CoordinatorAgents /> : <Navigate to="/executive" replace />} />

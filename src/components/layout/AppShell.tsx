@@ -26,7 +26,7 @@ const COORDINATOR_NAV: NavItem[] = [
 const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
   { to: "/executive/atlas", label: "אטלס המטה", icon: MapIcon },
-  { to: "/executive/catalog", label: "קטלוג סל", icon: BookOpen },
+  { to: "/executive/catalog", label: "ספריית הסל", icon: BookOpen },
   { to: "/executive/algorithm", label: "אלגוריתם התאמה", icon: BarChart3 },
 ];
 

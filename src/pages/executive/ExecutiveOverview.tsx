@@ -8,10 +8,10 @@ import { count } from "@/lib/hebrew";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
-import { Award, BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
+import { Activity, Award, BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
-import { DECIDED_PRINCIPLES_MEETING_2, isDecided, ruleKeys, settingLabel, statusNote } from "@sal-ishi/core";
+import { DECIDED_PRINCIPLES_MEETING_2, DEMO_JERUSALEM, buildDemoAuthority, isDecided, penetration, ruleKeys, settingLabel, statusNote, timeToFirstService, utilization } from "@sal-ishi/core";
 import { communityFor } from "@/lib/community";
 import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
 import { statusText } from "@/lib/statusText";
@@ -81,6 +81,24 @@ export default function ExecutiveOverview() {
   const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
   const requests = derived.requests.length;
   const incentivePoints = derived.incentives.reduce((n, i) => n + i.points, 0);
+  const participants = appSettings.program.pilot_participants;
+  const pctOf = (n: number) => `${Math.round(n * 100)}%`;
+  // מדדי השטח: אותן פונקציות של הליבה שהאטלס משתמש בהן, על נתוני ההדגמה של ירושלים.
+  const { kpis, kpiMonth } = useMemo(() => {
+    const data = buildDemoAuthority(DEMO_JERUSALEM);
+    const seed = catalogState.seed;
+    const month = [...data.enrollment.map((e) => e.month)].sort().at(-1) ?? "";
+    return {
+      kpiMonth: month.split("-").reverse().join("/"),
+      kpis: data.neighborhoods.map((n) => ({
+        name: n.name,
+        enrolled: data.enrollment.filter((e) => e.neighborhoodId === n.id && e.month === month)[0]?.enrolled ?? null,
+        pen: penetration(n.id, data.enrollment, seed.settings, month),
+        util: utilization({ neighborhoodId: n.id, asOfMonth: month, services: data.services, activity: data.activity, enrollment: data.enrollment }, seed),
+        first: timeToFirstService(n.id, data.enrollment, seed.settings, month),
+      })),
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -147,6 +165,64 @@ export default function ExecutiveOverview() {
         <p className="text-xs text-muted-foreground mt-3">
           לפי ההחלטות: פסגת זאב, תלפיות מזרח, רוממה, הר נוף, בית וגן, ובית חנינא בתגבור (מרץ 2027). הר נוף עוד לא בקטלוג ההדגמה. קטלוג הדגמה, נתונים בדויים.
         </p>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="kpi-h">
+        <h2 id="kpi-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <Activity className="w-5 h-5 text-primary" aria-hidden="true" /> מדדי הפיילוט לפי שכונה
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">
+          מהדיווח המצטבר של השטח, חודש {kpiMonth}. מיצוי מול יעד {pctOf(Number(settings.utilization_target))} ודגל אדום {pctOf(Number(settings.red_flag_avg))} (מפגש 2). אותן פונקציות כמו באטלס המטה.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-right text-muted-foreground">
+                <th scope="col" className="py-2 font-semibold">שכונה</th>
+                <th scope="col" className="py-2 font-semibold">מחזיקי סל</th>
+                <th scope="col" className="py-2 font-semibold">פעילים מתוך הזכאים</th>
+                <th scope="col" className="py-2 font-semibold">מיצוי הארנק</th>
+                <th scope="col" className="py-2 font-semibold">ימים לשירות ראשון</th>
+              </tr>
+            </thead>
+            <tbody>
+              {kpis.map((k) => (
+                <tr key={k.name} className="border-b border-border/60 last:border-0">
+                  <td className="py-2.5 font-semibold text-foreground">{k.name}</td>
+                  <td className="py-2.5 text-foreground">{k.enrolled ?? "-"}</td>
+                  <td className="py-2.5 text-foreground">{k.pen.suppressed ? "פחות מ-5" : k.pen.rate === null ? "-" : pctOf(k.pen.rate)}</td>
+                  <td className={cn("py-2.5 font-semibold", k.util.flag === "red" ? "text-red-700" : k.util.flag === "below_target" ? "text-amber-800" : k.util.flag === "on_target" ? "text-emerald-800" : "text-muted-foreground")}>
+                    {k.util.rate === null ? "-" : pctOf(k.util.rate)}
+                    <span className="font-normal text-muted-foreground"> {k.util.flag === "red" ? "· דגל אדום" : k.util.flag === "below_target" ? "· מתחת ליעד" : k.util.flag === "on_target" ? "· ביעד" : ""}</span>
+                  </td>
+                  <td className={cn("py-2.5", k.first.overMax ? "text-red-700 font-semibold" : "text-foreground")}>{k.first.avgDays === null ? "-" : k.first.avgDays}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">נתוני הדגמה בדויים. בפיילוט: מהדוח המצטבר של ספק העל, בלי פירוט לפי אדם, ותא קטן מוסתר.</p>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="budget-h">
+        <h2 id="budget-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <Wallet className="w-5 h-5 text-primary" aria-hidden="true" /> התקציב החודשי של הפיילוט
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">חישוב: {participants} משתתפים כפול חלוקת הסל שהוכרעה.</p>
+        <dl className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {[
+            ["סך הכל", participants * basket.total],
+            ["ארנקים אישיים", participants * basket.personal_wallet],
+            ["ליווי", participants * basket.companion],
+            ["קהילה", participants * basket.community],
+            ["תפעול", participants * basket.overhead],
+          ].map(([label, v]) => (
+            <div key={String(label)} className="rounded-lg border border-border p-3">
+              <dt className="text-xs text-muted-foreground">{label}</dt>
+              <dd className="text-lg font-bold text-foreground">₪{Number(v).toLocaleString("he-IL")}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       <section className="libi-card p-5" aria-labelledby="decided-h">
