@@ -35,6 +35,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      merge_sha: ${{ steps.build.outputs.merge_sha }}
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,6 +46,7 @@ jobs:
         with:
           node-version: 20
       - name: Build every site
+        id: build
         run: |
           set -e
           mkdir -p site
@@ -56,6 +60,7 @@ jobs:
             mkdir -p "site/$dest"
             cp -r "$dir/dist/." "site/$dest/"
             echo "$ref -> /$dest ($sha)"
+            if [ "$dest" = merge ]; then echo "merge_sha=$sha" >> "$GITHUB_OUTPUT"; fi
           done
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
@@ -63,3 +68,37 @@ jobs:
           path: site
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # אחרי הפריסה: השורש ו-/next/ עונים, ו-/merge/ החי נבדק בדפדפן מול ה-commit שנבנה
+  # (scripts/check-live.mjs בענף המאוחד). כישלון לא מחזיר את הפריסה אחורה, רק מסמן אדום.
+  check-live:
+    needs: build-and-deploy
+    if: needs.build-and-deploy.outputs.merge_sha != ''
+    runs-on: ubuntu-latest
+    env:
+      PAGES_URL: ${{ needs.build-and-deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build-and-deploy.outputs.merge_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Every site answers
+        run: |
+          base="${PAGES_URL%/}/"
+          for path in "" next/ merge/ merge/hq/ merge/field/; do
+            curl -fsS -o /dev/null "$base$path" && echo "ok /$path"
+          done
+      - name: /merge/ is the new build and reads right
+        run: |
+          base="${PAGES_URL%/}/"
+          short=$(git rev-parse --short HEAD)
+          for i in 1 2 3 4 5; do
+            node scripts/check-live.mjs "${base}merge/" "$short" && exit 0
+            echo "retry $i in 30s"; sleep 30
+          done
+          exit 1
