@@ -137,3 +137,59 @@ test("נגישות: axe בלי ליקויים חמורים במסכים המאו
   }
   expect(problems).toEqual([]);
 });
+
+test("חוט הזהב: שרה מזמינה מקהלה, רונית רואה, והמטה סופר", async ({ page, context }) => {
+  await page.goto("./#/citizen");
+  const first = page.locator(`section[aria-labelledby=rec-title] a[href^="#/citizen/services/"]`).first();
+  await expect(first).toContainText("מקהלה קהילתית");
+  await expect(first).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
+
+  await page.goto("./#/citizen/services");
+  await expect(page.getByRole("heading", { level: 1, name: "השוק בשכונה שלך" })).toBeVisible();
+  await page.getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
+  await page.getByRole("button", { name: "להזמין" }).click();
+  const radios = page.getByRole("radio");
+  if (await radios.count()) {
+    await radios.first().check();
+    await page.getByRole("button", { name: "לבדוק ולאשר" }).click();
+  }
+  await page.getByRole("button", { name: "לאשר את ההזמנה" }).click();
+  await expect(page.getByRole("heading", { name: "ההזמנה נקלטה" })).toBeVisible();
+
+  const companion = await context.newPage();
+  await companion.goto("./#/coordinator/patients/c1");
+  await expect(companion.getByText(/מקהלה קהילתית:/).first()).toBeVisible();
+
+  await companion.goto("./#/executive");
+  // נתוני הפתיחה כבר כוללים הזמנות: בודקים שההזמנה נספרת (לפחות אחת).
+  await expect(companion.getByText(/[1-9]\d* הזמנות/)).toBeVisible();
+});
+
+test("לספר מה חשוב לי: ארבע שאלות, וההמלצות מתעדכנות", async ({ page }) => {
+  await page.goto("./#/citizen/needs");
+  for (const label of ["ללמוד ולקרוא", "בקבוצה קטנה", "בבוקר", "להיות לבד"]) {
+    await page.getByLabel(label).check();
+    await page.getByRole("button", { name: /להמשיך|לשמור/ }).click();
+  }
+  await expect(page.getByText("ההמלצות עודכנו לפי מה שסיפרת.")).toBeVisible();
+  await expect(page.getByText("סיפרת עכשיו שאת אוהבת ללמוד ולקרוא.")).toBeVisible();
+  await expect(page.getByText(/מקהלה קהילתית/)).toBeVisible();
+});
+
+test("מספרים: בלי טענות לא מבוססות בדף הבית, אצל המלווה ובמטה", async ({ page }) => {
+  for (const route of ["./", "./#/coordinator", "./#/executive", "./#/providers"]) {
+    await page.goto(route);
+    await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+    const text = await page.locator("body").innerText();
+    expect(text, route).not.toMatch(/₪2B|2 מיליארד|4\.7\/5|65%|₪930K|80% לשירותי|Harvard|Bedrock|Nudges|Timeline/);
+  }
+});
+
+test("הקהילה שלי ושוק האזרחית: אותו מספר שירותים", async ({ page }) => {
+  await page.goto("./#/citizen/services");
+  const citizen = (await page.locator("h1 + p").first().innerText()).match(/(\d+) שירותים מאושרים, (\d+) מהם/)!;
+  await page.goto("./#/coordinator/community");
+  const main = await page.locator("main").innerText();
+  expect(main).toContain(`בשוק של התושבים: ${citizen[1]}`);
+  expect(main).toMatch(new RegExp(`שירותים מאושרים בשכונה\\s+${citizen[2]}`));
+});

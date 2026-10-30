@@ -7,8 +7,11 @@
 import { useSyncExternalStore } from "react";
 import { EMPTY_SIMULATION, derive, type Actor, type Derived, type Lang, type OnBehalf, type PilotEvent, type PilotState, type RequestKind, type Simulation, type VisitKind } from "./model";
 
-/** מפתח נפרד מ-0.4: הגרסאות חולקות מקור באותו אתר, ו-0.5 לא כותב על הנתונים של 0.4. */
-export const STORAGE_KEY = "sal-ishi-pilot-v05";
+/**
+ * מפתח לכל גרסה: השורש (0.4), /next/ (0.5) ו-/merge/ (0.6) חולקים את אותו מקור
+ * באתר, ולכן כל אחת שומרת בנפרד, ומצב ההדגמה לא זולג ביניהן.
+ */
+export const STORAGE_KEY = "sal-ishi-pilot-v06-merge";
 
 const INITIAL: PilotState = { schema: 1, events: [], simulation: EMPTY_SIMULATION, lang: "he", textScale: 1 };
 
