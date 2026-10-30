@@ -413,6 +413,18 @@ test("השירותים בשכונה: בהתאמה אישית למעלה, ואז 
   await expect(personal.getByRole("heading", { level: 2, name: "שירותים בהתאמה אישית עבורך" })).toBeVisible();
   await expect(personal.getByRole("link").first()).toContainText("מקהלה קהילתית");
   const byCat = page.locator("section[aria-labelledby=bycat-h]");
+  // ברירת המחדל: כל השירותים לפי ההתאמה, עם רמת התאמה במילים ו"להראות עוד".
+  await expect(byCat.getByRole("heading", { level: 2, name: "כל השירותים, לפי ההתאמה אלייך" })).toBeVisible();
+  await expect(byCat.getByText(/מתאים לך/).first()).toBeVisible();
+  await expect(byCat.getByRole("button", { name: /להראות עוד 12/ })).toBeVisible();
+  await byCat.getByRole("radio", { name: "קרוב לבית" }).click();
+  await expect(byCat.getByRole("heading", { level: 2, name: "כל השירותים, הקרובים לבית קודם" })).toBeVisible();
+  await byCat.getByRole("radio", { name: "פופולרי בשכונה" }).click();
+  await expect(byCat.getByText(/פופולרי מאוד בשכונה/).first()).toBeVisible();
+  await byCat.getByRole("button", { name: "בבית או בטלפון" }).click();
+  await expect(byCat.getByRole("button", { name: "בבית או בטלפון" })).toHaveAttribute("aria-pressed", "true");
+  await byCat.getByRole("button", { name: "בבית או בטלפון" }).click();
+  await byCat.getByRole("radio", { name: "לפי קטגוריה" }).click();
   await expect(byCat.getByRole("heading", { level: 2, name: "שירותים לפי קטגוריה" })).toBeVisible();
   // ההתאמה האישית נשארת למעלה גם כשבוחרים קטגוריה.
   await byCat.getByRole("button", { name: "הכל" }).isVisible();

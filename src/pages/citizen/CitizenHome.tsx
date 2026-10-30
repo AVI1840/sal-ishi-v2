@@ -206,12 +206,7 @@ export default function CitizenHome() {
           )}
         </section>
 
-        {/* "שיחזרו אליי" והמוקד: בכרטיס העזרה שב-MobileShell, בכל מסך */}
-        <div className="flex items-center justify-center gap-4 pt-2">
-          <a href="tel:106" className="flex items-center gap-1.5 px-4 min-h-[48px] bg-gray-100 rounded-lg text-base font-medium text-gray-800">
-            <Phone className="w-4 h-4" aria-hidden="true" /> עירייה 106
-          </a>
-        </div>
+        {/* "שיחזרו אליי" והמוקד (מוקד הסל האישי): בכרטיס העזרה שב-MobileShell, בכל מסך. */}
       </main>
     </div>
   );

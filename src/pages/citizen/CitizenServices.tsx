@@ -8,7 +8,7 @@
  */
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, ChevronLeft, Clock, MapPin, Search, Sparkles, UserCheck } from "lucide-react";
+import { Award, Check, ChevronLeft, Clock, MapPin, Search, Sparkles, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RealService } from "@/data/realServices";
 import { catalogState } from "@/data/catalogSource";
@@ -16,6 +16,7 @@ import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
 import { personalRecommendations } from "@/lib/personalMatch";
+import { citizenReasons } from "@/lib/citizenReasons";
 import { amount } from "@/lib/wallet";
 import { SUPPLIER_RATING_NOTE_CITIZEN } from "@/lib/supplierRating";
 import { formatSlot } from "@/pilot/i18n";
@@ -29,6 +30,27 @@ import { usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 const QOL = "qol";
 const MAX_SHOWN = 6;
 const MAX_MORE = 9;
+/** ברשימה אחת (התאמה, פופולריות, קרבה): כמה בכל פעם. */
+const PAGE = 12;
+
+type Order = "fit" | "category" | "popular" | "near";
+const ORDERS: { id: Order; label: string; title: string }[] = [
+  { id: "fit", label: "הכי מתאים לי", title: "כל השירותים, לפי ההתאמה אלייך" },
+  { id: "category", label: "לפי קטגוריה", title: "שירותים לפי קטגוריה" },
+  { id: "popular", label: "פופולרי בשכונה", title: "כל השירותים, הפופולריים קודם" },
+  { id: "near", label: "קרוב לבית", title: "כל השירותים, הקרובים לבית קודם" },
+];
+const DEMAND_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+/** כמה קרוב לבית: בבית, בשכונה, באזור, מרחוק או בטלפון, ארצי. */
+function nearRank(s: RealService, home: string): number {
+  if (s.deliveryMode === "home" || s.serviceMode === "home") return 0;
+  if (s.deliveryMode === "remote" || s.serviceMode === "remote") return 3;
+  if (s.reach === "national") return 4;
+  if (s.neighborhood === home) return 1;
+  return 2;
+}
+const NEAR_LABEL = ["מגיע אלייך הביתה", "בשכונה שלך", "באזור, קרוב לשכונה", "מהבית, בטלפון או במחשב", "ארצי"];
 
 function domainOf(s: RealService): string {
   return s.coreCategoryId ?? QOL;
@@ -47,7 +69,7 @@ function whenText(s: RealService): string | null {
   return isSubscription(s) ? weeklyText(slots[0]) : formatSlot(he, slots[0]);
 }
 
-function ServiceCard({ service, reason, level = 3 }: { service: RealService; reason?: string; level?: 3 | 4 }) {
+function ServiceCard({ service, reason, reasons = [], badge, level = 3 }: { service: RealService; reason?: string; reasons?: string[]; badge?: string; level?: 3 | 4 }) {
   const Title = level === 4 ? "h4" : "h3";
   const showImages = useShowImages();
   const { image, gradient } = showImages ? getServiceImageInfo(service) : { image: undefined, gradient: "" };
@@ -68,6 +90,7 @@ function ServiceCard({ service, reason, level = 3 }: { service: RealService; rea
           <div className="flex-1 min-w-0">
             <Title className="text-base font-bold text-gray-900 leading-tight">{service.name}</Title>
             <span className="inline-block max-w-full mt-1 text-sm px-2 py-0.5 rounded-lg font-semibold bg-blue-50 text-[#1B3A5C]">{priceText(service)}</span>
+            {badge ? <span className="inline-block max-w-full mt-1 mr-1 text-sm px-2 py-0.5 rounded-lg font-semibold bg-emerald-50 text-emerald-900">{badge}</span> : null}
           </div>
           <ChevronLeft className="w-5 h-5 text-gray-500 shrink-0 self-center" aria-hidden="true" />
         </div>
@@ -77,6 +100,11 @@ function ServiceCard({ service, reason, level = 3 }: { service: RealService; rea
               <Sparkles className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /> <span>{reason}</span>
             </p>
           ) : null}
+          {reasons.filter((r) => r !== reason).slice(0, 2).map((r) => (
+            <p key={r} className="text-emerald-900 flex items-start gap-1">
+              <Check className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /> <span>{r}</span>
+            </p>
+          ))}
           <p className="flex items-start gap-1">
             <MapPin className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
             <span>
@@ -109,6 +137,10 @@ export default function CitizenServices() {
   const wallet = useWallet();
   const [query, setQuery] = useState("");
   const [domain, setDomain] = useState<string>("all");
+  const [order, setOrder] = useState<Order>("fit");
+  const [page, setPage] = useState(PAGE);
+  const [noCopay, setNoCopay] = useState(false);
+  const [fromHome, setFromHome] = useState(false);
 
   const all = useMemo(() => servicesFor(profile.neighborhood), [profile.neighborhood]);
   // סדר המנוע (כללי ההתאמה כמו שהם): לפי הציון שלו בכל תחום.
@@ -121,6 +153,9 @@ export default function CitizenServices() {
   const chosen = usePilot().derived.interests.get(profile.id) ?? [];
   const [more, setMore] = useState<Set<string>>(new Set());
   const reasonOf = new Map(picks.map((p) => [p.result.service.id, p.reason]));
+  // למה זה מתאים: ההסברים של המנוע בשפת האזרח, ורמת התאמה במילים (בלי ציון).
+  const whyOf = useMemo(() => new Map(ranked.map((r) => [r.service.id, citizenReasons(r.explanations)])), [ranked]);
+  const fitOf = useMemo(() => new Map(ranked.map((r) => [r.service.id, r.totalScore >= 70 ? "מתאים לך מאוד" : r.totalScore >= 55 ? "מתאים לך" : undefined])), [ranked]);
 
   const domains = useMemo(() => {
     const present = new Set(all.map(domainOf));
@@ -131,11 +166,27 @@ export default function CitizenServices() {
   }, [all, chosen]);
 
   const q = query.trim();
-  const shown = all.filter((s) => (domain === "all" || domainOf(s) === domain) && (!q || s.name.includes(q) || (s.subcategory ?? "").includes(q)));
+  const shown = all.filter(
+    (s) =>
+      (domain === "all" || domainOf(s) === domain) &&
+      (!q || s.name.includes(q) || (s.subcategory ?? "").includes(q)) &&
+      (!noCopay || priceOf(s).copay === 0) &&
+      (!fromHome || nearRank(s, profile.neighborhood) === 0 || nearRank(s, profile.neighborhood) === 3),
+  );
   // בהתאמה אישית: תמיד למעלה, בלי קשר לסינון. בקטגוריות הן לא חוזרות, חוץ מבחיפוש.
   const forYou = all.filter((s) => reasonOf.has(s.id)).sort((a, b) => [...reasonOf.keys()].indexOf(a.id) - [...reasonOf.keys()].indexOf(b.id));
   const rest = q ? shown : shown.filter((s) => !forYou.includes(s));
   const byRank = (a: RealService, b: RealService) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999);
+  const sorted = [...rest].sort((a, b) =>
+    order === "popular"
+      ? (DEMAND_RANK[a.demand ?? ""] ?? 3) - (DEMAND_RANK[b.demand ?? ""] ?? 3) || byRank(a, b)
+      : order === "near"
+        ? nearRank(a, profile.neighborhood) - nearRank(b, profile.neighborhood) || byRank(a, b)
+        : byRank(a, b),
+  );
+  const badgeOf = (s: RealService) =>
+    order === "popular" ? (s.demand === "high" ? "פופולרי מאוד בשכונה" : s.demand === "medium" ? "פופולרי בשכונה" : undefined) : order === "near" ? NEAR_LABEL[nearRank(s, profile.neighborhood)] : fitOf.get(s.id);
+  const current = ORDERS.find((o) => o.id === order)!;
   const groups = domains
     .map((d) => {
       const items = rest.filter((s) => domainOf(s) === d.id).sort(byRank);
@@ -174,13 +225,46 @@ export default function CitizenServices() {
             <h2 id="foryou-h" className="text-2xl font-bold text-gray-900">שירותים בהתאמה אישית עבורך</h2>
             <p className="text-base text-gray-700 mt-1 mb-3">לפי מה שסיפרת לנו ולמלווה.</p>
             <ul className="space-y-3">
-              {forYou.map((s) => <ServiceCard key={s.id} service={s} reason={reasonOf.get(s.id)} />)}
+              {forYou.map((sv) => <ServiceCard key={sv.id} service={sv} reason={reasonOf.get(sv.id)} badge={fitOf.get(sv.id)} reasons={whyOf.get(sv.id)} />)}
             </ul>
           </section>
         ) : null}
 
         <section aria-labelledby="bycat-h" className="space-y-5">
-          <h2 id="bycat-h" className="text-2xl font-bold text-gray-900">שירותים לפי קטגוריה</h2>
+          <h2 id="bycat-h" className="text-2xl font-bold text-gray-900">{current.title}</h2>
+          <div role="radiogroup" aria-label="לסדר לפי" className="grid grid-cols-2 gap-2">
+            {ORDERS.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                role="radio"
+                aria-checked={order === o.id}
+                onClick={() => (setOrder(o.id), setPage(PAGE))}
+                className={cn(
+                  "min-h-[48px] px-3 rounded-xl text-base font-semibold border",
+                  order === o.id ? "bg-[#1B3A5C] text-white border-[#1B3A5C]" : "bg-white text-[#1B3A5C] border-[#1B3A5C]/40",
+                )}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="סינון אישי">
+            {[
+              { on: noCopay, set: setNoCopay, label: "בלי תשלום ממני" },
+              { on: fromHome, set: setFromHome, label: "בבית או בטלפון" },
+            ].map((f) => (
+              <button
+                key={f.label}
+                type="button"
+                aria-pressed={f.on}
+                onClick={() => (f.set(!f.on), setPage(PAGE))}
+                className={cn("min-h-[44px] px-4 rounded-full text-base font-semibold border inline-flex items-center gap-1", f.on ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-gray-800 border-gray-300")}
+              >
+                {f.on ? <Check className="w-4 h-4" aria-hidden="true" /> : null} {f.label}
+              </button>
+            ))}
+          </div>
           <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" aria-hidden="true" />
             <input
@@ -212,11 +296,28 @@ export default function CitizenServices() {
 
           <p className="sr-only" role="status" aria-live="polite">{shown.length} שירותים</p>
 
-          {groups.map((g) => (
+          {order !== "category" ? (
+            <>
+              <ul className="space-y-3">
+                {sorted.slice(0, page).map((sv) => <ServiceCard key={sv.id} service={sv} badge={badgeOf(sv)} reasons={whyOf.get(sv.id)} />)}
+              </ul>
+              {sorted.length > page ? (
+                <button
+                  type="button"
+                  className="w-full min-h-[48px] rounded-xl border border-[#1B3A5C] text-[#1B3A5C] text-base font-semibold"
+                  onClick={() => setPage(page + PAGE)}
+                >
+                  להראות עוד {Math.min(PAGE, sorted.length - page)} (מתוך {sorted.length})
+                </button>
+              ) : null}
+            </>
+          ) : null}
+
+          {order === "category" && groups.map((g) => (
             <section key={g.id} aria-labelledby={`d-${g.id}`}>
               <h3 id={`d-${g.id}`} className="text-xl font-bold text-gray-900 mb-3">{g.name}</h3>
               <ul className="space-y-3">
-                {g.items.map((s) => <ServiceCard key={s.id} service={s} level={4} />)}
+                {g.items.map((sv) => <ServiceCard key={sv.id} service={sv} level={4} badge={fitOf.get(sv.id)} reasons={whyOf.get(sv.id)} />)}
               </ul>
               {g.total > g.items.length ? (
                 <button

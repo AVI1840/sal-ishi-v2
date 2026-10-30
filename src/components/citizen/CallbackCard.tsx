@@ -3,7 +3,7 @@
  * בקשה אחת פתוחה בכל פעם. כשהמלווה לא זמינה, הבקשה עוברת למחליפה.
  */
 import { Phone, PhoneCall } from "lucide-react";
-import { appSettings } from "@/pilot/settings";
+import { appSettings, callCenterNumber } from "@/pilot/settings";
 import { createRequest, usePilot } from "@/pilot/store";
 import { he } from "@/pilot/i18n/he";
 import { useCitizen } from "@/pilot/citizen/common";
@@ -30,8 +30,8 @@ export function CallbackCard() {
           <PhoneCall className="w-5 h-5" aria-hidden="true" /> {he.callMeBack}
         </button>
       ) : null}
-      <a href="tel:*6050" className="mt-2 w-full min-h-[48px] rounded-xl border border-white/40 text-base font-semibold flex items-center justify-center gap-2">
-        <Phone className="w-4 h-4" aria-hidden="true" /> {he.callCenter} *6050
+      <a href={`tel:${callCenterNumber()}`} className="mt-2 w-full min-h-[48px] rounded-xl border border-white/40 text-base font-semibold flex items-center justify-center gap-2">
+        <Phone className="w-4 h-4" aria-hidden="true" /> {he.callCenter} <span dir="ltr">{callCenterNumber()}</span>
       </a>
     </section>
   );

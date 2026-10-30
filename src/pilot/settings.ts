@@ -20,6 +20,8 @@ export interface AppSettings {
   mode: AppMode;
   version: string;
   program: { pilot_participants: number; pilot_participants_source: string };
+  /** המוקד שהאזרח מתקשר אליו: מוקד הסל האישי (לא ביטוח לאומי). */
+  support?: { call_center_name: string; call_center_number: string; note?: string };
   /** נתוני רקע לדף הבית ולמבט מטה. מוצגים רק כש-show דלוק (אישור של אביעד). */
   background?: {
     show?: boolean;
@@ -89,6 +91,9 @@ export async function loadAppSettings(): Promise<void> {
 }
 
 export const isDemo = () => appSettings.mode === "demo";
+
+/** מספר המוקד: מההגדרות, ברירת מחדל *120. */
+export const callCenterNumber = () => appSettings.support?.call_center_number ?? "*120";
 
 /** נתוני הרקע, רק אם הוצגו באישור (background.show). אחרת: כלום, ושום מספר לא מופיע. */
 export const shownBackground = () => (appSettings.background?.show ? appSettings.background : undefined);

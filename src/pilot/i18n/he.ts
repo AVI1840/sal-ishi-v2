@@ -135,7 +135,7 @@ export const he = {
   callbackSent: (name: string) => `${name}, המלווה שלך, קיבלה את הבקשה ותתקשר בקרוב.`,
   callbackPending: "כבר ביקשת שיחזרו אליך. הבקשה אצל המלווה.",
   companionAway: (name: string, cover: string) => `${name} לא זמינה השבוע. ${cover}, המלווה המחליפה, תתקשר בקרוב.`,
-  callCenter: "להתקשר למוקד ביטוח לאומי",
+  callCenter: "להתקשר למוקד הסל האישי",
   howToTitle: "איך משתמשים",
   howTo: [
     "בכל מסך יש כפתור \"להקריא\". הוא קורא בקול את מה שכתוב.",

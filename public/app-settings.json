@@ -10,6 +10,11 @@
     "pilot_participants": 286,
     "pilot_participants_source": "פיילוט פסגת זאב, נתוני רקע"
   },
+  "support": {
+    "call_center_name": "מוקד הסל האישי",
+    "call_center_number": "*120",
+    "note": "מוקד ייעודי לסל האישי. לא מוקד ביטוח לאומי ולא מוקד העירייה. המספר להדגמה"
+  },
   "background": {
     "show": false,
     "show_note": "כבוי עד אישור של אביעד. כשמדליקים: רק מספרים שאושרו, עם מקור.",

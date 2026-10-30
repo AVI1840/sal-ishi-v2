@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Phone, PhoneCall } from "lucide-react";
 import { useT } from "../i18n";
-import { appSettings } from "../settings";
+import { appSettings, callCenterNumber } from "../settings";
 import { createRequest, usePilot } from "../store";
 import { Alert } from "../components/Frame";
 import { PageTitle, useCitizen } from "./common";
@@ -39,9 +39,9 @@ export default function CitizenHelp() {
             </button>
           </>
         )}
-        <a href="tel:*6050" className="p-btn p-btn--secondary p-btn--block">
+        <a href={`tel:${callCenterNumber()}`} className="p-btn p-btn--secondary p-btn--block">
           <Phone aria-hidden="true" size={22} />
-          {t.callCenter} *6050
+          {t.callCenter} <span dir="ltr">{callCenterNumber()}</span>
         </a>
       </section>
       <section className="p-card" aria-labelledby="howto-title">
