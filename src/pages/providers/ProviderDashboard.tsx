@@ -1,24 +1,39 @@
 /**
- * פורטל ספקים (0.5 מאוחד): קליטה לפי תקן קליטת המפעילים ובדיקת השלמות בלבד.
- * תשלומים, יתרות, הזמנות ודירוג נמצאים אצל ספק העל, והכלי לא מבצע אותם.
+ * פורטל ספקים: הצד של הספק באותו סיפור. הספק נכנס לשוק השכונתי דרך תקן קליטת
+ * המפעילים: לכל שירות, האם הוא מוכן לקליטה ומה חסר. שורה אחת לכל שירות (עם
+ * השכונות שלו), בלי הפניות (שירות שממומן במלואו על ידי מממן אחר אינו שירות של
+ * הספק). דירוג הספק מוצג עם הרכיבים שלו. תשלומים, יתרות והזמנות אצל ספק העל.
  */
 import { useMemo, useState } from "react";
 import { CheckCircle2, AlertTriangle, FileJson, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { buildDemoAuthority, defaultSeed, entryTest, missingMandatoryFields, onboardingGaps, ENTRY_STATUS } from "@sal-ishi/core";
+import { buildDemoAuthority, complementOf, defaultSeed, DEMO_JERUSALEM, entryTest, missingMandatoryFields, onboardingGaps, supplierScore, withSettings, ENTRY_STATUS } from "@sal-ishi/core";
+import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
+
+/** "2026-Q3" מוצג כ"רבעון 3, 2026". */
+const quarterText = (q: string) => q.replace(/^(\d{4})-Q(\d)$/, "רבעון $2, $1");
 
 export default function ProviderDashboard() {
-  const data = useMemo(() => buildDemoAuthority(2), []);
+  const data = useMemo(() => buildDemoAuthority(DEMO_JERUSALEM), []);
   const suppliers = data.suppliers;
   const [code, setCode] = useState(suppliers[0]?.code ?? "");
   const supplier = suppliers.find((s) => s.code === code);
-  const services = data.services.filter((s) => s.supplierCode === code);
+  const hoodName = (id: string) => data.neighborhoods.find((n) => n.id === id)?.name ?? id;
+  const all = data.services.filter((s) => s.supplierCode === code);
+  // הפניה (מממן אחר משלם הכל) אינה שירות של הספק בשוק.
+  const referrals = all.filter((s) => complementOf(s, defaultSeed).state === "full");
+  const services = all.filter((s) => !referrals.includes(s));
+  const score = supplier ? supplierScore(supplier, withSettings(defaultSeed, { supplier_rating_enabled: true }).settings) : null;
 
-  const rows = services.map((s) => {
+  // שורה אחת לכל שירות: אותו שם באותו ספק בכמה שכונות מתאחד, עם רשימת השכונות.
+  const byName = new Map<string, typeof services>();
+  for (const s of services) byName.set(s.name, [...(byName.get(s.name) ?? []), s]);
+  const rows = [...byName.values()].map((group) => {
+    const s = group[0];
     const entry = entryTest(s, defaultSeed);
-    const missing = [...missingMandatoryFields(s, data.activity, defaultSeed).map((m) => m.label), ...onboardingGaps(s, defaultSeed)];
-    const ready = s.status === "אושר" && missing.length === 0 && entry.status === ENTRY_STATUS.in;
-    return { s, entry, missing, ready };
+    const missing = [...new Set(group.flatMap((g) => [...missingMandatoryFields(g, data.activity, defaultSeed).map((m) => m.label), ...onboardingGaps(g, defaultSeed)]))];
+    const ready = group.every((g) => g.status === "אושר") && missing.length === 0 && entry.status === ENTRY_STATUS.in;
+    return { s, hoods: [...new Set(group.map((g) => hoodName(g.neighborhoodId)))], statuses: [...new Set(group.map((g) => g.status))], entry, missing, ready };
   });
   const ready = rows.filter((r) => r.ready).length;
 
@@ -27,13 +42,13 @@ export default function ProviderDashboard() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">פורטל ספקים: קליטה לפי התקן</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          לכל שירות: האם הוא עומד בתקן קליטת המפעילים (operator_onboarding_standard 1.1), ומה חסר כדי להיכנס.
+          לכל שירות: האם הוא עומד בתקן קליטת המפעילים (גרסה 1.1), ומה חסר כדי להיכנס.
         </p>
       </div>
 
       <div className="libi-card p-4 flex items-start gap-3 bg-accent/40">
         <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-        <p className="text-sm text-foreground">תשלומים, יתרות, הזמנות ודירוג ספקים נמצאים בפלטפורמה של ספק העל. כאן רק בודקים שהשירות מוכן לקליטה.</p>
+        <p className="text-sm text-foreground">שירות שעומד בתקן נכנס לשוק השכונתי שהאזרחים והמלוות רואים. תשלומים, יתרות והזמנות נמצאים בפלטפורמה של ספק העל.</p>
       </div>
 
       <div className="flex flex-wrap items-end gap-4">
@@ -42,7 +57,7 @@ export default function ProviderDashboard() {
           <select className="min-h-[44px] rounded-lg border border-border bg-white px-3" value={code} onChange={(e) => setCode(e.target.value)}>
             {suppliers.map((s) => (
               <option key={s.code} value={s.code}>
-                {s.code}
+                {s.displayName}
               </option>
             ))}
           </select>
@@ -52,6 +67,10 @@ export default function ProviderDashboard() {
             {ready} מתוך {rows.length}
           </div>
           <div className="text-sm text-foreground mt-0.5">שירותים מוכנים לקליטה</div>
+        </div>
+        <div className="libi-stat-card">
+          <div className="text-2xl font-bold text-foreground">{score ? `${score.score.toFixed(1)} מתוך 5` : "אין עדיין"}</div>
+          <div className="text-sm text-foreground mt-0.5">דירוג הספק{score ? ` (${quarterText(score.quarter)})` : ""}</div>
         </div>
         {supplier ? <p className="text-sm text-muted-foreground">שפות: {supplier.languages.join(", ")} · נגיש: {supplier.accessible ? "כן" : "לא"}</p> : null}
       </div>
@@ -67,11 +86,11 @@ export default function ProviderDashboard() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ s, entry, missing, ready: ok }) => (
+            {rows.map(({ s, hoods, statuses, entry, missing, ready: ok }) => (
               <tr key={s.id} className="border-t border-border align-top">
                 <td className="p-3">
                   <div className="font-medium text-foreground">{s.name}</div>
-                  <div className="text-xs text-muted-foreground">{s.unit} · {s.status}</div>
+                  <div className="text-xs text-muted-foreground">{s.unit} · {statuses.join(", ")} · {hoods.join(", ")}</div>
                 </td>
                 <td className="p-3">{entry.status === ENTRY_STATUS.in ? "עובר" : `${entry.status}: ${entry.reason}`}</td>
                 <td className="p-3">{missing.length ? missing.join(", ") : "-"}</td>
@@ -87,8 +106,20 @@ export default function ProviderDashboard() {
         </table>
       </div>
 
+      <div className="libi-card p-4 space-y-1">
+        <p className="text-sm font-semibold text-foreground">איך נבנה דירוג הספק</p>
+        <p className="text-sm text-foreground">{SUPPLIER_RATING_COMPONENTS.join(" · ")}</p>
+        <p className="text-xs text-muted-foreground">ההרכב והמשקלות ייקבעו בהמשך. בהדגמה הדירוג מההערכה הרבעונית האחרונה באטלס.</p>
+      </div>
+
+      {referrals.length ? (
+        <p className="text-sm text-muted-foreground">
+          {referrals.length === 1 ? "הפניה אחת" : `${referrals.length} הפניות`} (מימון מלא ממממן אחר) לא מופיעות כאן: הן לא שירות של הספק בשוק.
+        </p>
+      ) : null}
+
       <p className="text-sm text-muted-foreground flex items-center gap-2">
-        <FileJson className="w-4 h-4" aria-hidden="true" /> התקן והסכמה פתוחים: schema/operator_onboarding_standard_1.1.schema.json. המטה מייצא אותו במסך "ייצוא".
+        <FileJson className="w-4 h-4" aria-hidden="true" /> התקן והסכמה פתוחים לכל ספק. המטה מייצא אותם במסך "ייצוא" באטלס.
       </p>
     </div>
   );

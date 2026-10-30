@@ -3,6 +3,7 @@
  * מבוסס על החלטות ממשלה 127 ו-150
  * 5 תחומי ליבה · קטגוריות משנה · רמות שירות
  */
+import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -187,7 +188,7 @@ export default function ServicesCatalog() {
     <div className="min-h-screen bg-gray-50 pb-28" dir="rtl">
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/citizen" className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
+          <Link to="/executive" aria-label="חזרה למבט מטה" className="w-11 h-11 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
             <ChevronLeft className="w-4 h-4 text-gray-500 rotate-180" />
           </Link>
           <span className="text-sm font-bold text-gray-900">קטלוג סל שירותים</span>
@@ -306,18 +307,13 @@ export default function ServicesCatalog() {
 
         {/* Algorithm */}
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">אלגוריתם התאמה - 5 שכבות</h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">אלגוריתם התאמה - 5 שכבות</h3>
+          <p className="text-xs text-gray-600 mb-4">המשקלות מההגדרות (תוספת 3). הצעה: ועדת הסל קובעת.</p>
           <div className="space-y-2.5">
-            {[
-              { w: "40%", title: "מניעת הידרדרות", desc: "מה מוכח מחקרית שמעכב ירידה תפקודית, מותאם לגורמי סיכון מזוהים" },
-              { w: "25%", title: "רצון ומוטיבציות", desc: "מה האדם רוצה, מה מתאים לאישיותו, מה מוכן להשקיע" },
-              { w: "20%", title: "התאמה לפרופיל", desc: "יכולות פיזיות, קוגניטיביות, שפה, מגזר, מגבלות" },
-              { w: "10%", title: "זמינות מעשית", desc: "קרבה גיאוגרפית, שעות, הסעות, עלות" },
-              { w: "5%", title: "המלצות וניסיון", desc: "דירוגי משתמשים, המלצות מקצועיות" },
-            ].map((l, i) => (
+            {MATCHING_LAYER_SOURCES.map((x) => ({ w: `${Math.round(((catalogState.seed.settings.matching_weights as Record<string, number>)[x.key] ?? 0) * 100)}%`, title: x.label, desc: x.source })).map((l, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-11 h-6 rounded bg-[#1B3A5C]/10 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-[#1B3A5C]">{l.w}</span>
+                  <span className="text-xs font-bold text-[#1B3A5C]">{l.w}</span>
                 </div>
                 <div><p className="text-sm font-medium text-gray-900">{l.title}</p><p className="text-xs text-gray-500">{l.desc}</p></div>
               </div>
@@ -329,9 +325,10 @@ export default function ServicesCatalog() {
         <div className="bg-[#1B3A5C]/5 border border-[#1B3A5C]/10 rounded-xl p-4 space-y-2">
           <p className="text-xs font-semibold text-[#1B3A5C]">כללי בחירה</p>
           <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
-            <li>מינימום שירות אחד מכל תחום</li>
-            <li>מקסימום 8 שירותים פעילים במקביל</li>
+            <li>מומלץ לפחות שירות אחד מכל תחום (המלצה רכה, לא חסימה)</li>
+            <li>עד {catalogState.seed.settings.selection_max_active} שירותים פעילים במקביל</li>
             <li>אפשרות שינוי כל חודש עם ליווי</li>
+            <li>כללי הבחירה: הצעה, להכרעה במפגש 3</li>
             <li>עדיפות לשירותים מוכחי יעילות למניעת הידרדרות</li>
             <li>משקלות האלגוריתם נקבעים ע"י ועדת הסל אחת לחציון</li>
           </ul>

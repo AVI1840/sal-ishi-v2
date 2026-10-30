@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { catalogState } from "@/data/catalogSource";
 import { Activity, Heart, Users, MapPin, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SERVICES, CITIZENS } from "@/data/mockData";
@@ -14,13 +15,16 @@ interface Layer {
 
 export default function CoordinatorAlgorithm() {
   // משקלות מאומתות מנתוני פיילוט פסגת זאב
-  const DEFAULT_LAYER_WEIGHTS = [30, 25, 20, 15, 10];
+  // ברירת המחדל מההגדרות (seed 0.4, תוספת 3): מניעה 30, רצון 30, התאמה ליכולות 25, זמינות 15, המלצות 0.
+  const w = catalogState.seed.settings.matching_weights as Record<string, number>;
+  const pct = (k: string) => Math.round((w[k] ?? 0) * 100);
+  const DEFAULT_LAYER_WEIGHTS = [pct("prevention"), pct("motivation"), pct("profileFit"), pct("socialProof"), pct("proximity")];
   const [layers, setLayers] = useState<Layer[]>([
-    { id: "prevention", label: "מניעת הידרדרות", description: "שירותים שמוכחים כמפחיתים ירידה תפקודית", icon: Activity, color: "#3b82f6", weight: 30 },
-    { id: "motivation", label: "מוטיבציות ורצון אישי", description: "התאמה לרצונות, חלומות ותחביבי האדם", icon: Heart, color: "#ec4899", weight: 25 },
-    { id: "profile", label: "פרופיל: ניידות, שפה, מגזר", description: "התאמה ליכולות ולצרכים הספציפיים", icon: Users, color: "#22c55e", weight: 20 },
-    { id: "social", label: "המלצות חברתיות ואמינות", description: "דירוגי עמיתים - מניע עיקרי לאימוץ שירות", icon: AlertTriangle, color: "#8b5cf6", weight: 15 },
-    { id: "proximity", label: "זמינות וקרבה גיאוגרפית", description: "שכונה, הסעות, שעות פתיחה", icon: MapPin, color: "#f59e0b", weight: 10 },
+    { id: "prevention", label: "מניעת הידרדרות", description: "שירותים שמוכחים כמפחיתים ירידה תפקודית", icon: Activity, color: "#3b82f6", weight: pct("prevention") },
+    { id: "motivation", label: "מוטיבציות ורצון אישי", description: "התאמה לרצונות, חלומות ותחביבי האדם", icon: Heart, color: "#ec4899", weight: pct("motivation") },
+    { id: "profile", label: "פרופיל: ניידות, שפה, מגזר", description: "התאמה ליכולות ולצרכים הספציפיים", icon: Users, color: "#22c55e", weight: pct("profileFit") },
+    { id: "social", label: "המלצות וניסיון", description: "מגיע מספק העל. 0 עד שיהיו נתוני ניסיון (תוספת 3)", icon: AlertTriangle, color: "#8b5cf6", weight: pct("socialProof") },
+    { id: "proximity", label: "זמינות וקרבה גיאוגרפית", description: "שכונה, הסעות, שעות פתיחה", icon: MapPin, color: "#f59e0b", weight: pct("proximity") },
   ]);
 
   const total = layers.reduce((sum, l) => sum + l.weight, 0);
@@ -71,6 +75,7 @@ export default function CoordinatorAlgorithm() {
                 </div>
                 <input
                   type="range"
+                  aria-label={`משקל: ${layer.label}`}
                   min={0}
                   max={50}
                   value={layer.weight}

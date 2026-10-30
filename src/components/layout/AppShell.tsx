@@ -103,6 +103,7 @@ export default function AppShell({ variant }: AppShellProps) {
 
         <div className="border-t border-border p-3 space-y-2">
           {/* האטלס: אותו קטלוג, אצל הרשות (שטח) ובמטה */}
+          {variant !== "provider" && (
           <a
             href={variant === "executive" ? "./hq/" : "./field/"}
             className="flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors border border-border"
@@ -111,6 +112,7 @@ export default function AppShell({ variant }: AppShellProps) {
             <span>{variant === "executive" ? "אטלס וקטלוג - מטה" : "אטלס השכונה (שטח)"}</span>
             <ExternalLink className="w-3.5 h-3.5 mr-auto text-muted-foreground" aria-hidden="true" />
           </a>
+          )}
 
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent transition-colors">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-glow text-primary-foreground flex items-center justify-center text-sm font-semibold">

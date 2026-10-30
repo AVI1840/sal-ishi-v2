@@ -1,184 +1,185 @@
-import { Building2, Users, Heart, TrendingUp, TrendingDown, Star, CheckCircle2, MapPin } from "lucide-react";
+/**
+ * מבט מטה: מה המדינה מחזיקה ורואה. כל מספר כאן מגיע ממקור אחד: הקטלוג
+ * המאושר באטלס, ההגדרות (seed 0.4, תוספת 3, מפגש 2), יומן האירועים, או
+ * app-settings.json, ומספר שלא אומת מסומן [לאמת]. בלי תחזיות חיסכון ובלי
+ * מגמות בלי נתונים.
+ */
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StatCard } from "@/components/shared/StatCard";
-import { ProgressBar } from "@/components/shared/ProgressBar";
-import { Chip } from "@/components/shared/Chip";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
+import { communityFor } from "@/lib/community";
+import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
+import { statusText } from "@/lib/statusText";
+import { appSettings } from "@/pilot/settings";
+import { usePilot } from "@/pilot/store";
 
-const TIMELINE_STEPS = [
-  { label: "נייר מדיניות", status: "done" },
-  { label: "מחקר", status: "done" },
-  { label: "סדנה", status: "done" },
-  { label: "אפיון", status: "active" },
-  { label: "פיילוט", status: "active" },
-  { label: "לוח ח-2", status: "pending" },
-  { label: "קול קורא", status: "pending" },
-  { label: "הרחבה", status: "pending" },
-  { label: "הטמעה", status: "pending" },
-];
+/** שכונות הפיילוט לפי ההחלטות. הר נוף עוד לא בקטלוג ההדגמה. */
+const PILOT_NEIGHBORHOODS = ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"];
 
-const SITES = [
-  { name: "פסגת זאב", citizens: 286, coordinators: 4, providers: 12, utilization: 71, prevention: 54, budget: "₪930K", status: "פעיל" },
-  { name: "תלפיות מזרח", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
-  { name: "בית חנינא", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
-  { name: "נווה יעקב", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
-  { name: "עין כרם", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "-", status: "מתוכנן" },
-];
+type Rule = { key: string; status: string };
 
+function ruleStatuses(settings: Record<string, unknown>): Rule[] {
+  const out: Rule[] = [];
+  for (const [key, v] of Object.entries(settings)) {
+    const status = key.endsWith("_status") && typeof v === "string" ? v : v && typeof v === "object" && "status" in v ? String((v as { status: unknown }).status) : null;
+    if (status) out.push({ key, status });
+  }
+  return out;
+}
+
+function Card(props: { icon: typeof Store; label: string; value: string | number; sub?: string; to?: string; href?: string }) {
+  const body = (
+    <>
+      <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+        <props.icon className="w-4 h-4" aria-hidden="true" /> {props.label}
+      </p>
+      <p className="text-3xl font-bold text-foreground mt-1">{props.value}</p>
+      {props.sub ? <p className="text-sm text-muted-foreground mt-1">{props.sub}</p> : null}
+    </>
+  );
+  if (props.to) return <Link to={props.to} className="libi-card p-5 block hover:border-primary/40">{body}</Link>;
+  if (props.href) return <a href={props.href} className="libi-card p-5 block hover:border-primary/40">{body}</a>;
+  return <div className="libi-card p-5">{body}</div>;
+}
 
 export default function ExecutiveOverview() {
+  const { derived } = usePilot();
+  const settings = catalogState.seed.settings as unknown as Record<string, unknown>;
+  const basket = settings as Record<"total" | "personal_wallet" | "companion" | "community" | "overhead", number>;
+  const weights = catalogState.seed.settings.matching_weights as Record<string, number>;
+  const rules = useMemo(() => ruleStatuses(settings), [settings]);
+  const proposals = rules.filter((r) => r.status.startsWith("proposal")).length;
+  const decided = rules.length - proposals;
+  const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
+  const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
+  const requests = derived.requests.length;
+
   return (
     <div className="space-y-6">
-      {/* Hero Banner */}
       <div className="bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] rounded-2xl p-8 text-white">
-        <h1 className="text-2xl font-bold">רפורמת סל אישי - מבט על</h1>
-        <p className="text-sm text-white/70 mt-1">שלב 1: פיילוט ירושלים</p>
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-white/80">התקדמות כללית</span>
-            <span className="text-sm font-bold">65%</span>
-          </div>
-          <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-400 rounded-full" style={{ width: "65%" }} />
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold">הסל האישי: מבט מטה</h1>
+        <p className="text-base text-white/90 mt-2 max-w-3xl">
+          המדינה מחזיקה בקטלוג, בכללים ובנתונים. ספק העל מפעיל את הנקודות והתשלומים, והתקן הפתוח מאפשר לכל ספק להתחבר.
+        </p>
+        <p className="text-sm text-white/80 mt-3">
+          פיילוט ירושלים · {appSettings.program.pilot_participants} משתתפים ({appSettings.program.pilot_participants_source})
+        </p>
       </div>
 
-      {/* 6 KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard icon={Building2} label="רשויות פעילות" value="1/5" sub="ירושלים" tone="primary" />
-        <StatCard icon={Users} label="אזרחים בפיילוט" value={286} sub="פסגת זאב" tone="success" />
-        <StatCard icon={Heart} label="מלוות חברתיות" value={4} sub="מודל 1:75" tone="info" />
-        <StatCard icon={TrendingUp} label="מיצוי ארנק" value="71%" sub="54% למניעה" tone="success" />
-        <StatCard icon={TrendingDown} label="דחיית הידרדרות" value="20%" sub="~3 חודשים" tone="success" />
-        <StatCard icon={Star} label="חיסכון פוטנציאלי" value="₪2B" sub="בהרחבה לאומית" tone="warning" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
+        <Card icon={Wallet} label="סל לאזרח בחודש" value={`${basket.total} נקודות`} sub={`${basket.personal_wallet} ארנק אישי · נקודה = ₪1`} />
+        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו · ${proposals} הצעה, ממתין להכרעה`} />
+        <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${bookings} הזמנות · ${requests} בקשות למלווה`} />
       </div>
 
-      {/* Timeline */}
-      <div className="libi-card p-5">
-        <h3 className="text-base font-semibold text-foreground mb-6">ציר זמן הרפורמה</h3>
-        <div className="flex items-center justify-between relative">
-          {/* Connection line */}
-          <div className="absolute top-4 right-4 left-4 h-0.5 bg-gradient-to-l from-success via-primary to-muted" />
-          {TIMELINE_STEPS.map((step, i) => (
-            <div key={i} className="flex flex-col items-center relative z-10">
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2",
-                step.status === "done" ? "bg-success text-success-foreground border-success" :
-                step.status === "active" ? "bg-primary text-primary-foreground border-primary animate-pulse" :
-                "bg-muted text-muted-foreground border-border"
-              )}>
-                {step.status === "done" ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-2 text-center max-w-[60px]">{step.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Neighborhoods + Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Neighborhood status list - replaces decorative dot-map */}
-        <div className="libi-card p-5">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-muted-foreground" /> אתרי הפיילוט - ירושלים
-          </h3>
-          <div className="space-y-2">
-            {[
-              { name: "פסגת זאב",     status: "פעיל",    citizens: 286, coordinators: 4, providers: 12 },
-              { name: "תלפיות מזרח", status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-              { name: "בית חנינא",    status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-              { name: "נווה יעקב",    status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-              { name: "עין כרם",      status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-            ].map((n) => (
-              <div key={n.name} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
-                <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", n.status === "פעיל" ? "bg-success" : "bg-muted-foreground/30")} />
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-foreground">{n.name}</span>
-                  {n.citizens && (
-                    <span className="text-xs text-muted-foreground mr-2">· {n.citizens} אזרחים · {n.coordinators} מלוות · {n.providers} ספקים</span>
-                  )}
-                </div>
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium border", n.status === "פעיל" ? "bg-success/10 text-success border-success/20" : "bg-muted text-muted-foreground border-border")}>
-                  {n.status}
-                </span>
-              </div>
-            ))}
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-3">הרחבה מתוכננת ל-5 שכונות לאחר סיום פיילוט פסגת זאב</p>
-        </div>
-
-        {/* Mini KPI charts with Recharts */}
-        <div className="libi-card p-5">
-          <h3 className="text-base font-semibold text-foreground mb-4">מגמות</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">מגמת מעורבות (6 חודשים)</p>
-              <ResponsiveContainer width="100%" height={120}>
-                <LineChart data={[{m:"אוק",v:42},{m:"נוב",v:48},{m:"דצמ",v:52},{m:"ינו",v:55},{m:"פבר",v:56},{m:"מרץ",v:58}]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="m" tick={{fontSize:10}} />
-                  <YAxis tick={{fontSize:10}} domain={[30,70]} />
-                  <Line type="monotone" dataKey="v" stroke="hsl(var(--success))" strokeWidth={2} dot={{r:3}} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">רישום אזרחים (מצטבר)</p>
-              <ResponsiveContainer width="100%" height={120}>
-                <BarChart data={[{m:"אוק",v:120},{m:"נוב",v:280},{m:"דצמ",v:420},{m:"ינו",v:550},{m:"פבר",v:650},{m:"מרץ",v:736}]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="m" tick={{fontSize:10}} />
-                  <YAxis tick={{fontSize:10}} />
-                  <Bar dataKey="v" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sites Table */}
-      <div className="libi-card overflow-hidden">
-        <div className="p-5 border-b border-border">
-          <h3 className="text-base font-semibold text-foreground">טבלת אתרים</h3>
+      <section className="libi-card p-5" aria-labelledby="hoods-h">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 id="hoods-h" className="text-base font-semibold text-foreground flex items-center gap-2">
+            <MapPinned className="w-5 h-5 text-primary" aria-hidden="true" /> השכונות: מה יש ואיפה הפער
+          </h2>
+          <a href="./hq/" className="min-h-[44px] inline-flex items-center gap-1 text-sm font-semibold text-primary">
+            פערים וחלופות באטלס המטה <ExternalLink className="w-4 h-4" aria-hidden="true" />
+          </a>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">שם אתר</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">אזרחים</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מלוות</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">ספקים</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מיצוי</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מניעה %</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">תקציב</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">סטטוס</th>
+              <tr className="border-b border-border text-right text-muted-foreground">
+                <th scope="col" className="py-2 font-semibold">שכונה</th>
+                <th scope="col" className="py-2 font-semibold">שירותים לתושבים</th>
+                <th scope="col" className="py-2 font-semibold">בשכונה ובאזור</th>
+                <th scope="col" className="py-2 font-semibold">תחומי ליבה ברצפה</th>
+                <th scope="col" className="py-2 font-semibold">סטטוס</th>
               </tr>
             </thead>
             <tbody>
-              {SITES.map((site) => (
-                <tr key={site.name} className="border-b border-border/50 hover:bg-muted/30">
-                  <td className="px-4 py-3 font-medium flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-muted-foreground" /> ירושלים - {site.name}
-                  </td>
-                  <td className="px-4 py-3">{site.citizens || "-"}</td>
-                  <td className="px-4 py-3">{site.coordinators || "-"}</td>
-                  <td className="px-4 py-3">{site.providers || "-"}</td>
-                  <td className="px-4 py-3">{site.utilization ? `${site.utilization}%` : "-"}</td>
-                  <td className="px-4 py-3">{site.prevention ? `${site.prevention}%` : "-"}</td>
-                  <td className="px-4 py-3">{site.budget}</td>
-                  <td className="px-4 py-3">
-                    <Chip tone={site.status === "פעיל" ? "success" : "muted"}>{site.status}</Chip>
-                  </td>
-                </tr>
-              ))}
+              {hoods.map(({ name, c }) => {
+                const green = c?.categories.filter((x) => x.level === "green").length ?? 0;
+                const total = c?.categories.length ?? 0;
+                return (
+                  <tr key={name} className="border-b border-border/60 last:border-0">
+                    <td className="py-2.5 font-semibold text-foreground">{name}</td>
+                    <td className="py-2.5 text-foreground">{c?.reachable ?? "-"}</td>
+                    <td className="py-2.5 text-foreground">{c?.services ?? "-"}</td>
+                    <td className="py-2.5">
+                      <span className={cn("inline-flex items-center gap-1 font-semibold", green === total ? "text-success" : "text-destructive")}>
+                        {green === total ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : null}
+                        {green} מתוך {total}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-muted-foreground">{name === "פסגת זאב" ? "פעיל" : "מתוכנן [לאמת]"}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          לפי ההחלטות: פסגת זאב, תלפיות מזרח, רוממה, הר נוף, בית וגן, ובית חנינא בתגבור (מרץ 2027) [לאמת]. הר נוף עוד לא בקטלוג ההדגמה. קטלוג הדגמה, נתונים בדויים.
+        </p>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <section className="libi-card p-5" aria-labelledby="basket-h">
+          <h2 id="basket-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+            <Wallet className="w-5 h-5 text-primary" aria-hidden="true" /> הרכב הסל לאזרח בחודש
+          </h2>
+          <ul className="space-y-1.5 text-sm">
+            {[
+              ["ארנק אישי (האזרח בוחר בשוק)", basket.personal_wallet],
+              ["ליווי (מלווה חברתית)", basket.companion],
+              ["קהילה", basket.community],
+              ["תפעול", basket.overhead],
+            ].map(([label, n]) => (
+              <li key={label as string} className="flex items-center justify-between">
+                <span className="text-foreground">{label}</span>
+                <span className="font-semibold text-foreground">{n} נקודות</span>
+              </li>
+            ))}
+            <li className="flex items-center justify-between border-t border-border pt-1.5 font-bold">
+              <span>סך הכל</span>
+              <span>{basket.total} נקודות</span>
+            </li>
+          </ul>
+          <p className="text-xs text-muted-foreground mt-3">מההגדרות (מפגש 2). הארנק בכלי מדומה: הנקודות החיות וספר החשבונות אצל ספק העל.</p>
+        </section>
+
+        <section className="libi-card p-5" aria-labelledby="engine-h">
+          <div className="flex items-center justify-between mb-3">
+            <h2 id="engine-h" className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Layers className="w-5 h-5 text-primary" aria-hidden="true" /> מנוע ההתאמה
+            </h2>
+            <Link to="/executive/algorithm" className="min-h-[44px] inline-flex items-center text-sm font-semibold text-primary">לפירוט</Link>
+          </div>
+          <ul className="space-y-1.5 text-sm">
+            {MATCHING_LAYER_SOURCES.map((l) => (
+              <li key={l.key} className="flex items-center justify-between">
+                <span className="text-foreground">{l.label}</span>
+                <span className="font-semibold text-foreground">{Math.round((weights[l.key] ?? 0) * 100)}%</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground mt-3">{statusText(settings.matching_weights_status)}</p>
+          <h3 className="text-sm font-semibold text-foreground mt-4">דירוג ספק: הרכיבים</h3>
+          <p className="text-sm text-foreground mt-1">{SUPPLIER_RATING_COMPONENTS.join(" · ")}</p>
+          <p className="text-xs text-muted-foreground mt-1">ההרכב והמשקלות ייקבעו בהמשך. מוצג בשוק, ולא משנה את סדר ההתאמה.</p>
+        </section>
       </div>
 
+      <section className="libi-card p-5" aria-labelledby="hq-h">
+        <h2 id="hq-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+          <BookOpen className="w-5 h-5 text-primary" aria-hidden="true" /> כלי המטה באטלס
+        </h2>
+        <p className="text-sm text-foreground">
+          אותו קטלוג, באטלס המטה: תמונה ארצית, פערים וחלופות, מחירי ייחוס, ספרייה וכללים, ייצוא תקן הקליטה לכל ספק, ופנקס למידה שמייצא רישום דרישות למכרז.
+        </p>
+        <a href="./hq/" className="mt-3 inline-flex items-center gap-2 min-h-[44px] px-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+          לאטלס המטה <ExternalLink className="w-4 h-4" aria-hidden="true" />
+        </a>
+      </section>
     </div>
   );
 }
