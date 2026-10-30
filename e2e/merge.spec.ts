@@ -252,7 +252,8 @@ test("0.6.2: בלי מספרים שלא אושרו, מקור אחד למספר �
   for (const route of ["./", "./#/executive"]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
-    expect(await page.locator("body").innerText(), route).not.toMatch(/לא לפרסום|מיליון|120 אלף|37%|94%|5\.5 חודשים/);
+    // הטענות עצמן (לא כל אחוז: מדד מהשטח יכול לצאת 37% במקרה).
+    expect(await page.locator("body").innerText(), route).not.toMatch(/לא לפרסום|מיליון|120 אלף|קשרים חברתיים|מ-37% ל-94%|5\.5 חודשים|בהידרדרות/);
   }
   // מה הוכרע: המונה שווה למספר השורות.
   const decided = Number((await page.getByText(/\d+ הוכרעו \(מפגש 2/).innerText()).match(/(\d+) הוכרעו/)![1]);
