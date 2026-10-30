@@ -49,6 +49,9 @@ test("בכל מסך של האזרחית יש שיחזרו אליי, ובלי ג�
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "שיחזרו אליי" })).toBeVisible();
     await noHorizontalScroll(page);
+    // מול האזרחית: בלי תיוג, ציונים ונקודות. אלה כלים של המלווה.
+    const text = await page.locator("#main").innerText();
+    expect(text, route).not.toMatch(/סיכון|ציון|נקודות|נק'|ירידה תפקודית|חסמים/);
   }
 });
 

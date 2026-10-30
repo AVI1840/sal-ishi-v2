@@ -9,11 +9,11 @@ import { useParams, Link } from "react-router-dom";
 import { useMemo, type ReactNode } from "react";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
-import { ArrowRight, MapPin, Clock, Phone, Globe, AlertCircle, Heart, Activity, Users, Laptop, Wrench, Wallet, CalendarX, Info } from "lucide-react";
+import { ArrowRight, MapPin, Clock, Phone, Globe, AlertCircle, Heart, Activity, Users, Laptop, Wrench, Wallet, CalendarX, Info, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { realServices } from "@/data/realServices";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
-import { MatchExplainability } from "@/components/shared/MatchExplainability";
+import { citizenReasons } from "@/lib/citizenReasons";
 import ServiceRating from "@/components/shared/ServiceRating";
 import { BookingPanel } from "@/components/citizen/BookingPanel";
 import { needsCompanion, termLines } from "@/lib/serviceTerms";
@@ -31,12 +31,6 @@ const LANG_MAP: Record<string, string> = {
 const ACCESS_MAP: Record<string, string> = {
   wheelchair: "נגיש לכיסא גלגלים", transport: "הסעות", home_visit: "ביקורי בית",
   remote: "מרחוק / דיגיטלי", elevator: "מעלית", parking: "חניה", emergency_button: "כפתור חירום",
-};
-
-const CERTAINTY_MAP: Record<string, { label: string; cls: string }> = {
-  high:   { label: "מאומת",        cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  medium: { label: "מאומת חלקית",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  low:    { label: "דורש אימות",   cls: "bg-gray-50 text-gray-500 border-gray-200" },
 };
 
 const CATEGORY_ICON: Record<number, typeof Heart> = {
@@ -79,12 +73,12 @@ export default function CitizenServiceDetail() {
       </main>
     );
   }
-  const certaintyInfo = CERTAINTY_MAP[service.certainty];
   const Icon = CATEGORY_ICON[service.category] ?? Heart;
   const imgInfo = getServiceImageInfo(service);
 
   // תנאי השירות בלי שורת הביטול: הביטול מוסבר בשפה פשוטה בכרטיס נפרד.
   const terms = termLines(service).filter((t) => t.term !== "ביטול" && t.term !== "אי-הגעה" && t.term !== "פתיחה");
+  const reasons = citizenReasons(matchResult?.explanations ?? []).slice(0, 4);
   const price = priceOf(service);
   const complement = complementLine(he, price);
   const mine = (kind: string) => derived.requests.find((r) => r.citizenId === citizen.id && r.serviceId === service.id && r.kind === kind && (r.status === "open" || r.status === "approved"));
@@ -217,18 +211,17 @@ export default function CitizenServiceDetail() {
         </div>
         )}
 
-        {/* למה זה מתאים לך, עם פירוט השכבות */}
-        <div className="bg-white rounded-xl p-5 border border-gray-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">{he.reasonTitle}</h2>
-            <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", certaintyInfo.cls)}>{certaintyInfo.label}</span>
-          </div>
-          {matchResult ? (
-            <MatchExplainability result={matchResult} />
-          ) : (
-            <p className="text-base text-gray-800">{he.reason[reasonKey(service)]}</p>
-          )}
-        </div>
+        {/* למה זה מתאים לך: בשפת האזרח, בלי ציון ובלי נקודות */}
+        <section aria-labelledby="why-h" className="bg-white rounded-xl p-5 border border-gray-200 space-y-2">
+          <h2 id="why-h" className="text-lg font-bold text-gray-900">{he.reasonTitle}</h2>
+          <ul className="space-y-1.5">
+            {(reasons.length ? reasons : [he.reason[reasonKey(service)]]).map((r) => (
+              <li key={r} className="flex items-start gap-2 text-base text-gray-800">
+                <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" /> {r}
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {/* Languages */}
         {service.languages.length > 0 && (

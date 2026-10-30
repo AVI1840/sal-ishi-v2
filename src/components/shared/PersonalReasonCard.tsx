@@ -14,6 +14,7 @@ import { ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MatchResult } from "@/lib/matchingEngine";
 import { MatchExplainability } from "./MatchExplainability";
+import { citizenReasons } from "@/lib/citizenReasons";
 
 interface Props {
   result: MatchResult;
@@ -46,7 +47,8 @@ export function PersonalReasonCard({
 }: Props) {
   const [open, setOpen] = useState(false);
 
-  const explanations = result.explanations.filter(Boolean);
+  // מול האזרח (בלי פירוט השכבות): הסיבות בשפה שלו, בלי תיוג ובלי כפתור בתוך הכרטיס.
+  const explanations = showLayers ? result.explanations.filter(Boolean) : citizenReasons(result.explanations);
   // First reason is the hook - shown collapsed
   const hookReason = explanations[0] ?? "מתאים לפרופיל שלך";
   // Rest shown on expand (may overlap with hook - dedupe)
@@ -61,7 +63,7 @@ export function PersonalReasonCard({
           {personalise(hookReason, firstName)}
         </p>
         {/* Toggle button - only if there's more to show */}
-        {(extraReasons.length > 0 || showLayers) && (
+        {showLayers && (
           <button
             onClick={() => setOpen((v) => !v)}
             className="shrink-0 flex items-center gap-1 text-xs text-[#1B3A5C]/70 hover:text-[#1B3A5C] transition-colors font-medium min-h-[28px] min-w-[80px] justify-end"

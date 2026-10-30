@@ -137,9 +137,6 @@ export default function CitizenHome() {
                           <div className={cn("w-full h-full", gradientDark)} />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/95 flex items-center justify-center border-2 border-emerald-500 shadow-sm" aria-label={`התאמה ${result.totalScore} מתוך 100`}>
-                          <span className="text-sm font-bold text-gray-900">{result.totalScore}</span>
-                        </div>
                         <div className="absolute bottom-3 right-4 left-4 flex items-end justify-between gap-2">
                           <h3 className="text-white font-bold text-lg leading-tight drop-shadow line-clamp-2">{result.service.name}</h3>
                           <span className={cn("shrink-0 text-sm px-2.5 py-1 rounded-lg font-semibold", badge.tone === "free" ? "bg-emerald-700 text-white" : "bg-[#1B3A5C] text-white")}>

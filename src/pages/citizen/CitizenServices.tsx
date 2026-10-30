@@ -2,7 +2,7 @@
  * CitizenServices: הקטלוג המאושר לשכונה (מהאטלס), עם חיפוש חכם והצעות לפי תחום.
  */
 import { useState, useMemo } from "react";
-import { Search, MapPin, Phone, Clock, Filter, ChevronLeft, ChevronDown, ChevronUp, Sparkles, TrendingUp, Award, Globe2, UserCheck } from "lucide-react";
+import { Search, MapPin, Phone, Clock, Filter, ChevronLeft, ChevronDown, ChevronUp, Sparkles, TrendingUp, Globe2, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -16,6 +16,7 @@ import { CITIZENS } from "@/data/mockData";
 import { catalogState } from "@/data/catalogSource";
 import { DEMAND_LABEL, REACH_LABEL, selectionRules, suggestByDomain } from "@/lib/suggestions";
 import { needsCompanion, termLines } from "@/lib/serviceTerms";
+import { citizenReasons } from "@/lib/citizenReasons";
 import { usePilot } from "@/pilot/store";
 import { he } from "@/pilot/i18n/he";
 
@@ -32,36 +33,22 @@ function ServiceRow({ service }: { service: RealService }) {
   const { image, gradient } = showImages
     ? getServiceImageInfo(service)
     : { image: undefined, gradient: "" };
-  // גוונים כהים מספיק לטקסט לבן (ניגודיות 4.5:1 לפחות).
-  const scoreBg = service.match_score >= 80 ? "#15803d" : service.match_score >= 60 ? "#b45309" : "#4b5563";
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-[#1B3A5C]/20 transition-colors">
       {/* Main row */}
       <div className="p-4">
         <div className="flex items-start gap-3">
-          {/* Thumbnail (images mode) or score circle (clean mode) */}
+          {/* תמונה במצב תמונות. בלי ציון: האזרח לא רואה ציונים */}
           {showImages ? (
             <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden">
               {image ? (
-                <img src={image} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
+                <img src={image} alt="" className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <div className={cn("w-full h-full", gradient)} />
               )}
-              <div
-                className="absolute bottom-0 right-0 left-0 text-center py-0.5 text-[10px] font-bold text-white"
-                style={{ backgroundColor: scoreBg }}
-              >
-                {service.match_score}
-              </div>
             </div>
-          ) : (
-            /* Original score circle */
-            <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
-              style={{ borderColor: scoreBg, color: scoreBg }}>
-              {service.match_score}
-            </div>
-          )}
+          ) : null}
 
           {/* Content */}
           <div className="flex-1 min-w-0">
@@ -152,12 +139,12 @@ function ServiceRow({ service }: { service: RealService }) {
   );
 }
 
-/** היקף, ביקוש ודירוג ספק, מהאטלס. טקסט וסמל, לא רק צבע. */
+/** היקף וביקוש, מהאטלס. טקסט וסמל, לא רק צבע. בלי דירוג ספק: אין לו מקור מאומת. */
 function AtlasBadges({ service }: { service: RealService }) {
   const reach = service.reach && service.reach !== "neighborhood" ? REACH_LABEL[service.reach] : null;
   const demand = service.demand ? DEMAND_LABEL[service.demand] : null;
   const gated = needsCompanion(service);
-  if (!reach && !demand && !service.supplierScore && !gated) return null;
+  if (!reach && !demand && !gated) return null;
   return (
     <div className="flex flex-wrap gap-1.5 mt-1.5">
       {reach && (
@@ -175,18 +162,10 @@ function AtlasBadges({ service }: { service: RealService }) {
           <TrendingUp className="w-3 h-3" aria-hidden="true" /> {demand}
         </span>
       )}
-      {service.supplierScore ? (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-300 text-amber-900">
-          <Award className="w-3 h-3" aria-hidden="true" /> דירוג ספק {service.supplierScore.toFixed(1)} מתוך 5
-        </span>
-      ) : null}
     </div>
   );
 }
 
-// ההסברים של מנוע ההתאמה כתובים עם קו מפריד ארוך. בתצוגה מחליפים אותו בנקודתיים.
-const LONG_DASH = String.fromCharCode(0x2014);
-const plainDash = (text: string) => text.split(LONG_DASH).map((t) => t.trim()).join(": ");
 
 /** הצעות לפי תחום, מתוך מנוע ההתאמה הקיים. */
 function DomainSuggestions({ neighborhood }: { neighborhood: string }) {
@@ -204,8 +183,7 @@ function DomainSuggestions({ neighborhood }: { neighborhood: string }) {
           <Sparkles className="w-4 h-4 text-[#1B3A5C]" aria-hidden="true" /> הצעות בשבילך לפי תחום{target ? `, ${target}` : ""}
         </h2>
         <p className="text-xs text-gray-600 mt-0.5">
-          לפי מנוע ההתאמה, עם הסבר קצר. מומלץ לבחור לפחות {rules.minPerDomain} מכל תחום ועד {rules.maxActive} שירותים במקביל, עם אפשרות החלפה כל {rules.changeMonths === 1 ? "חודש" : `${rules.changeMonths} חודשים`}
-          {rules.isProposal ? " (הצעה, ממתין להכרעה)" : ""}.
+          בחרנו לפי מה שחשוב לך ולפי השכונה. אפשר עד {rules.maxActive} שירותים במקביל, ולהחליף כל {rules.changeMonths === 1 ? "חודש" : `${rules.changeMonths} חודשים`}.
         </p>
       </div>
       {domains.map((d) => (
@@ -218,12 +196,9 @@ function DomainSuggestions({ neighborhood }: { neighborhood: string }) {
                   <Link to={`/citizen/services/${service.id}`} className="text-sm font-medium text-[#1B3A5C] hover:underline">
                     {service.name}
                   </Link>
-                  <p className="text-xs text-gray-600">{plainDash(result.explanations[0] ?? service.subcategory)}</p>
+                  <p className="text-xs text-gray-600">{citizenReasons(result.explanations)[0] ?? service.subcategory}</p>
                   {needsCompanion(service) && <p className="text-xs text-violet-900">נפתח באישור המלווה</p>}
                 </div>
-                <span className="shrink-0 text-xs font-bold text-gray-700" aria-label={`התאמה ${Math.round(result.totalScore)} מתוך 100`}>
-                  {Math.round(result.totalScore)}
-                </span>
               </li>
             ))}
           </ul>
@@ -251,15 +226,15 @@ export default function CitizenServices() {
 
   if (simulation.noServices) {
     return (
-      <div className="px-6 pt-16 pb-6 space-y-3" dir="rtl">
+      <main id="main" tabIndex={-1} className="px-6 pt-16 pb-6 space-y-3" dir="rtl">
         <h1 className="text-2xl font-bold text-gray-900">{he.noServicesTitle}</h1>
         <p className="text-base text-gray-800">{he.noServicesText}</p>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="px-4 pt-5 pb-6 space-y-4" dir="rtl">
+    <main id="main" tabIndex={-1} className="px-4 pt-5 pb-6 space-y-4" dir="rtl" data-read>
 
       {/* Header */}
       <div>
@@ -414,6 +389,6 @@ export default function CitizenServices() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }

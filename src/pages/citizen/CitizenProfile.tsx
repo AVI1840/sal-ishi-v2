@@ -1,26 +1,20 @@
 /**
  * CitizenProfile: פרופיל אישי.
  *
+ * מה שהאזרחית רואה על עצמה: מה חשוב לה, הסל, הפעילויות ואיש קשר. בלי רמת
+ * סיכון, מוכנות, חסמים, ציונים ואחוזים: אלה כלים של המלווה, ונמצאים בתיק.
  * 0.5 מאוחד: הסל בשקלים (כמו בבית), והפעילויות מההזמנות, במקום ארנק
  * היחידות ורשימת הפעילויות הקבועה.
  */
-import { Phone, MapPin, Heart, Wallet, Target, Calendar, Sparkles, ChevronLeft, CheckCircle, Clock } from "lucide-react";
+import { Phone, MapPin, Heart, Wallet, Calendar, ChevronLeft, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
-import { BARRIER_LABELS, MOTIVATION_LABELS, READINESS_LABELS } from "@/data/types";
+import { MOTIVATION_LABELS } from "@/data/types";
 import { ProgressBar } from "@/components/shared/ProgressBar";
-import { cn } from "@/lib/utils";
 import { catalogState } from "@/data/catalogSource";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { usePilot } from "@/pilot/store";
 import { useCitizen, useWallet } from "@/pilot/citizen/common";
-
-const RISK_LEVEL_MAP = {
-  low:      { label: "נמוך",    cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  medium:   { label: "בינוני",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  high:     { label: "גבוה",    cls: "bg-orange-50 text-orange-700 border-orange-200" },
-  critical: { label: "קריטי",   cls: "bg-red-50 text-red-700 border-red-200" },
-};
 
 export default function CitizenProfile() {
   const { derived } = usePilot();
@@ -31,7 +25,6 @@ export default function CitizenProfile() {
     .filter((b) => b.citizenId === citizen.id && b.status !== "cancelled")
     .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt))
     .slice(0, 3);
-  const risk = RISK_LEVEL_MAP[citizen.riskLevel];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6" dir="rtl">
@@ -60,36 +53,9 @@ export default function CitizenProfile() {
               <p className="text-xs text-white/80 mt-1">{citizen.familyStatus} · {citizen.language}</p>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
-            <div className="text-center">
-              <p className="text-lg font-bold">{citizen.weeklyActivities}</p>
-              <p className="text-xs text-white/80">פעילויות/שבוע</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold">{citizen.persistenceRate}%</p>
-              <p className="text-xs text-white/80">התמדה</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold">{citizen.engagementScore}%</p>
-              <p className="text-xs text-white/80">מעורבות</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Risk + Readiness */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-600 uppercase tracking-wider mb-2">רמת סיכון</p>
-            <span className={cn("text-xs px-3 py-1.5 rounded-md font-semibold border", risk.cls)}>
-              {risk.label}
-            </span>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-600 uppercase tracking-wider mb-2">מוכנות לשינוי</p>
-            <span className="text-xs px-3 py-1.5 rounded-md font-semibold bg-[#1B3A5C]/5 text-[#1B3A5C] border border-[#1B3A5C]/10">
-              {READINESS_LABELS[citizen.readiness]}
-            </span>
-          </div>
+          <p className="mt-4 pt-4 border-t border-white/10 text-sm text-white/90">
+            {bookings.length ? `${bookings.length} פעילויות קרובות` : "עוד אין פעילויות קרובות"}
+          </p>
         </div>
 
         {/* הסל בשקלים, כמו בבית */}
@@ -112,7 +78,7 @@ export default function CitizenProfile() {
         <div className="bg-white rounded-xl p-5 border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
             <Heart className="w-4 h-4 text-[#1B3A5C]" />
-            <h2 className="text-sm font-semibold text-gray-900">מוטיבציות</h2>
+            <h2 className="text-base font-semibold text-gray-900">מה חשוב לי</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {citizen.motivations.map((m) => (
@@ -128,24 +94,6 @@ export default function CitizenProfile() {
             </div>
           )}
         </div>
-
-        {/* Barriers */}
-        {citizen.barriers.length > 0 && (
-          <div className="bg-white rounded-xl p-5 border border-gray-100">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="w-4 h-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-gray-900">חסמים מזוהים</h2>
-              <span className="text-xs text-gray-600">ההמלצות מותאמות לכך</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {citizen.barriers.map((b) => (
-                <span key={b} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium border border-amber-200">
-                  {BARRIER_LABELS[b]}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* פעילויות קרובות: מההזמנות */}
         <div className="bg-white rounded-xl p-5 border border-gray-100">
@@ -200,20 +148,6 @@ export default function CitizenProfile() {
               <Phone className="w-3.5 h-3.5" /> חייג
             </a>
           </div>
-        </div>
-
-        {/* Digital literacy */}
-        <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100">
-          <Sparkles className="w-4 h-4 text-[#1B3A5C] shrink-0" />
-          <div className="flex-1">
-            <p className="text-xs font-medium text-gray-700">אוריינות דיגיטלית</p>
-            <div className="flex gap-1 mt-1.5">
-              {[1,2,3,4,5].map((n) => (
-                <div key={n} className={cn("h-1.5 flex-1 rounded-full", n <= citizen.digitalLiteracy ? "bg-[#1B3A5C]" : "bg-gray-200")} />
-              ))}
-            </div>
-          </div>
-          <span className="text-sm font-bold text-[#1B3A5C]">{citizen.digitalLiteracy}/5</span>
         </div>
 
       </main>
