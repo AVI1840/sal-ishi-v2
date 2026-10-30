@@ -194,6 +194,24 @@ const SPECS_J: Spec[] = [
   // ארוחה חמה (החלטה 30.10): בקטלוג כשירות מותנה באישור המלווה, לפי תנאי הכניסה בהגדרות.
   // מחיר דמה: עד 3 ארוחות בשבוע לפי הנחת המחיר (25), כ-12 בחודש.
   { key: "meal", n: 0, type: "T52", sup: "S-002", fit: G, price: 300, pattern: C, base: 8, status: "אושר", copay: "qol", mode: "home", delivery: "home", name: "ארוחה חמה עד הבית", fp: fp(AT_HOME, { goals: ["health"] }) },
+  // סל מגוון ומקיף (0.6.2): מה שהיה חסר בפסגת זאב מתוך ספריית סוגי השירות, ושירותים
+  // בשפה הרוסית (כמחצית ממשתתפי הפיילוט). בסוף הרשימה: המספרים של השאר לא משתנים.
+  { key: "swim", n: 0, type: "T15", sup: "S-003", fit: G, price: 120, pattern: C, base: 22, status: "אושר", name: "שחייה בבריכה של המתנ\"ס", fp: fp(WALK_AND_AID, { goals: ["health"], evidenceLevel: "high", intensity: "low" }) },
+  { key: "dance", n: 0, type: "T19", sup: "S-004", fit: G, price: 80, pattern: C, base: 16, status: "אושר", copay: "classes", name: "ריקודי עם", fp: fp(WALK_ONLY, { goals: ["health", "belonging"], intensity: "medium" }) },
+  { key: "music", n: 0, type: "T23", sup: "S-006", fit: G, price: 150, pattern: C, base: 12, status: "אושר", copay: "classes", name: "לימוד נגינה ושפות", fp: fp(WALK_AND_AID, { goals: ["curiosity", "meaning"] }) },
+  { key: "ru-club", n: 0, type: "T03", sup: "S-003", fit: G, price: 60, pattern: C, base: 20, status: "אושר", name: "מועדון שיח בשפה הרוסית", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
+  { key: "ru-tours", n: 0, type: "T09", sup: "S-005", fit: G, price: 95, pattern: C, base: 16, status: "אושר", reach: "regional", name: "סיורים בירושלים בשפה הרוסית", fp: fp(WALK_ONLY, { goals: ["curiosity", "belonging"], intensity: "medium" }) },
+  { key: "friends-video", n: 0, type: "T05", sup: "S-007", fit: G, price: 60, pattern: C, base: 12, status: "אושר", mode: "remote", delivery: "remote", name: "מפגש חברים בווידאו", fp: fp(BY_SMARTPHONE, { goals: ["belonging"] }) },
+  { key: "brain-tablet", n: 0, type: "T24", sup: "S-007", fit: G, price: 90, pattern: C, base: 12, status: "אושר", mode: "remote", delivery: "remote", name: "אימון מוח בטאבלט", fp: fp(BY_SMARTPHONE, { goals: ["independence"], suitableMildCognitiveDecline: true }) },
+  { key: "ai", n: 0, type: "T42", sup: "S-007", fit: G, price: 180, pattern: C, base: 12, status: "אושר", name: "בינה מלאכותית לוותיקים", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone", goals: ["curiosity", "independence"] }) },
+  { key: "sleep", n: 0, type: "T30", sup: "S-006", fit: G, price: 140, pattern: C, base: 12, status: "אושר", name: "סדנת שינה ואורח חיים", fp: fp(WALK_AND_AID, { goals: ["health"], evidenceLevel: "high" }) },
+  { key: "nutrition-course", n: 0, type: "T25", sup: "S-006", fit: G, price: 160, pattern: C, base: 12, status: "אושר", name: "קורס תזונה נכונה", fp: fp(WALK_AND_AID, { goals: ["health"] }) },
+  { key: "transitions", n: 0, type: "T39", sup: "S-006", fit: G, price: 150, pattern: C, base: 12, status: "אושר", name: "הכנה למעברי חיים", fp: fp(WALK_AND_AID, { goals: ["meaning"] }) },
+  { key: "legal", n: 0, type: "T35", sup: "S-006", fit: G, price: 200, pattern: C, base: 10, status: "אושר", mode: "individual", name: "ייעוץ משפטי בסיסי", fp: fp(AT_HOME, { goals: ["independence"] }) },
+  { key: "finance", n: 0, type: "T36", sup: "S-006", fit: G, price: 180, pattern: C, base: 10, status: "אושר", mode: "individual", name: "ייעוץ כלכלי וניהול תקציב", fp: fp(AT_HOME, { goals: ["independence"] }) },
+  { key: "light-help", n: 0, type: "T38", sup: "S-002", fit: G, price: 60, pattern: C, base: 14, status: "אושר", mode: "home", delivery: "home", name: "עזרה קלה בבית: קניות וסידורים", fp: fp(AT_HOME, { goals: ["independence"] }) },
+  { key: "tech-line", n: 0, type: "T46", sup: "S-007", fit: G, price: 60, pattern: C, base: 14, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "קו תמיכה טכנית בטלפון", fp: fp(BY_PHONE, { goals: ["independence"] }) },
+  { key: "icecream", n: 0, type: "T49", sup: "S-008", fit: G, price: 25, pattern: C, base: 30, status: "אושר", copay: "qol", name: "שובר גלידה זוגי", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
 ];
 
 interface Variant {
