@@ -1,10 +1,36 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { execSync } from "child_process";
+import { readFileSync } from "fs";
+
+// חותמת בנייה: איזה commit רץ בכתובת החיה. נכתבת ל-version.json ומוצגת בתחתית דף הבית,
+// ונבדקת על ידי scripts/check-live.mjs אחרי פריסה.
+const commit = (() => {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch {
+    return "local";
+  }
+})();
+const appVersion = (JSON.parse(readFileSync(path.resolve(__dirname, "public/app-settings.json"), "utf8")) as { version: string }).version;
+const builtAt = new Date().toISOString();
+
+const versionFile = (): Plugin => ({
+  name: "version-file",
+  generateBundle() {
+    this.emitFile({ type: "asset", fileName: "version.json", source: JSON.stringify({ version: appVersion, commit, builtAt }, null, 2) + "\n" });
+  },
+});
 
 export default defineConfig({
   base: "./",
-  plugins: [react()],
+  plugins: [react(), versionFile()],
+  define: {
+    __BUILD_COMMIT__: JSON.stringify(commit),
+    __BUILD_TIME__: JSON.stringify(builtAt),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { COMMUNITIES, DELIVERY_MODES, SUPPLIER_TYPES, supplierScore, type Supplier, type SupplierEvaluation, SUPPLIER_RATING_COMPONENTS } from "@sal-ishi/core";
+import { COMMUNITIES, DELIVERY_MODES, SUPPLIER_TYPES, supplierScore, type Supplier, type SupplierEvaluation, SUPPLIER_RATING_COMPONENTS, quarterText } from "@sal-ishi/core";
 import { Alert, Button, CheckboxField, CheckboxGroup, Dialog, SelectField, TextField, useToast } from "@sal-ishi/ui";
 import { LANGUAGES, useAnalysis } from "../analysis";
 import { nextSupplierCode, useField } from "../store";
@@ -129,7 +129,7 @@ function EvaluationEditor(props: { evaluations: SupplierEvaluation[]; onChange: 
   };
   return (
     <fieldset className="fieldset">
-      <legend className="fieldset__legend">דירוג הספק לרבעון {quarter}</legend>
+      <legend className="fieldset__legend">דירוג הספק, {quarterText(quarter)}</legend>
       <p className="field__hint">{props.scoreLabel}. הדירוג לא חוסם שירות. הוא מוצג במטה, בשטח ובשוק לאזרח. המשקלות ייקבעו בהמשך, והדירוג המחייב אצל ספק העל.</p>
       <div className="grid grid--form">
         {CRITERIA.map((c) => (

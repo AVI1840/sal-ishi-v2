@@ -190,7 +190,7 @@ export default function DemoHome() {
       </section>
 
       <footer className="max-w-5xl mx-auto px-6 py-6 text-sm text-gray-600 flex flex-wrap items-center justify-between gap-2">
-        <span>הסל האישי · {appSettings.demo.data_label} · גרסה {appSettings.version}</span>
+        <span>הסל האישי · {appSettings.demo.data_label} · גרסה {appSettings.version} · בנייה {__BUILD_COMMIT__}</span>
         <Link to="/scope" className="underline underline-offset-4 min-h-[44px] leading-[44px]">מה הכלי כן ולא עושה</Link>
       </footer>
     </div>

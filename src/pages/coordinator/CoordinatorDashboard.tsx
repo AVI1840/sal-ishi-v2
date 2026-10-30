@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
 import { CalendarCheck, ChevronLeft, Inbox, MapPinned, Users, Wallet } from "lucide-react";
 import { TodayTriage } from "@/components/companion/TodayTriage";
+import { NewInCaseload } from "@/components/companion/NewInCaseload";
 import { buildCaseload, triage } from "@/pilot/caseload";
 import { appSettings } from "@/pilot/settings";
 import { usePilot } from "@/pilot/store";
@@ -65,6 +66,9 @@ export default function CoordinatorDashboard() {
         <Stat icon={CalendarCheck} label="הזמנות השבוע" value={weekBookings} />
         <Stat icon={MapPinned} label="שירותים בשכונה" value={community?.services ?? 0} to="/coordinator/community" />
       </div>
+
+      {/* חוט הזהב: מה שאזרחים בתיק עשו עכשיו, עם פעולה מוצעת */}
+      <NewInCaseload />
 
       {/* שיטת תעדוף אחת: לפי הכללים שבהגדרות */}
       <TodayTriage />

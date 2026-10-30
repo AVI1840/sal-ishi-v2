@@ -36,6 +36,8 @@ export interface AppSettings {
   supplier_rating?: { show: boolean; components?: string[]; status?: string };
   companion: {
     name: string;
+    /** השכונה של המלווה: התיק והקהילה שלה. */
+    neighborhood?: string;
     caseload_size: number;
     cover_name: string;
     triage_order: TriageRule[];

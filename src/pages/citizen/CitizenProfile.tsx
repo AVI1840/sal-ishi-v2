@@ -133,9 +133,9 @@ export default function CitizenProfile() {
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
             <div>
               <p className="text-sm font-medium text-gray-900">אורי רוזנברג</p>
-              <p className="text-xs text-gray-600">בן · 054-9876543</p>
+              <p className="text-sm text-gray-700">בן · 050-0000000</p>
             </div>
-            <a href="tel:054-9876543"
+            <a href="tel:050-0000000"
               className="flex items-center gap-1.5 px-3 py-2 bg-[#1B3A5C] text-white rounded-lg text-xs font-medium hover:bg-[#15304d] transition-colors">
               <Phone className="w-3.5 h-3.5" /> חייג
             </a>

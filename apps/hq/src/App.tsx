@@ -87,7 +87,7 @@ export default function App() {
                 {preview ? <FeedbackButton /> : null}
                 <span>{pilots} פיילוטים</span>
                 <span aria-hidden="true">|</span>
-                <span>גרסת בסיס {seed.meta.version}</span>
+                <span>גרסת כללים {seed.meta.version}</span>
               </>
             }
             footerNote="משטח המטה של ביטוח לאומי. הנתונים נשמרים רק בדפדפן הזה."

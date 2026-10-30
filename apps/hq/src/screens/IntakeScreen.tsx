@@ -84,7 +84,7 @@ export default function IntakeScreen() {
 
       {seedNotice ? (
         <div className="stack">
-          <Alert tone="info" title="גרסת בסיס חדשה" live>{seedNotice}</Alert>
+          <Alert tone="info" title="גרסת כללים חדשה" live>{seedNotice}</Alert>
           <div><Button small variant="secondary" onClick={dismissSeedNotice}>הבנתי</Button></div>
         </div>
       ) : null}
@@ -111,7 +111,7 @@ export default function IntakeScreen() {
                 <th scope="col">שכונות</th>
                 <th scope="col">שירותים</th>
                 <th scope="col">יוצאה</th>
-                <th scope="col">גרסת בסיס</th>
+                <th scope="col">גרסת כללים</th>
                 <th scope="col">חתימה</th>
               </tr>
             </thead>
@@ -175,7 +175,7 @@ function DiffView({ item, activeSeed, remaining }: { item: Pending; activeSeed: 
         <Alert tone="error" title="התנגשות מזהים" live>מזהים שכבר שייכים לרשות אחרת: {diff.collisions.join(", ")}. המיזוג חסום.</Alert>
       ) : null}
       {pkg.seedVersion !== activeSeed ? (
-        <Alert tone="warning">החבילה נבנתה על גרסת בסיס {pkg.seedVersion}, והגרסה הפעילה במטה היא {activeSeed}. הכללים יחושבו לפי גרסת המטה.</Alert>
+        <Alert tone="warning">החבילה נבנתה על גרסת כללים {pkg.seedVersion}, והגרסה הפעילה במטה היא {activeSeed}. הכללים יחושבו לפי גרסת המטה.</Alert>
       ) : null}
       <div className="row">
         <Badge tone="success">חדשים: {diff.added.length}</Badge>

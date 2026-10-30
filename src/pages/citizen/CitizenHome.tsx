@@ -35,7 +35,7 @@ export function copayBadge(result: MatchResult): { text: string; tone: "free" | 
   const s = serviceById(result.service.id);
   if (!s) return { text: "", tone: "free" };
   const price = priceOf(s);
-  if (price.state !== "none" && price.state !== "missing") return { text: "משלים מממן אחר", tone: "part" };
+  if (price.state !== "none" && price.state !== "missing") return { text: `משלים את ${price.funder ?? he.otherFunder}`, tone: "part" };
   return { text: priceLabel(s, amount, true), tone: price.copay === 0 ? "free" : "part" };
 }
 

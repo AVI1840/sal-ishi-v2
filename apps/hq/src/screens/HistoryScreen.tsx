@@ -49,7 +49,7 @@ export default function HistoryScreen() {
 
   return (
     <>
-      <PageHeader title="גרסאות ויומן ביקורת" description={`גרסת הבסיס הפעילה: ${seed.meta.version}. כל שינוי בכללים נרשם, ונכנס לגרסה בפרסום.`} />
+      <PageHeader title="גרסאות ויומן ביקורת" description={`גרסת הכללים הפעילה: ${seed.meta.version}. כל שינוי בכללים נרשם, ונכנס לגרסה בפרסום.`} />
       <section className="card stack" aria-labelledby="pending-h">
         <h2 id="pending-h">ממתין לפרסום ({pending.length})</h2>
         <Changes changes={pending} label="שינויים שממתינים לפרסום" />

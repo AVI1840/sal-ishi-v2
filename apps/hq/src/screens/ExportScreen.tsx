@@ -76,7 +76,7 @@ export default function ExportScreen() {
     <>
       <PageHeader
         title="ייצוא"
-        description={`${contract.name} בגרסה ${contract.version}: תקן קליטת המפעילים שביטוח לאומי מחזיק. ספק העל מקבל אותו ולא מגדיר אותו, ומפעיל לפיו נקודות, ביטולים ונוכחות. נכנסים רק שירותים בסטטוס ${seed.settings.publish_to_citizen_statuses.join(", ")} שיש להם את כל שדות מודל התשלום.`}
+        description={`תקן קליטת המפעילים, גרסה ${contract.version}: התקן שביטוח לאומי מחזיק. ספק העל מקבל אותו ולא מגדיר אותו, ומפעיל לפיו נקודות, ביטולים ונוכחות. נכנסים רק שירותים בסטטוס ${seed.settings.publish_to_citizen_statuses.join(", ")} שיש להם את כל שדות מודל התשלום.`}
       />
 
       {error ? <Alert tone="error" title="הייצוא נכשל" live>{error}</Alert> : null}

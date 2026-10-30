@@ -22,7 +22,8 @@
     "dev:hq": "npm run dev -w @sal-ishi/hq",
     "build:offline": "npm run build:offline -w @sal-ishi/field && npm run build:offline -w @sal-ishi/hq",
     "test:e2e": "npm run build:all && playwright test",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "check:live": "node scripts/check-live.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",

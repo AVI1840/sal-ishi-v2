@@ -105,14 +105,14 @@ export default function RulesScreen() {
     const published = publishSeed();
     await new FileSyncAdapter(createBrowserFileIO()).publishSeed(published);
     setConfirmPublish(false);
-    toast("success", `גרסת בסיס ${published.meta.version} פורסמה. שלחו את הקובץ לרשויות.`);
+    toast("success", `גרסת כללים ${published.meta.version} פורסמה. שלחו את הקובץ לרשויות.`);
   };
 
   return (
     <>
       <PageHeader
         title="ספרייה וכללים"
-        description="ההגדרות, כללי מודל התשלום וספריית סוגי השירות. שינוי משפיע מיד על הכיסוי, המדדים, המחירים והייצוא במטה, ומגיע לשטח כשמפרסמים גרסת בסיס חדשה."
+        description="ההגדרות, כללי מודל התשלום וספריית סוגי השירות. שינוי משפיע מיד על הכיסוי, המדדים, המחירים והייצוא במטה, ומגיע לשטח כשמפרסמים גרסת כללים חדשה."
         actions={
           <Button icon={<Send size={18} />} disabled={!pending.length} onClick={() => setConfirmPublish(true)}>
             פרסום גרסה ({pending.length} שינויים)
@@ -196,7 +196,7 @@ export default function RulesScreen() {
       <WeightsCard
         id="layers-h"
         title="שכבות ההתאמה לאזרח"
-        description="המשקלות שמנוע ההתאמה בכלי לאזרח ולמלווה משתמש בהם. ועדת הסל קובעת אותם. המלצות וניסיון על 0 עד שיהיו נתוני ניסיון. הכלי המרכזי קורא אותם מגרסת הבסיס שמתפרסמת."
+        description="המשקלות שמנוע ההתאמה בכלי לאזרח ולמלווה משתמש בהם. ועדת הסל קובעת אותם. המלצות וניסיון על 0 עד שיהיו נתוני ניסיון. הכלי המרכזי קורא אותם מגרסת הכללים שמתפרסמת."
         settingKey="matching_weights"
         statusKey="matching_weights_status"
         items={MATCHING_LAYERS}
@@ -290,7 +290,7 @@ export default function RulesScreen() {
         {history.length ? (
           <ul>{history.map((h) => <li key={h.version}>גרסה {h.version}, {new Date(h.published_at).toLocaleDateString("he-IL")}: {h.changes.length} שינויים</li>)}</ul>
         ) : (
-          <p className="muted">גרסת הבסיס הפעילה: {seed.meta.version}. עוד לא פורסמה גרסה מהמטה.</p>
+          <p className="muted">גרסת הכללים הפעילה: {seed.meta.version}. עוד לא פורסמה גרסה מהמטה.</p>
         )}
       </section>
 
@@ -307,7 +307,7 @@ export default function RulesScreen() {
         }}
       />
 
-      <ConfirmDialog open={confirmPublish} title="פרסום גרסת בסיס" confirmLabel="פרסום והורדה" onClose={() => setConfirmPublish(false)} onConfirm={publish}>
+      <ConfirmDialog open={confirmPublish} title="פרסום גרסת כללים" confirmLabel="פרסום והורדה" onClose={() => setConfirmPublish(false)} onConfirm={publish}>
         <p>תיווצר גרסה חדשה עם {pending.length} שינויים ויומן השינויים שלהם. הקובץ יורד למחשב, ומשם שולחים אותו לרשויות. בשטח טוענים אותו במסך "הרשות שלי".</p>
         <Alert tone="info">חבילות שייבנו בשטח על הגרסה הקודמת יסומנו במטה כ"גרסה שונה".</Alert>
       </ConfirmDialog>

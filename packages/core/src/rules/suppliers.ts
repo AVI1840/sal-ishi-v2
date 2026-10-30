@@ -5,6 +5,7 @@
 
 import type { Service, Supplier } from "../model";
 import type { Settings } from "../seed";
+import { RETIRED_SETTINGS } from "../settings";
 
 /** חמשת רכיבי הדירוג, והשדה בהערכה שמזין כל אחד. */
 export const SUPPLIER_RATING_COMPONENTS = [
@@ -61,6 +62,9 @@ export interface CompetitionFlag {
  * למוצר בערוץ הארצי. מדד בלבד.
  */
 export function competitionFlags(services: readonly Service[], settings: Pick<Settings, "competition_max_suppliers_local" | "competition_max_suppliers_national">): CompetitionFlag[] {
+  // הוסר ב-0.6.1: תקרת ספקים לסוג שירות סותרת את המאגר הפתוח (כל ספק שעומד בתקן
+  // נכנס). הפונקציה נשארת לתאימות, ולא מחזירה חריגות.
+  if (RETIRED_SETTINGS.has("competition_max_suppliers_local")) return [];
   const groups = new Map<string, { s: Service; suppliers: Set<string> }>();
   for (const s of services) {
     const national = s.reach === "national";

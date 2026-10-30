@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpenCheck, CheckCircle2, History, Info, XCircle } from "lucide-react";
-import { buildOnboardingStandard, isPublishable, proposalKeys, statusNote, validateOnboardingStandard } from "@sal-ishi/core";
+import { buildOnboardingStandard, isPublishable, proposalKeys, settingLabel, statusNote, validateOnboardingStandard } from "@sal-ishi/core";
 import { Badge, PageHeader, ProposalBadge } from "@sal-ishi/ui";
 import { useHqAnalysis } from "../analysis";
 import { useHq } from "../store";
@@ -41,13 +41,13 @@ export default function OverviewScreen() {
 
   const steps = [
     { to: "/intake", title: "1. קטלוג", value: `${approved} שירותים מאושרים`, note: `${summaries.length} רשויות, ${state.neighborhoods.length} שכונות` },
-    { to: "/rules", title: "2. כללים", value: `גרסת בסיס ${seed.meta.version}`, note: `${proposals.length} כללים פתוחים${pending ? `, ${pending} שינויים לפני פרסום` : ""}` },
+    { to: "/rules", title: "2. כללים", value: `גרסת כללים ${seed.meta.version}`, note: `${proposals.length} כללים פתוחים${pending ? `, ${pending} שינויים לפני פרסום` : ""}` },
     { to: "/national", title: "3. מדדים", value: red.length ? `${red.length} פערי כיסוי אדומים` : "אין פערי כיסוי אדומים", note: `${redHoods ? `ב-${redHoods} שכונות. ` : ""}גם מיצוי, חדירה, פריסה, מחיר לשעה וזמן לשירות ראשון` },
     {
       to: "/export",
       title: "4. ייצוא לספק",
       value: exported ? `${exported.count} שירותים בתקן 1.1` : "מחשב...",
-      note: exported ? (exported.valid ? "עובר את ה-JSON Schema" : "לא עובר את הסכמה") + (exported.skipped ? `, ${exported.skipped} דורשים השלמה` : "") : "",
+      note: exported ? (exported.valid ? "עובר את בדיקת התקן" : "לא עובר את בדיקת התקן") + (exported.skipped ? `, ${exported.skipped} דורשים השלמה` : "") : "",
     },
   ];
 
@@ -80,8 +80,8 @@ export default function OverviewScreen() {
         <ul className="overview-proposals">
           {proposals.map((k) => (
             <li key={k}>
-              <code dir="ltr">{k}</code> <ProposalBadge />
-              <span className="muted"> {statusNote(seed.settings, k).replace(/^\s*proposal\s*-?\s*/i, "")}</span>
+              {settingLabel(k)} <ProposalBadge />
+              <span className="muted"> {statusNote(seed.settings, k)}</span>
             </li>
           ))}
         </ul>

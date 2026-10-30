@@ -120,9 +120,9 @@ export default function HomeScreen() {
       const s = await new FileSyncAdapter(createBrowserFileIO()).receiveSeed();
       if (!s) return;
       setSeed(s);
-      toast("success", `נטענה גרסת בסיס ${s.meta.version} מהמטה`);
+      toast("success", `נטענה גרסת כללים ${s.meta.version} מהמטה`);
     } catch (e) {
-      toast("error", `קובץ הבסיס לא נקלט: ${e instanceof Error ? e.message : String(e)}`);
+      toast("error", `קובץ הכללים לא נקלט: ${e instanceof Error ? e.message : String(e)}`);
     }
   };
 
@@ -132,7 +132,7 @@ export default function HomeScreen() {
     <>
       <PageHeader
         title="הרשות שלי"
-        description="הגדרת הרשות והשכונות, תמונת מצב קצרה וההגדרות שהמטה קבע. כל הספים נקראים מקובץ הבסיס ולא מקודדים."
+        description="הגדרת הרשות והשכונות, תמונת מצב קצרה וההגדרות שהמטה קבע. כל הספים נקראים מקובץ הכללים ולא מקודדים."
         actions={
           <>
             <Button variant="secondary" icon={<Database size={18} />} onClick={() => (hasData ? setConfirmDemo(true) : loadDemo())}>
@@ -149,7 +149,7 @@ export default function HomeScreen() {
 
       {seedNotice ? (
         <div className="stack">
-          <Alert tone="info" title="גרסת בסיס חדשה" live>{seedNotice}</Alert>
+          <Alert tone="info" title="גרסת כללים חדשה" live>{seedNotice}</Alert>
           <div><Button small variant="secondary" onClick={dismissSeedNotice}>הבנתי</Button></div>
         </div>
       ) : null}
@@ -260,9 +260,9 @@ export default function HomeScreen() {
           <h2 id="settings-h">ההגדרות הפעילות</h2>
           <div className="row">
             <Badge tone={seedFromHq ? "success" : "neutral"}>
-              גרסת בסיס {seed.meta.version} {seedFromHq ? "(מהמטה)" : "(מובנית)"}
+              גרסת כללים {seed.meta.version} {seedFromHq ? "(מהמטה)" : "(מובנית)"}
             </Badge>
-            <Button variant="secondary" small onClick={receiveSeed}>קבלת גרסת בסיס מהמטה</Button>
+            <Button variant="secondary" small onClick={receiveSeed}>קבלת גרסת כללים מהמטה</Button>
           </div>
         </div>
         <p className="muted">ההגדרות נקבעות במטה. ערך שמסומן "הצעה" עוד ממתין להכרעה.</p>

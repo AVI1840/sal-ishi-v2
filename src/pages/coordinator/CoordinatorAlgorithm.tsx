@@ -23,7 +23,7 @@ export default function CoordinatorAlgorithm() {
     { id: "prevention", label: "מניעת הידרדרות", description: "שירותים שמוכחים כמפחיתים ירידה תפקודית", icon: Activity, color: "#3b82f6", weight: pct("prevention") },
     { id: "motivation", label: "מוטיבציות ורצון אישי", description: "התאמה לרצונות, חלומות ותחביבי האדם", icon: Heart, color: "#ec4899", weight: pct("motivation") },
     { id: "profile", label: "פרופיל: ניידות, שפה, מגזר", description: "התאמה ליכולות ולצרכים הספציפיים", icon: Users, color: "#22c55e", weight: pct("profileFit") },
-    { id: "social", label: "המלצות וניסיון", description: "מגיע מספק העל. 0 עד שיהיו נתוני ניסיון (תוספת 3)", icon: AlertTriangle, color: "#8b5cf6", weight: pct("socialProof") },
+    { id: "social", label: "המלצות וניסיון", description: "מגיע מספק העל. 0 עד שיהיו נתוני ניסיון", icon: AlertTriangle, color: "#8b5cf6", weight: pct("socialProof") },
     { id: "proximity", label: "זמינות וקרבה גיאוגרפית", description: "שכונה, הסעות, שעות פתיחה", icon: MapPin, color: "#f59e0b", weight: pct("proximity") },
   ]);
 

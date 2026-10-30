@@ -81,16 +81,13 @@ export const EXTRA_PERSONAS: CaseloadPerson[] = [
 
 export function buildCaseload(size = appSettings.companion.caseload_size): CaseloadPerson[] {
   const r = rng(20261103);
-  const hoods: [string, number][] = [["פסגת זאב", 0.45], ["תלפיות מזרח", 0.2], ["בית וגן", 0.15], ["בית חנינא", 0.12], ["רוממה", 0.08]];
-  const pickHood = () => {
-    let x = r();
-    for (const [h, w] of hoods) if ((x -= w) <= 0) return h;
-    return hoods[0][0];
-  };
+  // מלווה עובדת בשכונה אחת: כל התיק בשכונה שלה (מההגדרות).
+  const home = appSettings.companion.neighborhood ?? "פסגת זאב";
   const people: CaseloadPerson[] = [PERSONA_PERSON, ...EXTRA_PERSONAS];
   for (let i = 1; i < size; i++) {
-    const neighborhood = pickHood();
-    const arab = neighborhood === "בית חנינא";
+    r(); // שומר על רצף המחולל (קבוע בין הרצות)
+    const neighborhood = home;
+    const arab = false;
     const ru = !arab && r() < 0.15;
     const pool = arab ? NAMES_AR : ru ? NAMES_RU : NAMES_HE;
     const name = `${pool[Math.floor(r() * pool.length)]} ${INITIALS[Math.floor(r() * INITIALS.length)]}.`;

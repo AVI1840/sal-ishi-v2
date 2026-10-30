@@ -308,7 +308,7 @@ export default function ServicesCatalog() {
         {/* Algorithm */}
         <div className="bg-white border border-gray-100 rounded-xl p-5">
           <h3 className="text-sm font-bold text-gray-900 mb-1">אלגוריתם התאמה - 5 שכבות</h3>
-          <p className="text-xs text-gray-600 mb-4">המשקלות מההגדרות (תוספת 3). הצעה: ועדת הסל קובעת.</p>
+          <p className="text-xs text-gray-600 mb-4">המשקלות מההגדרות. הצעה: ועדת הסל קובעת.</p>
           <div className="space-y-2.5">
             {MATCHING_LAYER_SOURCES.map((x) => ({ w: `${Math.round(((catalogState.seed.settings.matching_weights as Record<string, number>)[x.key] ?? 0) * 100)}%`, title: x.label, desc: x.source })).map((l, i) => (
               <div key={i} className="flex items-start gap-3">

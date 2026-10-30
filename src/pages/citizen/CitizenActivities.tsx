@@ -63,7 +63,7 @@ function BookingCard({ b }: { b: Booking }) {
           </p>
           {attended > 0 ? (
             <p className="text-sm text-emerald-800 mt-0.5">
-              {sub ? `השתתפת ב-${attended === 1 ? "מפגש אחד" : `${attended} מפגשים`} מתוך ${b.sessionsPerMonth ?? 4} החודש.` : "השתתפת."}
+              {sub ? `${attended === 1 ? "השתתפת במפגש אחד" : `השתתפת ב-${attended} מפגשים`} מתוך ${b.sessionsPerMonth ?? 4} החודש.` : "השתתפת."}
             </p>
           ) : null}
         </div>

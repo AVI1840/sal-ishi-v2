@@ -146,8 +146,8 @@ const SPECS_J: Spec[] = [
   { key: "video", n: 0, type: "T44", sup: "S-007", fit: G, price: 110, pattern: C, base: 12, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "שיחות וידאו עם המשפחה", fp: fp(BY_SMARTPHONE, { goals: ["family", "belonging"] }) },
   { key: "homeadapt", n: 0, type: "T29", sup: "S-003", fit: G, price: 300, pattern: C, base: 13, status: "אושר", mode: "home", delivery: "home", name: "התאמת הבית למניעת נפילות", fp: fp(AT_HOME, { goals: ["independence"], evidenceLevel: "high" }) },
   // השלמה בלבד: ייעוץ תזונה (סל הבריאות מממן חלק), בדיקות מונעות (הפניה בלבד)
-  { key: "nutrition", n: 0, type: "T26", sup: "S-006", fit: G, price: 240, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ תזונה (השלמה)", fp: fp(AT_HOME, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 50 } } },
-  { key: "checkups", n: 0, type: "T31", sup: "S-001", fit: G, price: 120, pattern: C, base: 20, status: "אושר", mode: "individual", name: "בדיקות מונעות בקופה (הפניה)", fp: fp(WALK_AND_AID, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 100 } } },
+  { key: "nutrition", n: 0, type: "T26", sup: "S-006", fit: G, price: 240, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ תזונה", fp: fp(AT_HOME, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 50 } } },
+  { key: "checkups", n: 0, type: "T31", sup: "S-001", fit: G, price: 120, pattern: C, base: 20, status: "אושר", mode: "individual", name: "בדיקות מונעות בקופה", fp: fp(WALK_AND_AID, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 100 } } },
   // איכות חיים (seed, הוכרע): שובר בית קפה, וסל טיפוח באישור המלווה
   { key: "coffee", n: 0, type: "T48", sup: "S-008", fit: G, price: 53, pattern: C, base: 40, status: "אושר", copay: "qol", name: "שובר בית קפה זוגי", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
   { key: "care", n: 0, type: "T51", sup: "S-008", fit: G, price: 105, pattern: C, base: 14, status: "אושר", copay: "qol", name: "סל טיפוח", fp: fp(AT_HOME) },
@@ -464,9 +464,9 @@ export function buildDemoNationalChannel(): { suppliers: Supplier[]; services: S
       item("light", "T54", "תאורת לילה אוטומטית", "N-002", 120),
       item("fit", "T56", "עזרי התעמלות ביתיים", "N-003", 280),
       // השלמה בלבד
-      item("hearing", "T57", "מכשיר שמיעה (השלמה)", "N-002", 3000, funded("משרד הבריאות", { kind: "amount", value: 2400 })),
+      item("hearing", "T57", "מכשיר שמיעה", "N-002", 3000, funded("משרד הבריאות", { kind: "amount", value: 2400 })),
       item("walker", "T56", "הליכון (השאלה, הפניה)", "N-003", 450, funded("אחר", { kind: "percent", value: 100 })),
-      item("button", "T55", "לחצן מצוקה (השלמה)", "N-002", 450, funded("גמלת סיעוד", { kind: "amount", value: 300 }, true)),
+      item("button", "T55", "לחצן מצוקה", "N-002", 450, funded("גמלת סיעוד", { kind: "amount", value: 300 }, true)),
     ],
   };
 }

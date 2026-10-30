@@ -77,7 +77,7 @@ export default function App() {
                 {preview ? <FeedbackButton /> : null}
                 <span>{authority || "רשות לא הוגדרה"}</span>
                 <span aria-hidden="true">|</span>
-                <span>גרסת בסיס {seed.meta.version}</span>
+                <span>גרסת כללים {seed.meta.version}</span>
               </>
             }
             footerNote="הנתונים נשמרים רק בדפדפן הזה. מעבר נתונים למטה נעשה רק בחבילת פיילוט."

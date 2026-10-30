@@ -18,7 +18,7 @@ const LEVEL = {
   not_checked: { text: "לא נבדק", cls: "bg-muted text-foreground border-border", Icon: AlertTriangle },
 } as const;
 
-export const COMPANION_NEIGHBORHOOD = "פסגת זאב";
+export const COMPANION_NEIGHBORHOOD = appSettings.companion.neighborhood ?? "פסגת זאב";
 
 export default function CoordinatorCommunity() {
   const c = useMemo(() => communityFor(COMPANION_NEIGHBORHOOD), []);

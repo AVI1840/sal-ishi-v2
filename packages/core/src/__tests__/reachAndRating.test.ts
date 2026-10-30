@@ -82,10 +82,9 @@ describe("דירוג ספקים", () => {
     expect(supplierScore({}, seed.settings)).toBeNull();
   });
 
-  it("מדד תחרות: יותר מ-3 ספקים לאותו סוג שירות בשכונה", () => {
+  it("מדד התחרות הוסר: המאגר פתוח לכל ספק שעומד בתקן", () => {
     const services = ["s1", "s2", "s3", "s4"].map((code, i) => svc(`x${i}`, { supplierCode: code }));
-    expect(competitionFlags(services, seed.settings)).toEqual([{ authority: services[0]!.authority, neighborhoodId: nGeneral.id, serviceTypeId: "T17", suppliers: 4, max: 3 }]);
-    expect(competitionFlags(services.slice(0, 3), seed.settings)).toEqual([]);
+    expect(competitionFlags(services, seed.settings)).toEqual([]);
   });
 
   it("seed ישן מקבל את ההגדרות החדשות בלי לדרוס ערכים קיימים", () => {
@@ -100,7 +99,7 @@ describe("דירוג ספקים", () => {
 
   it("ההגדרות החדשות מסומנות כהצעה", () => {
     const keys = proposalKeys(seed.settings);
-    expect(keys).toEqual(expect.arrayContaining(["supplier_rating_enabled", "matching_weights", "selection_max_active", "competition_max_suppliers_local", "subcategory_breadth_min"]));
+    expect(keys).toEqual(expect.arrayContaining(["supplier_rating_enabled", "matching_weights", "selection_max_active", "subcategory_breadth_min"]));
   });
 });
 

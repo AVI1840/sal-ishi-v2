@@ -95,7 +95,7 @@ export const useField = create<FieldState>()((set, get) => {
         if (saved.seed && isOlderSeedBase(saved.seed)) {
           // מבנה ההגדרות השתנה בין גרסאות הבסיס: עוברים ל-seed המובנה ומודיעים.
           const from = (saved.seed as { meta?: { version?: string } }).meta?.version ?? "קודמת";
-          seedNotice = `גרסת הבסיס עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ההגדרות שהגיעו מהמטה בגרסה הקודמת הוחלפו בהגדרות של ${defaultSeed.meta.version}. אם המטה שינה ערכים, בקשו ממנו גרסת בסיס חדשה.`;
+          seedNotice = `גרסת הכללים עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ההגדרות שהגיעו מהמטה בגרסה הקודמת הוחלפו בהגדרות של ${defaultSeed.meta.version}. אם המטה שינה ערכים, בקשו ממנו גרסת כללים חדשה.`;
         } else if (saved.seed) {
           try {
             seed = upgradeSeed(saved.seed);

@@ -9,19 +9,38 @@ async function noHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(1);
 }
 
-/** שירות קבוצתי עם מועדים, בלי אישור מלווה ובלי מממן אחר. */
+/** שירות רציף (מנוי חודשי): מצטרפים לקבוצה. */
 const SERVICE = "demoj-balance";
+/** שירות חד-פעמי עם מועדים (סדנה): מזמינים מועד ומבטלים לפי הכלל. */
+const SINGLE = "demoj-cooking";
 
-test("אזרחית: ארנק בנקודות, הזמנה, ביטול ושיחזרו אליי", async ({ page }) => {
+test("אזרחית: ארנק מהאירועים, הצטרפות ועזיבה, הזמנה וביטול, שיחזרו אליי", async ({ page }) => {
   await page.goto("./#/citizen");
   await expect(page.getByRole("heading", { level: 1, name: /, שרה$/ })).toBeVisible();
-  await expect(page.getByText(/נשארו \d+ נקודות/).first()).toBeVisible();
+  // נתוני הפתיחה: מועדון (126 בחודש) עם 2 מפגשים מדווחים מתוך 4.
+  const wallet = page.locator("[aria-labelledby=wallet-title]");
+  await expect(wallet).toContainText("נשארו 374 נקודות");
+  await expect(wallet).toContainText("שמור 63 נקודות");
+  await expect(wallet).toContainText("נוצל 63 נקודות");
   await expect(page.getByText("נקודה = ₪1").first()).toBeVisible();
   await noHorizontalScroll(page);
 
+  // שירות רציף: להצטרף לקבוצה, ולעזוב.
   await page.goto(`./#/citizen/services/${SERVICE}`);
   const name = (await page.getByRole("heading", { level: 1 }).innerText()).trim();
-  await expect(page.getByRole("heading", { name: "כמה זה עולה" })).toBeVisible();
+  await expect(page.getByText(/נקודות בחודש, כ-4 מפגשים/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "אם רוצים לעזוב" })).toBeVisible();
+  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+  await expect(page.getByRole("heading", { name: "הצטרפת לקבוצה" })).toBeVisible();
+  await page.getByRole("link", { name: "לפעילויות שלי" }).click();
+  await page.getByRole("button", { name: `לעזוב את הקבוצה: ${name}` }).click();
+  await page.getByRole("button", { name: "כן, לעזוב" }).click();
+  await expect(page.getByText(/עזבת את הקבוצה/)).toBeVisible();
+
+  // חד-פעמי: מועד, אישור, ביטול לפי הכלל.
+  await page.goto(`./#/citizen/services/${SINGLE}`);
+  const single = (await page.getByRole("heading", { level: 1 }).innerText()).trim();
   await expect(page.getByRole("heading", { name: "אם צריך לבטל" })).toBeVisible();
   await page.getByRole("button", { name: "להזמין" }).click();
   const radios = page.getByRole("radio");
@@ -32,10 +51,8 @@ test("אזרחית: ארנק בנקודות, הזמנה, ביטול ושיחזר
   }
   await page.getByRole("button", { name: "לאשר את ההזמנה" }).click();
   await expect(page.getByRole("heading", { name: "ההזמנה נקלטה" })).toBeVisible();
-
   await page.getByRole("link", { name: "לפעילויות שלי" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "הפעילויות שלי" })).toBeVisible();
-  await page.getByRole("button", { name: `לבטל: ${name}` }).click();
+  await page.getByRole("button", { name: `לבטל: ${single}` }).click();
   await expect(page.getByText(/הביטול בלי חיוב|הביטול מאוחר/)).toBeVisible();
   await page.getByRole("button", { name: "כן, לבטל" }).click();
   await expect(page.getByText(/ההזמנה בוטלה/)).toBeVisible();
@@ -138,7 +155,7 @@ test("נגישות: axe בלי ליקויים חמורים במסכים המאו
   expect(problems).toEqual([]);
 });
 
-test("חוט הזהב: שרה מזמינה מקהלה, רונית רואה, והמטה סופר", async ({ page, context }) => {
+test("חוט הזהב: שרה מצטרפת למקהלה, שמור, רונית רואה, המטה סופר, נוכחות, נוצל ודירוג", async ({ page, context }) => {
   await page.goto("./#/citizen");
   const first = page.locator(`section[aria-labelledby=rec-title] a[href^="#/citizen/services/"]`).first();
   await expect(first).toContainText("מקהלה קהילתית");
@@ -147,22 +164,35 @@ test("חוט הזהב: שרה מזמינה מקהלה, רונית רואה, וה
   await page.goto("./#/citizen/services");
   await expect(page.getByRole("heading", { level: 1, name: "השוק בשכונה שלך" })).toBeVisible();
   await page.getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
-  await page.getByRole("button", { name: "להזמין" }).click();
-  const radios = page.getByRole("radio");
-  if (await radios.count()) {
-    await radios.first().check();
-    await page.getByRole("button", { name: "לבדוק ולאשר" }).click();
-  }
-  await page.getByRole("button", { name: "לאשר את ההזמנה" }).click();
-  await expect(page.getByRole("heading", { name: "ההזמנה נקלטה" })).toBeVisible();
+  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+  await expect(page.getByRole("heading", { name: "הצטרפת לקבוצה" })).toBeVisible();
 
+  // הארנק: המקהלה (84 בחודש) שמורה, עוד לא נוצלה.
+  await page.goto("./#/citizen");
+  const wallet = page.locator("[aria-labelledby=wallet-title]");
+  await expect(wallet).toContainText("נשארו 290 נקודות");
+  await expect(wallet).toContainText("שמור 147 נקודות");
+
+  // רונית רואה כרטיס "חדש בתיק" ואת המקהלה בתיק.
   const companion = await context.newPage();
+  await companion.goto("./#/coordinator");
+  await expect(companion.getByText(/נרשמה למקהלה קהילתית/)).toBeVisible();
   await companion.goto("./#/coordinator/patients/c1");
   await expect(companion.getByText(/מקהלה קהילתית:/).first()).toBeVisible();
 
+  // המטה סופר.
   await companion.goto("./#/executive");
-  // נתוני הפתיחה כבר כוללים הזמנות: בודקים שההזמנה נספרת (לפחות אחת).
   await expect(companion.getByText(/[1-9]\d* הזמנות/)).toBeVisible();
+
+  // הספק מדווח נוכחות: שמור הופך לנוצל, ומופיע דירוג.
+  await companion.getByRole("button", { name: "הדגמה" }).click();
+  await companion.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
+  await page.goto("./#/citizen/activities");
+  const choir = page.locator("li").filter({ hasText: "מקהלה קהילתית" });
+  await expect(choir).toContainText("נוצל 21 נקודות");
+  await expect(choir).toContainText("השתתפת במפגש אחד");
+  await expect(choir.getByText(/דרג את מקהלה קהילתית/)).toBeVisible();
 });
 
 test("לספר מה חשוב לי: ארבע שאלות, וההמלצות מתעדכנות", async ({ page }) => {

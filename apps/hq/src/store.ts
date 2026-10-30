@@ -32,7 +32,7 @@ type ServiceType = Seed["service_types"][number];
 /** יומן ביקורת: כל שינוי במטה, בקטלוג ובכללים, עם זמן. לא נמחק בפרסום. */
 export interface AuditEntry {
   at: string;
-  action: "קליטת חבילה" | "נתוני הדגמה" | "איפוס" | "שינוי כלל" | "סוג שירות" | "ערוץ ארצי" | "פרסום גרסת בסיס";
+  action: "קליטת חבילה" | "נתוני הדגמה" | "איפוס" | "שינוי כלל" | "סוג שירות" | "ערוץ ארצי" | "פרסום גרסת כללים";
   detail: string;
 }
 
@@ -112,7 +112,7 @@ export const useHq = create<HqStore>()((set, get) => {
         if (isOlderSeedBase(saved.seed)) {
           // מבנה ההגדרות השתנה בין גרסאות הבסיס: עוברים ל-seed המובנה, ושינויים שלא פורסמו בגרסה הישנה לא חלים עליו.
           const from = (saved.seed as { meta?: { version?: string } } | null)?.meta?.version ?? "קודמת";
-          seedNotice = `גרסת הבסיס עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ערכים ששונו במטה בגרסה הקודמת הוחלפו בערכי ${defaultSeed.meta.version}, ויש לעדכן אותם מחדש בספרייה וכללים אם צריך.`;
+          seedNotice = `גרסת הכללים עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ערכים ששונו במטה בגרסה הקודמת הוחלפו בערכי ${defaultSeed.meta.version}, ויש לעדכן אותם מחדש בספרייה וכללים אם צריך.`;
           pending = [];
         } else {
           try {
@@ -141,7 +141,7 @@ export const useHq = create<HqStore>()((set, get) => {
 
     reset() {
       set({ state: emptyHqState(), seed: defaultSeed, pending: [], isDemo: false });
-      audit("איפוס", "המטה אופס: בלי חבילות, גרסת הבסיס המובנית");
+      audit("איפוס", "המטה אופס: בלי חבילות, גרסת הכללים המובנית");
     },
 
     updateSetting(key, value, note) {
@@ -190,7 +190,7 @@ export const useHq = create<HqStore>()((set, get) => {
       const { seed, pending } = get();
       const published = publishSeedVersion(seed, pending);
       set({ seed: published, pending: [] });
-      audit("פרסום גרסת בסיס", `גרסה ${published.meta.version}, ${pending.length} שינויים`);
+      audit("פרסום גרסת כללים", `גרסה ${published.meta.version}, ${pending.length} שינויים`);
       return published;
     },
   };
