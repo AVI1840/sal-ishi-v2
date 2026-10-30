@@ -114,10 +114,10 @@ export default function CitizenServiceDetail() {
 
   if (!service) {
     return (
-      <main id="main" tabIndex={-1} className="px-6 pt-16 pb-6 space-y-4" dir="rtl">
+      <main id="main" tabIndex={-1} className="px-6 pt-6 pb-6 space-y-4" dir="rtl">
         <h1 className="text-2xl font-bold text-gray-900">השירות לא נמצא</h1>
         <p className="text-base text-gray-700">ייתכן שהוא כבר לא בקטלוג. אפשר לחפש שירות אחר, או לבקש מהמלווה.</p>
-        <Link to="/citizen/services" className="flex items-center justify-center min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold">
+        <Link to="/citizen" className="flex items-center justify-center min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold">
           {he.findService}
         </Link>
       </main>
@@ -147,7 +147,7 @@ export default function CitizenServiceDetail() {
 
       {/* חזרה. שם השירות הוא הכותרת שבכרטיס הראשי, כי כלי הנגישות יושבים בפינה השמאלית העליונה */}
       <header className="sticky top-10 z-30 bg-white border-b border-gray-200 px-5 h-14 flex items-center">
-        <Link to="/citizen/services" className="min-h-[44px] px-2 -mx-2 inline-flex items-center gap-1.5 text-base font-semibold text-[#1B3A5C]">
+        <Link to="/citizen" className="min-h-[44px] px-2 -mx-2 inline-flex items-center gap-1.5 text-base font-semibold text-[#1B3A5C]">
           <ArrowRight className="w-5 h-5" aria-hidden="true" /> לשירותים
         </Link>
       </header>

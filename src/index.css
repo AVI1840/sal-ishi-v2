@@ -137,3 +137,8 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ניגודיות גבוהה (סרגל הנגישות של האזרח): טקסט משני כהה יותר, ומסגרות בולטות. */
+html.hc .text-gray-500, html.hc .text-gray-600, html.hc .text-gray-700, html.hc .text-gray-800 { color: #0b1220 !important; }
+html.hc .text-white\/75, html.hc .text-white\/80, html.hc .text-white\/85, html.hc .text-white\/90 { color: #fff !important; }
+html.hc .border-gray-200, html.hc .border-gray-300 { border-color: #374151 !important; }

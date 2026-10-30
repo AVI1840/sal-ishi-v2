@@ -18,13 +18,13 @@ import { AutoDemoOverlay } from "@/components/AutoDemoOverlay";
 
 // Pages
 import DemoHome from "@/pages/DemoHome";
-import CitizenHome from "@/pages/citizen/CitizenHome";
 import CitizenServices from "@/pages/citizen/CitizenServices";
 import CitizenServiceDetail from "@/pages/citizen/CitizenServiceDetail";
 import CitizenActivities from "@/pages/citizen/CitizenActivities";
 import CitizenNeeds from "@/pages/citizen/CitizenNeeds";
 import CitizenChat from "@/pages/citizen/CitizenChat";
 import CitizenProfile from "@/pages/citizen/CitizenProfile";
+import CitizenCompanion from "@/pages/citizen/CitizenCompanion";
 import CoordinatorDashboard from "@/pages/coordinator/CoordinatorDashboard";
 import CoordinatorPatients from "@/pages/coordinator/CoordinatorPatients";
 import CoordinatorPatientDetail from "@/pages/coordinator/CoordinatorPatientDetail";
@@ -85,13 +85,15 @@ export default function LegacyApp() {
 
               {/* Citizen App (Mobile) */}
               <Route path="/citizen" element={<MobileShell />}>
-                <Route index element={<CitizenHome />} />
-                <Route path="services" element={<CitizenServices />} />
+                {/* השוק הוא מסך הכניסה של האזרחית. הכתובת הישנה של השוק מובילה אליו. */}
+                <Route index element={<CitizenServices />} />
+                <Route path="services" element={<Navigate to="/citizen" replace />} />
                 <Route path="services/:id" element={<CitizenServiceDetail />} />
                 <Route path="activities" element={<CitizenActivities />} />
                 <Route path="needs" element={<CitizenNeeds />} />
                 <Route path="chat" element={CITIZEN_CHAT_ENABLED ? <CitizenChat /> : <Navigate to="/citizen" replace />} />
                 <Route path="profile" element={<CitizenProfile />} />
+                <Route path="companion" element={<CitizenCompanion />} />
               </Route>
 
               {/* Coordinator Dashboard (Desktop) */}

@@ -74,7 +74,7 @@ export default function CitizenNeeds() {
   if (done) {
     return (
       <div className="min-h-screen bg-white" dir="rtl">
-        <div className="bg-[#1B3A5C] text-white px-6 pt-16 pb-6">
+        <div className="bg-[#1B3A5C] text-white px-6 pt-6 pb-6">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <CheckCircle2 className="w-7 h-7" aria-hidden="true" /> תודה
           </h1>
@@ -94,7 +94,7 @@ export default function CitizenNeeds() {
               </li>
             ))}
           </ul>
-          <Link to="/citizen/services" className="flex items-center justify-center min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold">
+          <Link to="/citizen" className="flex items-center justify-center min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold">
             לכל השירותים, לפי ההתאמה אלי{male ? "ך" : "יך"}
           </Link>
           <button type="button" className="w-full min-h-[48px] border border-[#1B3A5C] text-[#1B3A5C] rounded-xl text-base font-semibold" onClick={() => setDone(false)}>
@@ -107,7 +107,7 @@ export default function CitizenNeeds() {
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
-      <div className="bg-[#1B3A5C] text-white px-6 pt-16 pb-6">
+      <div className="bg-[#1B3A5C] text-white px-6 pt-6 pb-6">
         <h1 id="q-title" className="text-3xl font-bold">מה חשוב לי</h1>
         <p className="text-lg text-white/90 mt-1">
           מה שסיפרת ל{appSettings.companion.name} בקליטה כבר מסומן. אפשר להוסיף, להוריד ולעדכן, וההמלצות ישתנו בהתאם.

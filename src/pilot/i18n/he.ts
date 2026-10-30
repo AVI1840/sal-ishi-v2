@@ -98,9 +98,9 @@ export const he = {
   bookedText: (name: string) => `נרשמת ל${name}.`,
   bookedOffline: "אין חיבור כרגע. ההזמנה שמורה בטלפון ותישלח כשהחיבור יחזור.",
   toHome: "לחזור לבית",
-  toActivities: "לפעילויות שלי",
+  toActivities: "לשירותים שלי",
 
-  activitiesTitle: "הפעילויות שלי",
+  activitiesTitle: "השירותים שלי",
   upcoming: "מה מחכה לי",
   requestsTitle: "בקשות למלווה",
   status: {
