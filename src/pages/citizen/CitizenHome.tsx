@@ -21,7 +21,6 @@ import { useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/commo
 import { personalRecommendations } from "@/lib/personalMatch";
 import { amount } from "@/lib/wallet";
 import { WalletSummary } from "@/components/citizen/WalletSummary";
-import { GiveCard } from "@/components/citizen/GiveCard";
 import { priceLabel, priceOf, serviceById } from "@/pilot/services";
 
 const getGreeting = () => {
@@ -178,7 +177,6 @@ export default function CitizenHome() {
         </section>
 
         {/* תמריצים: רק למי שהמלווה סימנה */}
-        <GiveCard />
 
         {/* Schedule from bookings */}
         <section aria-labelledby="sched-title">

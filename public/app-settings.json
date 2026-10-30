@@ -1,6 +1,6 @@
 {
   "mode": "demo",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "mode_options": [
     "demo",
     "pilot"
@@ -11,7 +11,9 @@
     "pilot_participants_source": "פיילוט פסגת זאב, נתוני רקע"
   },
   "background": {
-    "source": "נתוני רקע מסיכומי הפיילוט והמפגשים. לא לפרסום",
+    "show": false,
+    "show_note": "כבוי עד אישור של אביעד. כשמדליקים: רק מספרים שאושרו, עם מקור.",
+    "source": "נתוני רקע מסיכומי הפיילוט והמפגשים",
     "pilot_months": 24,
     "social_ties_from": 37,
     "social_ties_to": 94,
@@ -47,7 +49,8 @@
     "status": "הצעה: שירות רציף במנוי חודשי בנקודות, שמור בהצטרפות ונוצל לפי נוכחות מדווחת. חד-פעמי לפי יחידה. להכרעה במפגש 3"
   },
   "incentives": {
-    "enabled": true,
+    "enabled": false,
+    "enabled_note": "כבוי עד הכרעה על מקור המימון: מוצג במטה בלבד, כהצעה. כשדולק: אצל המלווה ובארנק של האזרח.",
     "rates": {
       "volunteer_hour": 15,
       "teach_session": 40,

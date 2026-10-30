@@ -6,12 +6,13 @@ import { readFileSync } from "fs";
 
 // חותמת בנייה: איזה commit רץ בכתובת החיה. נכתבת ל-version.json ומוצגת בתחתית דף הבית,
 // ונבדקת על ידי scripts/check-live.mjs אחרי פריסה.
+// קודם git של התיקייה שנבנית: בפריסה כל אתר נבנה מ-worktree של הענף שלו, ו-GITHUB_SHA
+// שם הוא ה-commit של main (שם רצה הפריסה), לא של /merge/.
 const commit = (() => {
-  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
   try {
     return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
   } catch {
-    return "local";
+    return process.env.GITHUB_SHA?.slice(0, 7) ?? "local";
   }
 })();
 const appVersion = (JSON.parse(readFileSync(path.resolve(__dirname, "public/app-settings.json"), "utf8")) as { version: string }).version;

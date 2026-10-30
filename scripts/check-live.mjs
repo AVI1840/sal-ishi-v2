@@ -12,7 +12,7 @@ const expected = process.argv[3] ?? execSync("git rev-parse --short HEAD").toStr
 
 /** מה חייב להופיע, לפי מסך. */
 const MUST = {
-  "#/": ["משעות לתוצאות", "שלוש דלתות"],
+  "#/": ["מגמלה לצמיחה", "סל אישי להזדקנות מיטבית", "משעות לתוצאות", "שלוש דלתות"],
   "#/citizen": ["נשארו", "שמור", "נוצל", "מקהלה קהילתית"],
   "#/citizen/services": ["השירותים בשכונה שלך", "שירותים בהתאמה אישית עבורך", "שירותים לפי קטגוריה"],
   "#/citizen/services/demoj-choir": ["להצטרף לקבוצה", "בחודש"],
@@ -20,7 +20,7 @@ const MUST = {
   "#/executive": ["מה הוכרע במפגש 2", "₪760"],
 };
 /** מה אסור שיופיע באף מסך. */
-const NEVER = /₪2B|הכסף מנוצל|ארנק בשקלים|760 נקודות|תוספת 3|supplier_|גרסת בסיס|\(השלמה\)|\(הפניה\)|Nudges|Timeline|—/;
+const NEVER = /₪2B|הכסף מנוצל|ארנק בשקלים|760 נקודות|תוספת 3|supplier_|גרסת בסיס|\(השלמה\)|\(הפניה\)|Nudges|Timeline|—|לא לפרסום|ליווי למפגש|approved services|any resident data/;
 const EXTRA = ["#/citizen/activities", "#/citizen/profile", "#/coordinator/patients/c1", "#/coordinator/community", "#/providers", "#/scope"];
 const ATLAS = ["hq/#/", "hq/#/rules", "hq/#/export", "field/#/"];
 

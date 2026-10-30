@@ -224,23 +224,56 @@ test("הקהילה שלי ושוק האזרחית: אותו מספר שירות�
   expect(main).toMatch(new RegExp(`שירותים מאושרים בשכונה\\s+${citizen[2]}`));
 });
 
-test("תמריצים: הצעה אישית רק למי שסומן, התמדה באישור המלווה, והנקודות בארנק", async ({ page, context }) => {
+test("תמריצים: כבויים עד הכרעה על המימון. לא אצל שרה ולא אצל רונית, ובמטה כהצעה", async ({ page }) => {
   await page.goto("./#/citizen");
-  const give = page.locator("[aria-labelledby=give-title]");
-  await expect(give).toContainText("להוביל שירה בציבור במועדון השכונתי");
-  await expect(give).toContainText("40 נקודות על כל מפגש");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByText(/לתת לקהילה|נקודות על כל מפגש/)).toHaveCount(0);
+  await page.goto("./#/coordinator/patients/c1");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByText(/תמריץ/)).toHaveCount(0);
+  await page.goto("./#/executive");
+  const inc = page.locator("section[aria-labelledby=inc-h]");
+  await expect(inc.getByRole("heading", { name: "תמריצים לאזרחים: הצעה" })).toBeVisible();
+  await expect(inc).toContainText("מקור המימון פתוח");
+  await expect(inc).toContainText("עד ההכרעה לא מוצג לאזרחים ולמלווה");
+});
 
-  const companion = await context.newPage();
-  await companion.goto("./#/coordinator");
-  await companion.getByRole("button", { name: "הדגמה" }).click();
-  await companion.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
-  await companion.goto("./#/coordinator/patients/c1");
-  await expect(companion.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
-  await companion.getByRole("button", { name: /להעניק תמריץ התמדה/ }).click();
-  await expect(companion.getByText(/נוספו לשרה 20 נקודות/)).toBeVisible();
+test("0.6.2: בלי מספרים שלא אושרו, מקור אחד למספר השירותים, מונה ורשימה תואמים", async ({ page }) => {
+  // רקע: כבוי עד אישור.
+  for (const route of ["./", "./#/executive"]) {
+    await page.goto(route);
+    await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+    expect(await page.locator("body").innerText(), route).not.toMatch(/לא לפרסום|מיליון|120 אלף|37%|94%|5\.5 חודשים/);
+  }
+  // מה הוכרע: המונה שווה למספר השורות.
+  const decided = Number((await page.getByText(/\d+ הוכרעו \(מפגש 2/).innerText()).match(/(\d+) הוכרעו/)![1]);
+  expect(await page.locator("section[aria-labelledby=decided-h] ul").first().locator("li").count()).toBe(decided);
+  // מספר השירותים: המטה, השטח והשוק של שרה.
+  const row = page.locator("section[aria-labelledby=hoods-h] tr", { hasText: "פסגת זאב" });
+  const [reach, local] = (await row.locator("td").allInnerTexts()).slice(1, 3).map(Number);
+  await page.goto("./#/citizen/services");
+  await expect(page.locator("h1 + p").first()).toContainText(`${reach} שירותים מאושרים, ${local} מהם`);
+  await page.goto("./field/#/");
+  const fieldRow = page.locator("tr", { hasText: "פסגת זאב" }).first();
+  await expect(fieldRow).toContainText(String(local));
+  await expect(fieldRow).toContainText(String(reach));
+  await expect(page.getByLabel("שם הרשות")).toHaveValue(/ירושלים/);
+  // ייצוא במטה: עברית, ושמות שדות רק בגופן קוד. בלי שורות כפולות.
+  await page.goto("./hq/#/export");
+  const lists = page.locator(".grid--cards li");
+  await expect(lists.first()).toBeVisible();
+  for (const t of await lists.evaluateAll((els) => els.map((e) => [...e.childNodes].filter((n) => n.nodeName !== "CODE").map((n) => n.textContent).join("")))) expect(t).not.toMatch(/[a-z]{3,}/);
+  const skipped = await page.locator(".alert li").allInnerTexts();
+  expect(new Set(skipped).size).toBe(skipped.length);
+  await expect(page.getByText(/פיילוט ירושלים, 5 שכונות/).first()).toBeVisible();
+});
 
-  await page.goto("./#/citizen");
-  await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("כולל 20 נקודות שקיבלת כתמריץ");
+test("תפריט ההדגמה נסגר במעבר מסך", async ({ page }) => {
+  await page.goto("./#/coordinator");
+  await page.getByRole("button", { name: "הדגמה" }).click();
+  await expect(page.locator("#demo-menu")).toBeVisible();
+  await page.getByRole("link", { name: "שרה", exact: true }).click();
+  await expect(page.locator("#demo-menu")).toHaveCount(0);
 });
 
 // תחילת חודש: מנוי חודשי מתחדש, והנוכחות נספרת לפי חודש. אותם מספרים בשער (2.11),
@@ -266,8 +299,8 @@ for (const day of ["2026-11-01T06:00:00Z", "2026-11-02T08:00:00Z", "2026-11-03T0
     await expect(companion.getByText(/נרשמה למקהלה קהילתית/)).toBeVisible();
     await companion.getByRole("button", { name: "הדגמה" }).click();
     await companion.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
-    await companion.goto("./#/coordinator/patients/c1");
-    await expect(companion.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
+    await page.goto("./#/citizen/activities");
+    await expect(page.locator("li").filter({ hasText: "מועדון שכונתי" })).toContainText("השתתפת ב-3 מפגשים מתוך 4 החודש");
   });
 }
 
@@ -277,7 +310,7 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   await context.clock.setFixedTime(new Date("2026-11-03T08:00:00Z"));
   // 0:00 בית
   await page.goto("./#/");
-  for (const t of ["משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא"]) await expect(page.getByText(t).first()).toBeVisible();
+  for (const t of ["מגמלה לצמיחה", "סל אישי להזדקנות מיטבית", "משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא"]) await expect(page.getByText(t).first()).toBeVisible();
   // 1:00 שרה: הארנק
   await page.goto("./#/citizen");
   const wallet = page.locator("[aria-labelledby=wallet-title]");
@@ -309,25 +342,27 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   const ronit = await context.newPage();
   await ronit.goto("./#/coordinator");
   await expect(ronit.getByText("שרה נרשמה למקהלה קהילתית.")).toBeVisible();
-  await ronit.getByRole("button", { name: /התקשרתי והצעתי ליווי/ }).first().click();
+  await ronit.getByRole("button", { name: /^ראיתי: שרה/ }).click();
+  await expect(ronit.getByText("שרה נרשמה למקהלה קהילתית.")).toHaveCount(0);
   // 3:30 לפנות היום: הבקשה של בוריס, לאשר, סיבה, לאשר ולתעד
   await ronit.getByRole("button", { name: /^לאשר: .*בוריס/ }).click();
   await ronit.getByRole("radio").first().check();
   await ronit.getByRole("button", { name: "לאשר ולתעד" }).click();
   await expect(ronit.getByRole("button", { name: /^לאשר: .*בוריס/ })).toHaveCount(0);
-  // 4:00 הספק מדווח נוכחות, ובתיק של שרה: התמדה
+  // 4:00 הספק מדווח נוכחות: אצל שרה "נוצל", והדירוג נפתח
   await ronit.getByRole("button", { name: "הדגמה" }).click();
   await ronit.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
-  await ronit.goto("./#/coordinator/patients/c1");
-  await expect(ronit.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
-  await expect(ronit.getByRole("button", { name: /להעניק תמריץ התמדה/ })).toBeVisible();
+  await page.goto("./#/citizen/activities");
+  const choir = page.locator("li").filter({ hasText: "מקהלה קהילתית" });
+  await expect(choir).toContainText("נוצל 21 נקודות");
+  await expect(choir.getByText(/דרג את מקהלה קהילתית/)).toBeVisible();
   // 4:45 הקהילה שלי: תקציב קהילה
   await ronit.goto("./#/coordinator/community");
   await expect(ronit.getByText("₪1,520 בחודש")).toBeVisible();
   await expect(ronit.getByText(/הוכרע במפגש 2/).first()).toBeVisible();
   // 5:15 מטה
   await ronit.goto("./#/executive");
-  for (const t of ["מה הוכרע במפגש 2", "חלוקת ₪760: ארנק 500, ליווי 181, קהילה 20, תפעול 59", "דירוג ספק: חמישה רכיבים"]) await expect(ronit.getByText(t).first()).toBeVisible();
+  for (const t of ["מה הוכרע במפגש 2", "סל לאזרח בחודש: ₪760", "ארנק אישי בחודש: 500 נקודות בחודש", "דירוג ספק: חמישה רכיבים"]) await expect(ronit.getByText(t).first()).toBeVisible();
   // 6:00 ספקים ואטלס המטה
   await ronit.goto("./#/providers");
   await expect(ronit.getByText("מוכן").first()).toBeVisible();

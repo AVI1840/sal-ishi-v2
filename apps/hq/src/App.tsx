@@ -59,6 +59,8 @@ export default function App() {
   const hydrate = useHq((s) => s.hydrate);
   const seed = useHq((s) => s.seed);
   const pilots = useHq((s) => new Set(s.state.neighborhoods.map((n) => n.authority)).size);
+  // הסיפור הוא פיילוט ירושלים. שאר הרשויות בהדגמה הן להשוואה בתמונה הארצית.
+  const jerusalem = useHq((s) => s.state.neighborhoods.filter((n) => n.authority.startsWith("ירושלים")).length);
   const isDemo = useHq((s) => s.isDemo);
 
   useEffect(() => {
@@ -86,9 +88,9 @@ export default function App() {
               <>
                 <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
                 {preview ? <FeedbackButton /> : null}
-                <span>{pilots} פיילוטים</span>
+                <span>{jerusalem ? `פיילוט ירושלים, ${jerusalem} שכונות${pilots > 1 ? ` · ועוד ${pilots - 1} רשויות הדגמה להשוואה` : ""}` : `${pilots} פיילוטים`}</span>
                 <span aria-hidden="true">|</span>
-                <span>גרסת כללים {seed.meta.version}</span>
+                <span>גרסת כללים {seed.meta.version}, לפי מפגש 2</span>
               </>
             }
             footerNote="משטח המטה של ביטוח לאומי. הנתונים נשמרים רק בדפדפן הזה."

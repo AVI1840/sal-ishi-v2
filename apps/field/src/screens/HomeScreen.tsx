@@ -6,6 +6,8 @@ import { Database, MapPin, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react"
 import {
   COMMUNITIES,
   FileSyncAdapter,
+  buildDemoNationalChannel,
+  servesNeighborhood,
   HOSPITALIZATION_TEXT,
   createBrowserFileIO,
   migrationGaps,
@@ -87,6 +89,8 @@ function formatSetting(key: string, value: unknown, settings: Settings): string 
     const inner = (value as { value: unknown }).value;
     return typeof inner === "string" ? (MODE_TEXT[inner] ?? inner) : formatSetting(key, inner, settings);
   }
+  // הוכרע 28.10: פרטי ספק יחיד מגיעים למטה בלבד, ואף פעם לא לייצוא לספק העל.
+  if (key === "supplier_contact_to_hq") return value ? "כן, למטה בלבד. לא לספק העל ולא לשום ייצוא" : "לא, רק קוד וסוג";
   if (typeof value === "boolean") return value ? "כן" : "לא";
   if (typeof value === "number" && value > 0 && value < 1) return `${Math.round(value * 100)}%`;
   if (key === "utilization_window" && typeof value === "string") return value.replace(/rolling_(\d+)_months/, "$1 חודשים מתגלגלים");
@@ -104,12 +108,21 @@ export default function HomeScreen() {
   const toast = useToast();
 
   const [authorityDraft, setAuthorityDraft] = useState(data.authority);
+  // הנתונים נטענים אחרי הפתיחה: השדה מתעדכן כשהרשות נטענת.
+  useEffect(() => setAuthorityDraft(data.authority), [data.authority]);
   useEffect(() => setAuthorityDraft(data.authority), [data.authority]);
   const [editing, setEditing] = useState<Neighborhood | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmDemo, setConfirmDemo] = useState(false);
 
   const proposals = new Set(proposalKeys(seed.settings));
+  // אותה הגדרה כמו בסל האישי ואצל המלווה: שירות שמתפרסם לאזרח ומגיע לשכונה (רשום בה או משרת אותה).
+  // שירות ארצי זמין לכל השכונות, ונספר בנפרד, גם אם נרשם בשכונה מסוימת.
+  // הארציים: של הרשות, ועוד הערוץ הארצי שהמטה מנהל (בהדגמה: אותו ערוץ שהסל האישי מציג).
+  const published = new Set(seed.settings.publish_to_citizen_statuses);
+  const shown = data.services.filter((s) => published.has(s.status));
+  const national = [...shown.filter((s) => s.reach === "national"), ...(shown.length ? buildDemoNationalChannel().services : [])];
+  const local = (n: Neighborhood) => shown.filter((s) => s.reach !== "national" && servesNeighborhood(s, n));
   const entered = [...perService.values()].filter((a) => a.entry.status === "נכנס").length;
   const approved = data.services.filter((s) => s.status === "אושר").length;
   const redCells = coverage.cells.filter((c) => c.level === "red").length;
@@ -220,7 +233,8 @@ export default function HomeScreen() {
                 <tr>
                   <th scope="col">שכונה</th>
                   <th scope="col">פרופיל קהילתי</th>
-                  <th scope="col">שירותים</th>
+                  <th scope="col">שירותים בשכונה ובאזור</th>
+                  <th scope="col">לתושבים, עם הארציים</th>
                   <th scope="col">ספקים</th>
                   <th scope="col"><span className="visually-hidden">פעולות</span></th>
                 </tr>
@@ -230,7 +244,8 @@ export default function HomeScreen() {
                   <tr key={n.id}>
                     <th scope="row">{n.name}</th>
                     <td><Badge tone={n.community === "general" ? "neutral" : "info"}>{labels.community[n.community]}</Badge></td>
-                    <td className="num">{data.services.filter((s) => s.neighborhoodId === n.id).length}</td>
+                    <td className="num">{local(n).length}</td>
+                    <td className="num">{local(n).length + national.length}</td>
                     <td className="num">{data.suppliers.filter((s) => s.neighborhoods.includes(n.id)).length}</td>
                     <td>
                       <div className="row">
@@ -280,7 +295,15 @@ export default function HomeScreen() {
                 <tr key={key}>
                   <th scope="row">{label}</th>
                   <td>{formatSetting(key, (seed.settings as Record<string, unknown>)[key], seed.settings)}</td>
-                  <td>{proposals.has(key) ? <ProposalBadge note={statusNote(seed.settings, key)} /> : <Badge tone="success">סופי</Badge>}</td>
+                  <td>
+                    {proposals.has(key) ? (
+                      <ProposalBadge note={statusNote(seed.settings, key)} />
+                    ) : key === "supplier_contact_to_hq" ? (
+                      <Badge tone="warning">הוכרע 28.10, לבדיקת אבטחת מידע 20.11</Badge>
+                    ) : (
+                      <Badge tone="success">סופי</Badge>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

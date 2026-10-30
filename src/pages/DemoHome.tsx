@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { BookOpen, Building2, ChevronLeft, ClipboardList, FileJson, Heart, MapPin, Phone, Scale, ShieldCheck, Store, Users, Wallet } from "lucide-react";
 import { catalogState } from "@/data/catalogSource";
 import { realServices } from "@/data/realServices";
-import { appSettings } from "@/pilot/settings";
+import { appSettings, shownBackground } from "@/pilot/settings";
 import { buildCaseload } from "@/pilot/caseload";
 
 const basket = () => catalogState.seed.settings as unknown as Record<"total" | "personal_wallet", number>;
@@ -56,7 +56,7 @@ const STATE_GETS = [
 
 export default function DemoHome() {
   const s = basket();
-  const bg = appSettings.background;
+  const bg = shownBackground();
   return (
     <div dir="rtl" className="min-h-screen bg-white">
       {/* גיבור */}
@@ -64,13 +64,13 @@ export default function DemoHome() {
         <img src="./images/activities-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
         <div className="relative max-w-5xl mx-auto px-6 py-14 text-white">
           <p className="text-sm font-semibold text-white/85 flex items-center gap-2">
-            <Wallet className="w-4 h-4" aria-hidden="true" /> הסל האישי · פיילוט ירושלים
+            <Wallet className="w-4 h-4" aria-hidden="true" /> <span className="font-bold text-white">"מגמלה לצמיחה"</span> · סל אישי להזדקנות מיטבית
           </p>
           <h1 className="text-3xl md:text-5xl font-bold leading-tight mt-3 max-w-3xl">
-            כל אזרח ותיק בוחר מה מחזיק אותו בחיים, והמדינה רואה מה עובד.
+            האזרח הוותיק בוחר מה יעזור לו להזדקנות מיטבית מסל שהותאם עבורו, והמדינה רואה מה עובד.
           </h1>
           <p className="text-lg text-white/90 mt-4 max-w-2xl">
-            משעות לתוצאות: סל משלים שמחבר אנשים לקהילה, לתנועה ולמשמעות, עם מלווה ליד, ושוק שירותים שהמדינה מחזיקה בכלליו.
+            משעות לתוצאות: סל אישי שמחבר אנשים לקהילה, לתנועה ולמשמעות, עם מלווה חברתית, ושוק שירותים שהמדינה מכוונת להזדקנות מיטבית ולמניעת הידרדרות.
           </p>
           <div className="flex flex-wrap gap-3 mt-8">
             {DOORS().map((d) => (

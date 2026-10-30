@@ -51,6 +51,15 @@ describe("derive: המצב נגזר מהאירועים", () => {
   });
 });
 
+describe("התיק של רונית", () => {
+  it("שמות פרטיים בלי כפילויות, ובוריס נשאר בוריס", () => {
+    const people = buildCaseload();
+    const firsts = people.map((p) => p.name.split(" ")[0]);
+    expect(new Set(firsts).size).toBe(firsts.length);
+    expect(people.find((p) => p.id === "p017")?.name).toBe("בוריס ר.");
+  });
+});
+
 describe("ארנק ומחיר בשקלים", () => {
   it("היתרה מהאירועים בלבד: שמור, נוצל, ביטול בזמן חוזר, ביטול מאוחר מחויב", () => {
     const month = new Date().toISOString();

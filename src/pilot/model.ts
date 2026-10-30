@@ -42,6 +42,8 @@ export interface PilotState {
   textScale: 1 | 1.25 | 1.5;
   /** נקודת ההתחלה של ההדגמה כבר נטענה. */
   seeded?: boolean;
+  /** "חדש בתיק" שהמלווה סימנה "ראיתי" (מזהי הזמנה). לא אירוע: לא עובר לספק. */
+  seen?: string[];
 }
 
 export interface Derived {

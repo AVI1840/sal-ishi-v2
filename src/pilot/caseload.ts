@@ -43,10 +43,12 @@ export interface TriageItem {
   bucket: "today" | "week" | "watch" | "ok";
 }
 
-const NAMES_HE = ["מרים", "יוסף", "רחל", "אברהם", "חנה", "משה", "אסתר", "דוד", "שושנה", "יעקב", "רבקה", "שמעון", "לאה", "אליהו", "זהבה", "חיים", "פנינה", "מרדכי", "תמר", "נסים", "ציפורה", "אהרון", "בתיה", "שלמה", "עליזה", "מאיר", "דבורה", "יצחק"];
+const NAMES_HE = ["מרים", "יוסף", "רחל", "אברהם", "חנה", "משה", "אסתר", "דוד", "שושנה", "יעקב", "רבקה", "שמעון", "לאה", "אליהו", "זהבה", "חיים", "פנינה", "מרדכי", "תמר", "נסים", "ציפורה", "אהרון", "בתיה", "שלמה", "עליזה", "מאיר", "דבורה", "יצחק", "גאולה", "ברוך", "יהודית", "שמואל", "נעמי", "אריה", "מלכה", "צבי", "רות", "בנימין", "אילנה", "גדעון", "עדנה", "יהושע", "חוה", "נחום", "סימה", "פנחס", "ברכה", "זאב", "יפה", "עמוס", "טובה", "אפרים", "רינה", "אליעזר", "שולמית", "מנחם", "אורה", "ישראל", "דינה", "נתן", "בלהה", "עזרא", "פרידה", "יהודה", "גילה", "רפאל", "נחמה", "אשר"];
 const NAMES_AR = ["פאטמה", "מחמד", "עאישה", "אחמד", "מרים", "חסן", "זינב", "עלי", "נג'לא", "יוסף", "סמירה", "איברהים"];
-const NAMES_RU = ["גלינה", "בוריס", "ולנטינה", "מיכאיל", "לודמילה", "ולדימיר", "טטיאנה", "יבגני"];
+const NAMES_RU = ["גלינה", "בוריס", "ולנטינה", "מיכאיל", "לודמילה", "ולדימיר", "טטיאנה", "יבגני", "סבטלנה", "איגור", "נטליה", "אלכסנדר", "ראיסה", "ויקטור", "אנטולי", "זויה", "סרגיי", "נינה", "פאבל"];
 const INITIALS = "אבגדהזחטכלמנסעפצקרשת";
+/** אורך המאגרים המקוריים: ההגרלה לפיהם, כדי ששמות שלא התנגשו יישארו כמו שהיו (בוריס נשאר בוריס). */
+const DRAW_LEN = { he: 28, ru: 8 };
 
 /** מחולל קבוע (mulberry32): אותו תיק בכל הרצה. */
 function rng(seed: number) {
@@ -84,13 +86,24 @@ export function buildCaseload(size = appSettings.companion.caseload_size): Casel
   // מלווה עובדת בשכונה אחת: כל התיק בשכונה שלה (מההגדרות).
   const home = appSettings.companion.neighborhood ?? "פסגת זאב";
   const people: CaseloadPerson[] = [PERSONA_PERSON, ...EXTRA_PERSONAS];
+  // שמות פרטיים בלי כפילויות (גם לא עם הדמויות): בתיק אמיתי שני "יבגני" באותה רשימה מבלבלים.
+  // ההגרלה נשארת אותה הגרלה, כך שהגיל, המיצוי והתעדוף לא משתנים: רק שם תפוס עובר לשם הפנוי הבא.
+  const used = new Set(people.map((p) => p.name.split(" ")[0]));
+  const pick = (pool: string[], at: number, drawLen: number) => {
+    // קודם השם שהוגרל, ואם תפוס: מהשמות שנוספו למאגר, כדי שהחלפה אחת לא תגרור עוד החלפות.
+    const order = [pool[at], ...pool.slice(drawLen), ...pool.slice(0, drawLen)];
+    const n = order.find((x) => !used.has(x)) ?? pool[at];
+    used.add(n);
+    return n;
+  };
   for (let i = 1; i < size; i++) {
     r(); // שומר על רצף המחולל (קבוע בין הרצות)
     const neighborhood = home;
     const arab = false;
     const ru = !arab && r() < 0.15;
     const pool = arab ? NAMES_AR : ru ? NAMES_RU : NAMES_HE;
-    const name = `${pool[Math.floor(r() * pool.length)]} ${INITIALS[Math.floor(r() * INITIALS.length)]}.`;
+    const drawLen = pool === NAMES_RU ? DRAW_LEN.ru : pool === NAMES_HE ? DRAW_LEN.he : pool.length;
+    const name = `${pick(pool, Math.floor(r() * drawLen), drawLen)} ${INITIALS[Math.floor(r() * INITIALS.length)]}.`;
     const daysSinceEnrollment = Math.floor(r() * 120) + 3;
     const firstServiceDone = daysSinceEnrollment > 30 ? r() > 0.08 : r() > 0.55;
     people.push({

@@ -158,6 +158,11 @@ export function setLang(lang: Lang) {
   set({ ...state, lang });
 }
 
+/** המלווה ראתה את "חדש בתיק" על ההזמנה. */
+export function markSeen(bookingId: string) {
+  set({ ...state, seen: [...(state.seen ?? []), bookingId] });
+}
+
 export function setTextScale(textScale: PilotState["textScale"]) {
   set({ ...state, textScale });
 }

@@ -33,17 +33,21 @@ function DemoMenu() {
   const [msg, setMsg] = useState<string | null>(null);
   const { state, derived } = usePilot();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const ref = useRef<HTMLDivElement>(null);
+
+  // מעבר מסך סוגר את התפריט, כדי שלא יישאר פתוח מעל התוכן.
+  useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    const onClick = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false);
+    const onClick = (e: PointerEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false);
     window.addEventListener("keydown", onKey);
-    window.addEventListener("mousedown", onClick);
+    window.addEventListener("pointerdown", onClick);
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("mousedown", onClick);
+      window.removeEventListener("pointerdown", onClick);
     };
   }, [open]);
 

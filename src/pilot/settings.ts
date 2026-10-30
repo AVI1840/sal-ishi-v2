@@ -20,8 +20,10 @@ export interface AppSettings {
   mode: AppMode;
   version: string;
   program: { pilot_participants: number; pilot_participants_source: string };
-  /** נתוני רקע לדף הבית ולמבט מטה (אושרו להצגה, לא לפרסום). */
+  /** נתוני רקע לדף הבית ולמבט מטה. מוצגים רק כש-show דלוק (אישור של אביעד). */
   background?: {
+    show?: boolean;
+    show_note?: string;
     source: string;
     pilot_months: number;
     social_ties_from: number;
@@ -44,6 +46,7 @@ export interface AppSettings {
   /** תמריצים בנקודות (הצעה). ראו src/lib/incentives.ts. */
   incentives?: {
     enabled: boolean;
+    enabled_note?: string;
     rates: { volunteer_hour: number; teach_session: number; persistence_month: number; goal: number };
     monthly_cap: number;
     persistence_min_share: number;
@@ -86,3 +89,6 @@ export async function loadAppSettings(): Promise<void> {
 }
 
 export const isDemo = () => appSettings.mode === "demo";
+
+/** נתוני הרקע, רק אם הוצגו באישור (background.show). אחרת: כלום, ושום מספר לא מופיע. */
+export const shownBackground = () => (appSettings.background?.show ? appSettings.background : undefined);

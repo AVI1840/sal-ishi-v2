@@ -8,19 +8,48 @@ import { count } from "@/lib/hebrew";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
-import { BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
+import { Award, BookOpen, CheckCircle2, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
-import { DECIDED_PRINCIPLES_MEETING_2, isDecided, ruleKeys, statusNote } from "@sal-ishi/core";
+import { DECIDED_PRINCIPLES_MEETING_2, isDecided, ruleKeys, settingLabel, statusNote } from "@sal-ishi/core";
 import { communityFor } from "@/lib/community";
 import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
 import { statusText } from "@/lib/statusText";
 import { amount } from "@/lib/wallet";
-import { appSettings } from "@/pilot/settings";
+import { incentivesOn } from "@/lib/incentives";
+import { appSettings, shownBackground } from "@/pilot/settings";
 import { usePilot } from "@/pilot/store";
 
 /** שכונות הפיילוט לפי ההחלטות. הר נוף עוד לא בקטלוג ההדגמה. */
 const PILOT_NEIGHBORHOODS = ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"];
+
+/** ערך של כלל שהוכרע, בשפה פשוטה: שקלים לחלוקת הסל, נקודות לארנק, אחוזים. */
+function decidedValue(key: string, settings: Record<string, unknown>): string {
+  const raw = settings[key];
+  const v = raw && typeof raw === "object" && "value" in (raw as object) ? (raw as { value: unknown }).value : raw;
+  const pct = (n: number) => `${Math.round(n * 100)}%`;
+  switch (key) {
+    case "personal_wallet":
+      return `${amount(Number(v))} בחודש`;
+    case "total":
+    case "companion":
+    case "community":
+    case "overhead":
+      return `₪${Number(v).toLocaleString("he-IL")}`;
+    case "copay_tiers": {
+      const t = raw as { core_and_prevention: number; classes: number; qol: number };
+      return `ליבה ומניעה ${pct(t.core_and_prevention)}, חוגים ${pct(t.classes)}, איכות חיים עד ${pct(t.qol)}`;
+    }
+    case "qol_cap_month":
+      return `${amount(Number(v))} בחודש`;
+    case "core_floor":
+      return `${v} שירותים`;
+    case "supplier_contact_to_hq":
+      return v ? "למטה בלבד, לא לשום ייצוא (לבדיקת אבטחת מידע 20.11)" : "לא, רק קוד וסוג";
+    default:
+      return typeof v === "number" && v > 0 && v < 1 ? pct(v) : String(v);
+  }
+}
 
 function Card(props: { icon: typeof Store; label: string; value: string | number; sub?: string; to?: string; href?: string }) {
   const body = (
@@ -39,12 +68,14 @@ function Card(props: { icon: typeof Store; label: string; value: string | number
 
 export default function ExecutiveOverview() {
   const { derived } = usePilot();
+  const bg = shownBackground();
   const settings = catalogState.seed.settings as unknown as Record<string, unknown>;
   const basket = settings as Record<"total" | "personal_wallet" | "companion" | "community" | "overhead", number>;
   const weights = catalogState.seed.settings.matching_weights as Record<string, number>;
   // מקור אחד לסטטוס הכללים, אותו כמו באטלס המטה (הליבה).
   const rules = ruleKeys(catalogState.seed.settings);
-  const decided = rules.filter((k) => isDecided(catalogState.seed.settings, k)).length;
+  const decidedRules = rules.filter((k) => isDecided(catalogState.seed.settings, k));
+  const decided = decidedRules.length;
   const proposals = rules.length - decided;
   const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
   const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
@@ -60,14 +91,14 @@ export default function ExecutiveOverview() {
         </p>
         <p className="text-sm text-white/80 mt-3">
           פיילוט ירושלים · {appSettings.program.pilot_participants} משתתפים
-          {appSettings.background ? ` · ${appSettings.background.pilot_months} חודשי פיילוט · 2027: ${appSettings.background.authorities_2027} רשויות, ${appSettings.background.budget_label}` : ""}
+          {bg ? ` · ${bg.pilot_months} חודשי פיילוט · 2027: ${bg.authorities_2027} רשויות, ${bg.budget_label}` : ""}
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
         <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
-        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2) · ${proposals} הצעה`} />
+        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2 ו-28.10) · ${proposals} הצעה`} />
         <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}${incentivePoints ? ` · ${incentivePoints} נקודות תמריץ` : ""}`} />
       </div>
 
@@ -120,14 +151,24 @@ export default function ExecutiveOverview() {
 
       <section className="libi-card p-5" aria-labelledby="decided-h">
         <h2 id="decided-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-2">
-          <Scale className="w-5 h-5 text-primary" aria-hidden="true" /> מה הוכרע במפגש 2
+          <Scale className="w-5 h-5 text-primary" aria-hidden="true" /> מה הוכרע במפגש 2 (ו-28.10)
         </h2>
+        {/* הרשימה נגזרת מאותו מקור כמו המונה למעלה: כל כלל שהוכרע, שורה אחת. */}
         <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-          {["חלוקת ₪760: ארנק 500, ליווי 181, קהילה 20, תפעול 59", "רצפה של 3 שירותים בכל תחום ליבה", "השתתפות עצמית 0, 20 ועד 50", "תקרת איכות חיים 100", "יעד מיצוי 70%, דגל אדום 35%", ...DECIDED_PRINCIPLES_MEETING_2].map((x) => (
+          {decidedRules.map((k) => (
+            <li key={k} className="flex items-start gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" />
+              <span>{settingLabel(k)}: {decidedValue(k, catalogState.seed.settings as unknown as Record<string, unknown>)}</span>
+            </li>
+          ))}
+        </ul>
+        <h3 className="text-sm font-semibold text-foreground mt-3">ועקרונות שהוכרעו</h3>
+        <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 mt-1">
+          {DECIDED_PRINCIPLES_MEETING_2.map((x) => (
             <li key={x} className="flex items-start gap-1.5"><CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" /> {x}</li>
           ))}
         </ul>
-        <p className="text-xs text-muted-foreground mt-2">כל שאר הכללים בהגדרות מסומנים כהצעה, גם כאן וגם באטלס המטה.</p>
+        <p className="text-xs text-muted-foreground mt-2">{count(decidedRules.length, "כלל אחד הוכרע", "כללים הוכרעו")}. כל שאר הכללים בהגדרות מסומנים כהצעה, גם כאן וגם באטלס המטה.</p>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -154,6 +195,24 @@ export default function ExecutiveOverview() {
           <p className="text-xs text-muted-foreground mt-1">ההרכב והמשקלות ייקבעו בהמשך. מוצג בשוק, ולא משנה את סדר ההתאמה.</p>
         </section>
       </div>
+
+      {appSettings.incentives ? (
+        <section className="libi-card p-5" aria-labelledby="inc-h">
+          <h2 id="inc-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-2">
+            <Award className="w-5 h-5 text-primary" aria-hidden="true" /> תמריצים לאזרחים: הצעה
+          </h2>
+          <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+            <li>התנדבות: {amount(appSettings.incentives.rates.volunteer_hour)} לשעה</li>
+            <li>הדרכת חוג או הרצאה: {amount(appSettings.incentives.rates.teach_session)} למפגש</li>
+            <li>התמדה במנוי (לפחות {Math.round(appSettings.incentives.persistence_min_share * 100)}% מהמפגשים): {amount(appSettings.incentives.rates.persistence_month)} לחודש</li>
+            <li>עמידה ביעד אישי: {amount(appSettings.incentives.rates.goal)}</li>
+          </ul>
+          <p className="text-sm text-foreground mt-2">מותאם אישית ולא לכולם: המלווה מסמנת למי זה מתאים ומאשרת כל תמריץ. תקרה של {amount(appSettings.incentives.monthly_cap)} לאזרח בחודש.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            מקור המימון פתוח ({(appSettings.incentives.funding_note ?? "תקציב הקהילה או מקור נפרד").replace(/^להכרעה:\s*/, "")}). {incentivesOn() ? "מופעל בהדגמה אצל המלווה ובארנק." : "עד ההכרעה לא מוצג לאזרחים ולמלווה."}
+          </p>
+        </section>
+      ) : null}
 
       <section className="libi-card p-5" aria-labelledby="hq-h">
         <h2 id="hq-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
