@@ -48,15 +48,27 @@ export const settingsSchema = z
     selection_max_active: z.number().int().positive().optional(),
     selection_change_months: z.number().int().positive().optional(),
     suggestions_per_domain: z.number().int().positive().optional(),
-    supplier_rating_weights: z
-      .object({ quality: ratio, outcomes: ratio, satisfaction: ratio, value: ratio })
+    /** ישן (4 רכיבים). נשאר לקריאת seed ישן, לא בשימוש. */
+    supplier_rating_weights: z.record(z.string(), ratio).optional(),
+    /** משקלות חמשת רכיבי הדירוג. חסר: ממוצע שווה (המשקלות ייקבעו). */
+    supplier_rating_component_weights: z
+      .record(z.enum(["audienceFit", "satisfaction", "quality", "serviceLevel", "outcomes"]), ratio)
       .refine((w) => Math.abs(Object.values(w).reduce((a, b) => a + b, 0) - 1) < 0.011, "סכום המשקלות חייב להיות 100%")
       .optional(),
+    supplier_rating_min_evaluations: z.number().int().positive().optional(),
     competition_max_suppliers_local: z.number().int().positive().optional(),
     competition_max_suppliers_national: z.number().int().positive().optional(),
     subcategory_breadth_min: z.number().int().nonnegative().optional(),
     subarea_alert_min: z.number().int().nonnegative().optional(),
     supplier_rating_enabled: z.boolean().optional(),
+    // תוספת 3: גיוון ונגישות ברצפה, יעד עושר, וספירת שירותים לא מקומיים.
+    floor_min_accessible: withStatus(z.number().int().nonnegative()).optional(),
+    target_per_category: withStatus(z.number().int().positive()).optional(),
+    floor_max_nonlocal: z
+      .object({ large_city: z.number().int().nonnegative(), small_authority: z.number().int().nonnegative(), status: z.string().optional() })
+      .passthrough()
+      .optional(),
+    large_city_authorities: z.array(z.string()).optional(),
     // גרסה 0.4: מודל התשלום של החשכ"ל.
     qol_copay: ratio,
     qol_cap_month: z.number().nonnegative(),

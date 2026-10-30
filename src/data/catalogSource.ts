@@ -14,16 +14,19 @@ import {
   FileSyncAdapter,
   buildCitizenCatalog,
   buildDemoAuthority,
+  DEMO_JERUSALEM,
   buildDemoNationalChannel,
   createBrowserFileIO,
   defaultSeed,
   upgradeSeed,
+  withSettings,
   seedIndex,
   type CitizenCatalog,
   type CitizenCatalogItem,
   type Seed,
 } from "@sal-ishi/core/citizen";
 import { configureMatching } from "@/domain/matchingEngine";
+import { appSettings } from "@/pilot/settings";
 import { costNote, costType } from "@/lib/serviceTerms";
 import { setRawServices } from "./realServices";
 import { setServiceCatalogRaw } from "./serviceCatalog";
@@ -70,6 +73,24 @@ function legacyCategory(code: string): 1 | 2 | 3 | 4 | 5 {
  * שכבת "המלצות וניסיון": במקום דירוג מומצא, ביקוש בפועל בשכונה ודירוג הספק.
  * 50 בסיס, ביקוש גבוה מוסיף 30, בינוני 15, נמוך 5, וכל נקודת דירוג מעל 3 מוסיפה 10.
  */
+/**
+ * מי מפעיל, כפי שהאזרח רואה. בתקן הקליטה לאזרח אין שם של ספק יחיד (פרטי ספק
+ * יחיד עוברים רק למטה, החלטה 28.10), ולכן מציגים את סוג המפעיל, בלי קוד.
+ */
+const PROVIDER_LABEL: Record<string, string> = {
+  authority: "מתנ\"ס או גוף ציבורי",
+  npo: "עמותה",
+  company: "חברה",
+  exempt: "מדריך עצמאי",
+  licensed: "איש מקצוע עצמאי",
+};
+
+/**
+ * שמות הספקים בקטלוג ההדגמה (בדויים). בקטלוג שפורסם אין שם של ספק יחיד בתקן לאזרח,
+ * ולכן שם יוצג סוג המפעיל.
+ */
+const DEMO_SUPPLIER_NAMES = new Map<string, string>();
+
 export function socialProofScore(item: Pick<CitizenCatalogItem, "demand" | "supplierScore">): number {
   let score = 50;
   if (item.demand === "high") score += 30;
@@ -101,7 +122,7 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
       byId.set(item.serviceId, {
         id: item.serviceId,
         name: item.name,
-        provider: `${supplierTypes.get(item.supplierType)?.name ?? item.supplierType} (קוד ${item.supplierCode})`,
+        provider: DEMO_SUPPLIER_NAMES.get(item.supplierCode) ?? PROVIDER_LABEL[item.supplierType] ?? supplierTypes.get(item.supplierType)?.name ?? "מפעיל מאושר",
         category: legacyCategory(item.categoryCode),
         subcategory: item.categoryName,
         neighborhood: home,
@@ -112,13 +133,13 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
         cost: costType({ copayRate: rate, copayPoints: item.copayPoints }),
         cost_note: costNote({ pricePoints: item.pricePoints, unit: item.unit, copayRate: rate, coveredPoints: item.coveredPoints, copayPoints: item.copayPoints }),
         target_age: "65+",
-        target_mobility: item.deliveryMode === "home" ? "homebound" : "any",
+        target_mobility: item.deliveryMode === "home" ? "homebound" : item.fitProfile && !item.fitProfile.mobility.includes("walker_wheelchair") ? "independent" : "any",
         languages: item.languages.map((l) => LANGUAGE_CODES[l] ?? l),
         phone: "",
         website: "",
         match_score: socialProofScore(item),
         certainty: "high",
-        accessibility: item.deliveryMode === "home" ? ["home_visit"] : item.deliveryMode === "remote" ? ["remote"] : [],
+        accessibility: item.deliveryMode === "home" || item.serviceMode === "home" ? ["home_visit"] : item.deliveryMode === "remote" || item.serviceMode === "remote" ? ["remote"] : [],
         ratings: [],
         // שם סוג השירות וההערה מהספרייה מזינים את כללי המניעה במנוע (נפילות, קוגניטיבי, מועדון).
         notes: [item.serviceTypeName, type?.note].filter(Boolean).join(". "),
@@ -146,6 +167,11 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
         coveredPoints: item.coveredPoints ?? null,
         copayPoints: item.copayPoints ?? null,
         copayBasis: item.copayBasis,
+        // תוספת 3
+        fitProfile: item.fitProfile,
+        otherFunderName: item.otherFunderName ?? null,
+        complementState: item.complementState ?? "none",
+        otherPaysPoints: item.otherPaysPoints ?? null,
       });
     }
   }
@@ -154,8 +180,9 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
 
 /** קטלוג ההדגמה: הוריאציה של האטלס שמתאימה לשכונות של אזרחי ההדגמה, ועוד הערוץ הארצי. */
 export function buildDemoCatalogs(seed: Seed): CitizenCatalog[] {
-  const data = buildDemoAuthority(2);
+  const data = buildDemoAuthority(DEMO_JERUSALEM);
   const national = buildDemoNationalChannel();
+  for (const sup of [...data.suppliers, ...national.suppliers]) if (sup.displayName) DEMO_SUPPLIER_NAMES.set(sup.code, sup.displayName.replace(/\s*\(הדגמה\)$/, ""));
   const source = { ...data, suppliers: [...data.suppliers, ...national.suppliers], services: [...data.services, ...national.services] };
   return data.neighborhoods.map((n) => buildCitizenCatalog(source, n.id, seed).catalog);
 }

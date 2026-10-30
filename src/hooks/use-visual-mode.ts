@@ -1,5 +1,5 @@
 /**
- * useVisualMode — toggles between "with images" and "clean" citizen interface.
+ * useVisualMode - toggles between "with images" and "clean" citizen interface.
  * State stored in localStorage so it survives navigation and page refreshes.
  */
 import { useState, useEffect } from "react";

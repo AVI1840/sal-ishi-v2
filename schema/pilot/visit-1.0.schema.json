@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "citizenId": {
+      "type": "string"
+    },
+    "at": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "home",
+        "phone",
+        "no_answer"
+      ]
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "citizenId",
+    "at",
+    "kind"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sal-ishi:visit:1.0",
+  "title": "visit 1.0",
+  "description": "רישום ביקור או שיחה של המלווה. בלי נתוני תושבים: מזהה האזרח הוא מזהה בדוי של הספק. אין שם, טלפון, כתובת או מספר זהות."
+}

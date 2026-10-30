@@ -8,10 +8,11 @@ import {
   FeedbackButton,
   FeedbackProvider,
   FeedbackScreen,
+  LearningNotebook,
   PartnerGuide,
   ToastProvider,
 } from "@sal-ishi/ui";
-import { BookOpen, Building2, ClipboardCheck, Compass, Grid3x3, Home, LineChart, MessageSquare, Users } from "lucide-react";
+import { BookOpen, BookOpenCheck, Building2, ClipboardCheck, Compass, Grid3x3, Home, LineChart, MessageSquare, Users } from "lucide-react";
 import { useField } from "./store";
 import HomeScreen from "./screens/HomeScreen";
 import InspirationScreen from "./screens/InspirationScreen";
@@ -32,6 +33,7 @@ const NAV = [
   { to: "/coverage", label: "מבחן כיסוי", icon: <Grid3x3 size={18} /> },
   { to: "/activity", label: "מה הולך", icon: <LineChart size={18} /> },
   { to: "/submit", label: "אישור ושליחה", icon: <ClipboardCheck size={18} /> },
+  { to: "/learning", label: "פנקס למידה", icon: <BookOpenCheck size={18} /> },
   ...(preview ? [{ to: "/feedback", label: "המשוב שלי", icon: <MessageSquare size={18} /> }] : []),
 ];
 
@@ -44,6 +46,9 @@ const GUIDE_STEPS = [
   { to: "/activity", title: "מה הולך", text: "פעילות חודשית מצטברת, מיצוי הארנק בחלון מתגלגל ושירותים מתחת לסף." },
   { to: "/submit", title: "אישור ושליחה", text: "הגשה, אישור ודחייה עם נימוק, ייצוא חבילת פיילוט למטה ו-Excel לוועדה." },
 ];
+
+/** בתוך מסגרת בכלי הראשי (אצל המלווה או במטה): בלי קישור החוצה "לסל האישי". */
+const embedded = typeof window !== "undefined" && window.self !== window.top;
 
 export default function App() {
   const hydrated = useField((s) => s.hydrated);
@@ -72,10 +77,11 @@ export default function App() {
             }
             headerMeta={
               <>
+                {embedded ? null : <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>}
                 {preview ? <FeedbackButton /> : null}
                 <span>{authority || "רשות לא הוגדרה"}</span>
                 <span aria-hidden="true">|</span>
-                <span>גרסת בסיס {seed.meta.version}</span>
+                <span>גרסת כללים {seed.meta.version}, לפי מפגש 2</span>
               </>
             }
             footerNote="הנתונים נשמרים רק בדפדפן הזה. מעבר נתונים למטה נעשה רק בחבילת פיילוט."
@@ -91,6 +97,7 @@ export default function App() {
                 <Route path="/coverage" element={<CoverageScreen />} />
                 <Route path="/activity" element={<ActivityScreen />} />
                 <Route path="/submit" element={<SubmitScreen />} />
+                <Route path="/learning" element={<LearningNotebook surface="שטח" />} />
                 <Route
                   path="/guide"
                   element={<PartnerGuide surface="field" seed={seed} steps={GUIDE_STEPS} otherSurface={{ href: "../hq/", label: "למשטח המטה" }} />}

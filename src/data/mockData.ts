@@ -5,7 +5,7 @@ import type {
 } from "./types";
 
 // ═══════════════════════════════════════════════════════════════
-// CITIZENS — פרופילים דינמיים עם מוטיבציות, חסמים, חוזקות
+// CITIZENS - פרופילים דינמיים עם מוטיבציות, חסמים, חוזקות
 // ═══════════════════════════════════════════════════════════════
 
 // Generate additional citizens to reach 75
@@ -195,24 +195,24 @@ export const CITIZENS: PersonalProfile[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// SERVICES — עם מוטיבציות, חסמים, חוזקות
+// SERVICES - עם מוטיבציות, חסמים, חוזקות
 // ═══════════════════════════════════════════════════════════════
 
 export const SERVICES: Service[] = [
-  { id: "s1", name: "מקהלה קהילתית", description: "שירה בקבוצה — שירים ישראליים וקלאסיים", category: "שייכות", motivationsServed: ["belonging", "meaning", "self_efficacy"], barriersAddressed: ["social_difficulty", "low_motivation"], strengthsActivated: ["humanity", "transcendence"], cost: 0, subsidyTier: "full", format: "small_group", duration: "75 דק׳", location: "מתנ״ס", emoji: "", color: "#3b82f6", engagementRate: 82 },
+  { id: "s1", name: "מקהלה קהילתית", description: "שירה בקבוצה - שירים ישראליים וקלאסיים", category: "שייכות", motivationsServed: ["belonging", "meaning", "self_efficacy"], barriersAddressed: ["social_difficulty", "low_motivation"], strengthsActivated: ["humanity", "transcendence"], cost: 0, subsidyTier: "full", format: "small_group", duration: "75 דק׳", location: "מתנ״ס", emoji: "", color: "#3b82f6", engagementRate: 82 },
   { id: "s2", name: "התעמלות מותאמת", description: "שיעור קבוצתי מותאם לבני 65+", category: "בריאות", motivationsServed: ["health", "self_efficacy", "belonging"], barriersAddressed: ["fear", "mobility"], strengthsActivated: ["courage"], cost: 0, subsidyTier: "full", format: "small_group", duration: "60 דק׳", location: "מרכז ספורט", emoji: "", color: "#22c55e", engagementRate: 75 },
   { id: "s3", name: "מועדון חברתי", description: "מפגשים שבועיים עם ארוחה ופעילות", category: "שייכות", motivationsServed: ["belonging", "comfort", "meaning"], barriersAddressed: ["social_difficulty", "low_motivation", "shame"], strengthsActivated: ["humanity"], cost: 0, subsidyTier: "full", format: "large_group", duration: "3 שעות", location: "מועדון קהילתי", emoji: "", color: "#3b82f6", engagementRate: 70 },
-  { id: "s4", name: "סדנת בישול", description: "בישול בריא בקבוצה — מתכונים מותאמים", category: "בריאות", motivationsServed: ["meaning", "belonging", "self_efficacy"], barriersAddressed: ["low_motivation", "social_difficulty"], strengthsActivated: ["wisdom", "humanity"], cost: 0, subsidyTier: "full", format: "small_group", duration: "90 דק׳", location: "מטבח קהילתי", emoji: "", color: "#f59e0b", engagementRate: 88 },
+  { id: "s4", name: "סדנת בישול", description: "בישול בריא בקבוצה - מתכונים מותאמים", category: "בריאות", motivationsServed: ["meaning", "belonging", "self_efficacy"], barriersAddressed: ["low_motivation", "social_difficulty"], strengthsActivated: ["wisdom", "humanity"], cost: 0, subsidyTier: "full", format: "small_group", duration: "90 דק׳", location: "מטבח קהילתי", emoji: "", color: "#f59e0b", engagementRate: 88 },
   { id: "s5", name: "קבוצת הליכה", description: "הליכה בפארק עם מדריך בקצב מותאם", category: "בריאות", motivationsServed: ["health", "belonging", "independence"], barriersAddressed: ["fear", "low_motivation"], strengthsActivated: ["courage", "temperance"], cost: 0, subsidyTier: "full", format: "small_group", duration: "45 דק׳", location: "פארק שכונתי", emoji: "", color: "#22c55e", engagementRate: 78 },
   { id: "s6", name: "חוג ציור", description: "ציור בצבעי מים באווירה חמה", category: "יצירה", motivationsServed: ["meaning", "self_efficacy", "growth"], barriersAddressed: ["low_motivation", "shame"], strengthsActivated: ["transcendence", "courage"], cost: 0, subsidyTier: "full", format: "small_group", duration: "90 דק׳", location: "מתנ״ס", emoji: "", color: "#8b5cf6", engagementRate: 80 },
   { id: "s7", name: "ביקור בית מתנדב", description: "שיחה אישית עם מתנדב/ת מותאם/ת", category: "חברתי", motivationsServed: ["belonging", "comfort", "family"], barriersAddressed: ["mobility", "social_difficulty", "fear", "shame"], strengthsActivated: ["humanity"], cost: 0, subsidyTier: "full", format: "alone", duration: "60 דק׳", location: "בבית", emoji: "", color: "#ec4899", engagementRate: 90 },
   { id: "s8", name: "הדרכת סמארטפון", description: "לימוד וואטסאפ, מצלמה, שיחות וידאו", category: "דיגיטל", motivationsServed: ["independence", "family", "curiosity", "growth"], barriersAddressed: ["lack_knowledge", "fear"], strengthsActivated: ["wisdom", "courage"], cost: 10, subsidyTier: "partial", format: "alone", duration: "60 דק׳", location: "ספרייה", emoji: "", color: "#0ea5e9", engagementRate: 65 },
-  { id: "s9", name: "תמיכה רגשית", description: "שיחות עם עו״ס — ליווי אישי", category: "חוסן", motivationsServed: ["self_efficacy", "meaning", "comfort"], barriersAddressed: ["anxiety", "fear", "low_motivation", "shame"], strengthsActivated: ["courage", "temperance"], cost: 15, subsidyTier: "partial", format: "alone", duration: "50 דק׳", location: "מרכז יום", emoji: "", color: "#8b5cf6", engagementRate: 72 },
+  { id: "s9", name: "תמיכה רגשית", description: "שיחות עם עו״ס - ליווי אישי", category: "חוסן", motivationsServed: ["self_efficacy", "meaning", "comfort"], barriersAddressed: ["anxiety", "fear", "low_motivation", "shame"], strengthsActivated: ["courage", "temperance"], cost: 15, subsidyTier: "partial", format: "alone", duration: "50 דק׳", location: "מרכז יום", emoji: "", color: "#8b5cf6", engagementRate: 72 },
   { id: "s10", name: "אימון מוח וזיכרון", description: "תרגילי חשיבה, זיכרון ומשחקים", category: "בריאות", motivationsServed: ["independence", "self_efficacy", "curiosity"], barriersAddressed: ["fear", "low_motivation"], strengthsActivated: ["wisdom"], cost: 0, subsidyTier: "full", format: "small_group", duration: "60 דק׳", location: "מרכז יום", emoji: "", color: "#3b82f6", engagementRate: 74 },
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// AI RECOMMENDATIONS — עם "למה" ו"מה הערך"
+// AI RECOMMENDATIONS - עם "למה" ו"מה הערך"
 // ═══════════════════════════════════════════════════════════════
 
 export const AI_RECOMMENDATIONS: AIRecommendation[] = [
@@ -252,7 +252,7 @@ export const AI_RECOMMENDATIONS: AIRecommendation[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// NUDGES — חיזוקים ותזכורות חכמות
+// NUDGES - חיזוקים ותזכורות חכמות
 // ═══════════════════════════════════════════════════════════════
 
 export const NUDGES: Nudge[] = [
@@ -275,7 +275,7 @@ export const RISK_ALERTS: RiskAlert[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// TIMELINE — CRM טיפולי
+// TIMELINE - CRM טיפולי
 // ═══════════════════════════════════════════════════════════════
 
 export const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -289,12 +289,12 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// KPIs — מדדי הצלחה אמיתיים (לא רק utilization)
+// KPIs - מדדי הצלחה אמיתיים (לא רק utilization)
 // ═══════════════════════════════════════════════════════════════
 
-// KPIs — נתוני פיילוט אמיתיים (פסגת זאב, 286 אזרחים)
+// KPIs - נתוני פיילוט אמיתיים (פסגת זאב, 286 אזרחים)
 export const KPIS: KPI[] = [
-  { id: "k1", label: "מיצוי ארנק", value: "71%", description: "71% מהיחידות מומשו — ממוצע פיילוט", trend: 6, trendLabel: "+6%", icon: "Target", tone: "success" },
+  { id: "k1", label: "מיצוי ארנק", value: "71%", description: "71% מהיחידות מומשו - ממוצע פיילוט", trend: 6, trendLabel: "+6%", icon: "Target", tone: "success" },
   { id: "k2", label: "שירותי מניעה", value: "54%", description: "מהמיצוי הולך לשירותי מניעה (לא בית)", trend: 8, trendLabel: "+8%", icon: "Heart", tone: "success" },
   { id: "k3", label: "מעורבות", value: "58%", description: "% אזרחים פעילים השבוע", trend: 4, trendLabel: "+4%", icon: "Activity", tone: "info" },
   { id: "k4", label: "בסיכון", value: 8, description: "אזרחים עם ירידה במעורבות", trend: 2, trendLabel: "+2", icon: "AlertTriangle", tone: "destructive" },
@@ -305,10 +305,10 @@ export const KPIS: KPI[] = [
 // COORDINATORS
 // ═══════════════════════════════════════════════════════════════
 
-// 4 מלוות חברתיות — מודל 1:75, פיילוט פסגת זאב
+// 4 מלוות חברתיות - מודל 1:75, פיילוט פסגת זאב
 export const COORDINATORS: Coordinator[] = [
-  { id: "co1", name: "רונית לוי",     citizenCount: 75, region: "פסגת זאב — מרכז" },
-  { id: "co2", name: "מיכל כהן",     citizenCount: 72, region: "פסגת זאב — צפון" },
-  { id: "co3", name: "סמאח חוסיין",  citizenCount: 70, region: "פסגת זאב — דרום" },
-  { id: "co4", name: "שרית אברהם",   citizenCount: 69, region: "פסגת זאב — מזרח" },
+  { id: "co1", name: "רונית לוי",     citizenCount: 75, region: "פסגת זאב - מרכז" },
+  { id: "co2", name: "מיכל כהן",     citizenCount: 72, region: "פסגת זאב - צפון" },
+  { id: "co3", name: "סמאח חוסיין",  citizenCount: 70, region: "פסגת זאב - דרום" },
+  { id: "co4", name: "שרית אברהם",   citizenCount: 69, region: "פסגת זאב - מזרח" },
 ];

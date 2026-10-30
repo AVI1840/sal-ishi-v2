@@ -51,8 +51,9 @@ describe("seed", () => {
     expect(keys).toEqual(
       expect.arrayContaining(["points_rollover_months", "cancellation_notice_hours", "no_show_charge_rule", "qol_mode", "reference_price_mode", "active_participant_min_sessions_month", "hot_meal_entry_criteria"]),
     );
-    expect(keys).not.toContain("min_participants");
-    expect(keys).not.toContain("supplier_contact_to_hq");
+    // מקור אחד: מה שהוכרע במפגש 2 (ומה שסומן "הוכרע" אחר כך) אינו הצעה. כל השאר הצעה.
+    for (const k of ["personal_wallet", "total", "core_floor", "copay_tiers", "qol_cap_month", "utilization_target", "red_flag_avg", "supplier_contact_to_hq"]) expect(keys).not.toContain(k);
+    expect(keys).toContain("min_participants");
   });
 
   it("השתתפות עצמית מההגדרות", () => {

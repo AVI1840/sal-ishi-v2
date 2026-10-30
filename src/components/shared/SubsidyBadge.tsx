@@ -1,5 +1,5 @@
 /**
- * SubsidyBadge — displays funding level per service cost type.
+ * SubsidyBadge - displays funding level per service cost type.
  * Single source of truth for subsidy display across all service cards.
  */
 import { cn } from "@/lib/utils";

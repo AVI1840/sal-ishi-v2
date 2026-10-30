@@ -7,7 +7,7 @@ export function AssistedDecisionFooter() {
         <ShieldCheck className="w-5 h-5" aria-hidden="true" />
       </div>
       <div className="text-sm">
-        <div className="font-bold text-info">AI כתמיכת החלטה — לא כהחלפת גורם מקצועי</div>
+        <div className="font-bold text-info">AI כתמיכת החלטה - לא כהחלפת גורם מקצועי</div>
         <p className="text-info/90 mt-1 leading-relaxed">
           כל המלצה במערכת עוברת אישור של מלווה או עו"ס לפני יישום. תוכנית ניהול סיכונים מתבססת על המדריך הרשמי
           לשימוש אחראי ב-AI במגזר הציבורי של מערך הדיגיטל הלאומי.

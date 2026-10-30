@@ -1,0 +1,100 @@
+{
+  "mode": "demo",
+  "version": "0.6.2",
+  "mode_options": [
+    "demo",
+    "pilot"
+  ],
+  "mode_note": "demo: שלוש דמויות בדויות, נתוני דמה וכפתור איפוס. pilot: בלי פס הדגמה, בלי איפוס ובלי נתוני פתיחה בדויים. אין הבדל בקוד.",
+  "program": {
+    "pilot_participants": 286,
+    "pilot_participants_source": "פיילוט פסגת זאב, נתוני רקע"
+  },
+  "support": {
+    "call_center_name": "מוקד הסל האישי",
+    "call_center_number": "*120",
+    "note": "מוקד ייעודי לסל האישי. לא מוקד ביטוח לאומי ולא מוקד העירייה. המספר להדגמה"
+  },
+  "background": {
+    "show": false,
+    "show_note": "כבוי עד אישור של אביעד. כשמדליקים: רק מספרים שאושרו, עם מקור.",
+    "source": "נתוני רקע מסיכומי הפיילוט והמפגשים",
+    "pilot_months": 24,
+    "social_ties_from": 37,
+    "social_ties_to": 94,
+    "delay_months": 5.5,
+    "authorities_2027": 6,
+    "budget_label": "כ-40 מיליון ש\"ח",
+    "level3_population_label": "כ-120 אלף ברמה 3"
+  },
+  "citizen": {
+    "persona_id": "c1",
+    "max_choices_per_step": 3,
+    "default_language": "he",
+    "languages": [
+      "he",
+      "ar",
+      "ru"
+    ]
+  },
+  "wallet": {
+    "unit": "points",
+    "unit_options": [
+      "points",
+      "shekel"
+    ],
+    "simulated": true,
+    "unit_note": "תוספת 3 ומפגש 2: ארנק של 500 נקודות, נקודה = ₪1. בפיילוט ירושלים ייתכנו שוברים מודפסים עד המעבר לספק העל: אז unit = shekel. הארנק בכלי מדומה, ספר החשבונות אצל ספק העל."
+  },
+  "pricing": {
+    "subscription_units": [
+      "חודש"
+    ],
+    "sessions_per_month_default": 4,
+    "status": "הצעה: שירות רציף במנוי חודשי בנקודות, שמור בהצטרפות ונוצל לפי נוכחות מדווחת. חד-פעמי לפי יחידה. להכרעה במפגש 3"
+  },
+  "incentives": {
+    "enabled": false,
+    "enabled_note": "כבוי עד הכרעה על מקור המימון: מוצג במטה בלבד, כהצעה. כשדולק: אצל המלווה ובארנק של האזרח.",
+    "rates": {
+      "volunteer_hour": 15,
+      "teach_session": 40,
+      "persistence_month": 20,
+      "goal": 30
+    },
+    "monthly_cap": 100,
+    "persistence_min_share": 0.75,
+    "status": "הצעה: תמריץ בנקודות על נתינה לקהילה (התנדבות, הדרכת חוג או הרצאה) ועל התמדה ועמידה ביעד אישי. מותאם אישית ולא לכולם: המלווה מסמנת למי זה מתאים ומאשרת כל תמריץ. תקרה חודשית לאזרח",
+    "funding_note": "להכרעה: מתקציב הקהילה, או מקור נפרד"
+  },
+  "companion": {
+    "name": "רונית",
+    "neighborhood": "פסגת זאב",
+    "caseload_size": 74,
+    "cover_name": "יעל",
+    "triage_order": [
+      "hospitalization",
+      "callback",
+      "gated_request",
+      "claim_task",
+      "cognitive_alert",
+      "no_first_service",
+      "low_utilization"
+    ],
+    "approval_reasons": {
+      "approve": [
+        "צורך שזוהה בביקור",
+        "בקשת האזרח, מתאים לתוכנית",
+        "המלצת גורם מקצועי"
+      ],
+      "reject": [
+        "לא מתאים כרגע לתוכנית",
+        "יש שירות אחר שעונה על הצורך",
+        "חסר מידע, אחזור לאזרח"
+      ]
+    }
+  },
+  "demo": {
+    "data_label": "נתוני הדגמה בדויים"
+  }
+}

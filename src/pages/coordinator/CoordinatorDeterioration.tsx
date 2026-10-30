@@ -1,5 +1,5 @@
 /**
- * דשבורד הידרדרות — Risk Detection
+ * דשבורד הידרדרות - Risk Detection
  * זיהוי ירידה במעורבות, withdrawal חברתי, ביטולים
  */
 import { AlertTriangle, TrendingDown, Users, Clock, Phone, Home, CheckCircle2, Eye } from "lucide-react";
@@ -106,7 +106,7 @@ export default function CoordinatorDeterioration() {
       {/* At-Risk Citizens Table */}
       <div className="libi-card p-5">
         <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-          <TrendingDown className="w-4 h-4 text-warning-foreground" /> אזרחים בסיכון — מיון לפי חומרה
+          <TrendingDown className="w-4 h-4 text-warning-foreground" /> אזרחים בסיכון - מיון לפי חומרה
         </h3>
         <div className="space-y-2">
           {[...criticalCitizens, ...highRiskCitizens].map((citizen) => (
@@ -143,10 +143,10 @@ export default function CoordinatorDeterioration() {
       </div>
       {/* SDI/RDI Explanation + Table */}
       <div className="libi-card p-5">
-        <h3 className="text-base font-semibold text-foreground mb-3">מדדי הידרדרות — SDI / RDI</h3>
+        <h3 className="text-base font-semibold text-foreground mb-3">מדדי הידרדרות - SDI / RDI</h3>
         <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs text-muted-foreground leading-relaxed space-y-2 mb-4">
-          <div><strong className="text-foreground">RDI (Risk Deterioration Index)</strong> — מדד סיכון הידרדרות. ככל שגבוה יותר, הסיכון להחמרה במצב גדול יותר. מעל 1.3 = דורש התערבות מיידית.</div>
-          <div><strong className="text-foreground">SDI (Service Diversity Index)</strong> — מדד מגוון שירותים פעילים. 0 = לא משתמש בשום שירות מניעה. ככל שגבוה יותר = טוב יותר (יעד: 17+).</div>
+          <div><strong className="text-foreground">RDI (Risk Deterioration Index)</strong> - מדד סיכון הידרדרות. ככל שגבוה יותר, הסיכון להחמרה במצב גדול יותר. מעל 1.3 = דורש התערבות מיידית.</div>
+          <div><strong className="text-foreground">SDI (Service Diversity Index)</strong> - מדד מגוון שירותים פעילים. 0 = לא משתמש בשום שירות מניעה. ככל שגבוה יותר = טוב יותר (יעד: 17+).</div>
           <div className="pt-1 border-t border-border/50"><strong className="text-foreground">על בסיס מה מחושב:</strong> מספר ימים ללא פעילות, ביטולי שירותים, ציון בדידות, ירידת מצב רוח, שינויים תפקודיים.</div>
         </div>
 
@@ -193,8 +193,8 @@ export default function CoordinatorDeterioration() {
                 <tr key={p.name} className="border-b border-border/30">
                   <td className="py-2.5 font-medium text-foreground">{p.name}</td>
                   <td className="py-2.5 text-muted-foreground">{p.age}</td>
-                  <td className={cn("py-2.5 font-bold", p.rdi > 1.3 ? "text-red-600" : p.rdi >= 1.2 ? "text-amber-600" : "text-emerald-600")}>{p.rdi.toFixed(2)}</td>
-                  <td className={cn("py-2.5 font-bold", p.sdi === 0 ? "text-red-600" : p.sdi < 17 ? "text-amber-600" : "text-emerald-600")}>{p.sdi}</td>
+                  <td className={cn("py-2.5 font-bold", p.rdi > 1.3 ? "text-red-600" : p.rdi >= 1.2 ? "text-amber-800" : "text-emerald-700")}>{p.rdi.toFixed(2)}</td>
+                  <td className={cn("py-2.5 font-bold", p.sdi === 0 ? "text-red-600" : p.sdi < 17 ? "text-amber-800" : "text-emerald-700")}>{p.sdi}</td>
                   <td className="py-2.5"><span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", p.cls)}>{p.status}</span></td>
                 </tr>
               ))}

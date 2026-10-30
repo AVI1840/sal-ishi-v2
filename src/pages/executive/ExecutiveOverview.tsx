@@ -1,184 +1,383 @@
-import { Building2, Users, Heart, TrendingUp, TrendingDown, Star, CheckCircle2, MapPin } from "lucide-react";
+/**
+ * מבט מטה: מה המדינה מחזיקה ורואה. כל מספר כאן מגיע ממקור אחד: הקטלוג
+ * המאושר באטלס, ההגדרות (seed 0.4, תוספת 3, מפגש 2), יומן האירועים, או
+ * app-settings.json, ומספר שלא אומת מסומן [לאמת]. בלי תחזיות חיסכון ובלי
+ * מגמות בלי נתונים.
+ */
+import { count } from "@/lib/hebrew";
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
+import { Activity, Award, Bot, BookOpen, CheckCircle2, ChevronLeft, ClipboardCheck, ExternalLink, Layers, MapPinned, Scale, Store, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StatCard } from "@/components/shared/StatCard";
-import { ProgressBar } from "@/components/shared/ProgressBar";
-import { Chip } from "@/components/shared/Chip";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
+// ציר הזמן של התכנית, ומגמות. המגמות הן נתוני הדגמה עד שספק העל מעביר דוח מצטבר.
 const TIMELINE_STEPS = [
   { label: "נייר מדיניות", status: "done" },
   { label: "מחקר", status: "done" },
   { label: "סדנה", status: "done" },
   { label: "אפיון", status: "active" },
   { label: "פיילוט", status: "active" },
-  { label: "לוח ח-2", status: "pending" },
-  { label: "קול קורא", status: "pending" },
+  { label: "הכרעות מפגש 3", status: "pending" },
+  { label: "מכרז אינטגרטור", status: "pending" },
   { label: "הרחבה", status: "pending" },
   { label: "הטמעה", status: "pending" },
-];
+] as const;
+const ENGAGEMENT = [{ m: "מאי", v: 42 }, { m: "יוני", v: 48 }, { m: "יולי", v: 52 }, { m: "אוג", v: 55 }, { m: "ספט", v: 56 }, { m: "אוק", v: 58 }];
+const ENROLLMENT = [{ m: "מאי", v: 120 }, { m: "יוני", v: 160 }, { m: "יולי", v: 200 }, { m: "אוג", v: 240 }, { m: "ספט", v: 265 }, { m: "אוק", v: 286 }];
+import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
+import { DECIDED_PRINCIPLES_MEETING_2, DEMO_JERUSALEM, buildDemoAuthority, isDecided, penetration, ruleKeys, settingLabel, statusNote, timeToFirstService, utilization } from "@sal-ishi/core";
+import { communityFor } from "@/lib/community";
+import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
+import { statusText } from "@/lib/statusText";
+import { amount } from "@/lib/wallet";
+import { incentivesOn } from "@/lib/incentives";
+import { appSettings, shownBackground } from "@/pilot/settings";
+import { usePilot } from "@/pilot/store";
 
-const SITES = [
-  { name: "פסגת זאב", citizens: 286, coordinators: 4, providers: 12, utilization: 71, prevention: 54, budget: "₪930K", status: "פעיל" },
-  { name: "תלפיות מזרח", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "בית חנינא", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "נווה יעקב", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-  { name: "עין כרם", citizens: 0, coordinators: 0, providers: 0, utilization: 0, prevention: 0, budget: "—", status: "מתוכנן" },
-];
+/** שכונות הפיילוט לפי ההחלטות. הר נוף עוד לא בקטלוג ההדגמה. */
+const PILOT_NEIGHBORHOODS = ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"];
 
+/** ערך של כלל שהוכרע, בשפה פשוטה: שקלים לחלוקת הסל, נקודות לארנק, אחוזים. */
+function decidedValue(key: string, settings: Record<string, unknown>): string {
+  const raw = settings[key];
+  const v = raw && typeof raw === "object" && "value" in (raw as object) ? (raw as { value: unknown }).value : raw;
+  const pct = (n: number) => `${Math.round(n * 100)}%`;
+  switch (key) {
+    case "personal_wallet":
+      return `${amount(Number(v))} בחודש`;
+    case "total":
+    case "companion":
+    case "community":
+    case "overhead":
+      return `₪${Number(v).toLocaleString("he-IL")}`;
+    case "copay_tiers": {
+      const t = raw as { core_and_prevention: number; classes: number; qol: number };
+      return `ליבה ומניעה ${pct(t.core_and_prevention)}, חוגים ${pct(t.classes)}, איכות חיים עד ${pct(t.qol)}`;
+    }
+    case "qol_cap_month":
+      return `${amount(Number(v))} בחודש`;
+    case "core_floor":
+      return `${v} שירותים`;
+    case "supplier_contact_to_hq":
+      return v ? "למטה בלבד, לא לשום ייצוא (לבדיקת אבטחת מידע 20.11)" : "לא, רק קוד וסוג";
+    default:
+      return typeof v === "number" && v > 0 && v < 1 ? pct(v) : String(v);
+  }
+}
+
+function Card(props: { icon: typeof Store; label: string; value: string | number; sub?: string; to?: string; href?: string }) {
+  const body = (
+    <>
+      <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+        <props.icon className="w-4 h-4" aria-hidden="true" /> {props.label}
+      </p>
+      <p className="text-3xl font-bold text-foreground mt-1">{props.value}</p>
+      {props.sub ? <p className="text-sm text-muted-foreground mt-1">{props.sub}</p> : null}
+    </>
+  );
+  if (props.to) return <Link to={props.to} className="libi-card p-5 block hover:border-primary/40">{body}</Link>;
+  if (props.href) return <a href={props.href} className="libi-card p-5 block hover:border-primary/40">{body}</a>;
+  return <div className="libi-card p-5">{body}</div>;
+}
 
 export default function ExecutiveOverview() {
+  const { derived } = usePilot();
+  const bg = shownBackground();
+  const settings = catalogState.seed.settings as unknown as Record<string, unknown>;
+  const basket = settings as Record<"total" | "personal_wallet" | "companion" | "community" | "overhead", number>;
+  const weights = catalogState.seed.settings.matching_weights as Record<string, number>;
+  // מקור אחד לסטטוס הכללים, אותו כמו באטלס המטה (הליבה).
+  const rules = ruleKeys(catalogState.seed.settings);
+  const decidedRules = rules.filter((k) => isDecided(catalogState.seed.settings, k));
+  const decided = decidedRules.length;
+  const proposals = rules.length - decided;
+  const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
+  const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
+  const requests = derived.requests.length;
+  const incentivePoints = derived.incentives.reduce((n, i) => n + i.points, 0);
+  const participants = appSettings.program.pilot_participants;
+  const pctOf = (n: number) => `${Math.round(n * 100)}%`;
+  // מדדי השטח: אותן פונקציות של הליבה שהאטלס משתמש בהן, על נתוני ההדגמה של ירושלים.
+  const { kpis, kpiMonth } = useMemo(() => {
+    const data = buildDemoAuthority(DEMO_JERUSALEM);
+    const seed = catalogState.seed;
+    const month = [...data.enrollment.map((e) => e.month)].sort().at(-1) ?? "";
+    return {
+      kpiMonth: month.split("-").reverse().join("/"),
+      kpis: data.neighborhoods.map((n) => ({
+        name: n.name,
+        enrolled: data.enrollment.filter((e) => e.neighborhoodId === n.id && e.month === month)[0]?.enrolled ?? null,
+        pen: penetration(n.id, data.enrollment, seed.settings, month),
+        util: utilization({ neighborhoodId: n.id, asOfMonth: month, services: data.services, activity: data.activity, enrollment: data.enrollment }, seed),
+        first: timeToFirstService(n.id, data.enrollment, seed.settings, month),
+      })),
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
-      {/* Hero Banner */}
       <div className="bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] rounded-2xl p-8 text-white">
-        <h1 className="text-2xl font-bold">רפורמת סל אישי — מבט על</h1>
-        <p className="text-sm text-white/70 mt-1">שלב 1: פיילוט ירושלים</p>
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-white/80">התקדמות כללית</span>
-            <span className="text-sm font-bold">65%</span>
-          </div>
-          <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-400 rounded-full" style={{ width: "65%" }} />
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold">הסל האישי: מבט מטה</h1>
+        <p className="text-base text-white/90 mt-2 max-w-3xl">
+          המדינה מחזיקה בקטלוג, בכללים ובנתונים. ספק העל מפעיל את הנקודות והתשלומים, והתקן הפתוח מאפשר לכל ספק להתחבר.
+        </p>
+        <p className="text-sm text-white/80 mt-3">
+          פיילוט ירושלים · {appSettings.program.pilot_participants} משתתפים
+          {bg ? ` · ${bg.pilot_months} חודשי פיילוט · 2027: ${bg.authorities_2027} רשויות, ${bg.budget_label}` : ""}
+        </p>
       </div>
 
-      {/* 6 KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard icon={Building2} label="רשויות פעילות" value="1/5" sub="ירושלים" tone="primary" />
-        <StatCard icon={Users} label="אזרחים בפיילוט" value={286} sub="פסגת זאב" tone="success" />
-        <StatCard icon={Heart} label="מלוות חברתיות" value={4} sub="מודל 1:75" tone="info" />
-        <StatCard icon={TrendingUp} label="מיצוי ארנק" value="71%" sub="54% למניעה" tone="success" />
-        <StatCard icon={TrendingDown} label="דחיית הידרדרות" value="20%" sub="~3 חודשים" tone="success" />
-        <StatCard icon={Star} label="חיסכון פוטנציאלי" value="₪2B" sub="בהרחבה לאומית" tone="warning" />
-      </div>
-
-      {/* Timeline */}
-      <div className="libi-card p-5">
-        <h3 className="text-base font-semibold text-foreground mb-6">ציר זמן הרפורמה</h3>
-        <div className="flex items-center justify-between relative">
-          {/* Connection line */}
-          <div className="absolute top-4 right-4 left-4 h-0.5 bg-gradient-to-l from-success via-primary to-muted" />
+      {/* ציר זמן התכנית */}
+      <section className="libi-card p-5" aria-labelledby="timeline-h">
+        <h2 id="timeline-h" className="text-base font-semibold text-foreground mb-6">ציר הזמן של התכנית</h2>
+        <ol className="grid grid-cols-3 sm:grid-cols-9 gap-y-4 gap-x-2 relative">
+          <span className="hidden sm:block absolute top-4 right-4 left-4 h-0.5 bg-gradient-to-l from-success via-primary to-muted" aria-hidden="true" />
           {TIMELINE_STEPS.map((step, i) => (
-            <div key={i} className="flex flex-col items-center relative z-10">
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2",
-                step.status === "done" ? "bg-success text-success-foreground border-success" :
-                step.status === "active" ? "bg-primary text-primary-foreground border-primary animate-pulse" :
-                "bg-muted text-muted-foreground border-border"
-              )}>
-                {step.status === "done" ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-2 text-center max-w-[60px]">{step.label}</span>
-            </div>
+            <li key={step.label} className="flex flex-col items-center relative z-10">
+              <span className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2", step.status === "done" ? "bg-success text-success-foreground border-success" : step.status === "active" ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border")}>
+                {step.status === "done" ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : i + 1}
+              </span>
+              <span className="text-xs text-foreground mt-2 text-center max-w-[76px]">{step.label}</span>
+              <span className="sr-only">{step.status === "done" ? "הושלם" : step.status === "active" ? "עכשיו" : "בהמשך"}</span>
+            </li>
           ))}
-        </div>
+        </ol>
+      </section>
+
+      {/* סוכני המערכת */}
+      <Link to="/executive/agents" className="libi-card p-5 flex items-center gap-4 hover:border-primary/40">
+        <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <Bot className="w-7 h-7" aria-hidden="true" />
+        </span>
+        <span className="flex-1">
+          <span className="block text-base font-semibold text-foreground">סוכני המערכת</span>
+          <span className="block text-sm text-muted-foreground">מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל שמתזמר. להריץ ולראות תוצאה.</span>
+        </span>
+        <ChevronLeft className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+      </Link>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
+        <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
+        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2 ו-28.10) · ${proposals} הצעה`} />
+        <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}${incentivePoints ? ` · ${incentivePoints} נקודות תמריץ` : ""}`} />
       </div>
 
-      {/* Neighborhoods + Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Neighborhood status list — replaces decorative dot-map */}
-        <div className="libi-card p-5">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-muted-foreground" /> אתרי הפיילוט — ירושלים
-          </h3>
-          <div className="space-y-2">
-            {[
-              { name: "פסגת זאב",     status: "פעיל",    citizens: 286, coordinators: 4, providers: 12 },
-              { name: "תלפיות מזרח", status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-              { name: "בית חנינא",    status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-              { name: "נווה יעקב",    status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-              { name: "עין כרם",      status: "מתוכנן",  citizens: null, coordinators: null, providers: null },
-            ].map((n) => (
-              <div key={n.name} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
-                <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", n.status === "פעיל" ? "bg-success" : "bg-muted-foreground/30")} />
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-foreground">{n.name}</span>
-                  {n.citizens && (
-                    <span className="text-xs text-muted-foreground mr-2">· {n.citizens} אזרחים · {n.coordinators} מלוות · {n.providers} ספקים</span>
-                  )}
-                </div>
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium border", n.status === "פעיל" ? "bg-success/10 text-success border-success/20" : "bg-muted text-muted-foreground border-border")}>
-                  {n.status}
-                </span>
-              </div>
-            ))}
+      {/* מגמות */}
+      <section className="libi-card p-5" aria-labelledby="trends-h">
+        <h2 id="trends-h" className="text-base font-semibold text-foreground">מגמות</h2>
+        <p className="text-xs text-muted-foreground mb-4">נתוני הדגמה, עד שספק העל מעביר דוח מצטבר</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>div]:overflow-hidden [&>div]:min-w-0">
+          <div>
+            <p className="text-sm text-foreground mb-2">מעורבות: % מהמשתתפים שפעילים בחודש</p>
+            <ResponsiveContainer width="100%" height={150}>
+              <LineChart data={ENGAGEMENT}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="m" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} domain={[30, 70]} />
+                <Tooltip />
+                <Line type="monotone" dataKey="v" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-3">הרחבה מתוכננת ל-5 שכונות לאחר סיום פיילוט פסגת זאב</p>
-        </div>
-
-        {/* Mini KPI charts with Recharts */}
-        <div className="libi-card p-5">
-          <h3 className="text-base font-semibold text-foreground mb-4">מגמות</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">מגמת מעורבות (6 חודשים)</p>
-              <ResponsiveContainer width="100%" height={120}>
-                <LineChart data={[{m:"אוק",v:42},{m:"נוב",v:48},{m:"דצמ",v:52},{m:"ינו",v:55},{m:"פבר",v:56},{m:"מרץ",v:58}]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="m" tick={{fontSize:10}} />
-                  <YAxis tick={{fontSize:10}} domain={[30,70]} />
-                  <Line type="monotone" dataKey="v" stroke="hsl(var(--success))" strokeWidth={2} dot={{r:3}} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">רישום אזרחים (מצטבר)</p>
-              <ResponsiveContainer width="100%" height={120}>
-                <BarChart data={[{m:"אוק",v:120},{m:"נוב",v:280},{m:"דצמ",v:420},{m:"ינו",v:550},{m:"פבר",v:650},{m:"מרץ",v:736}]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="m" tick={{fontSize:10}} />
-                  <YAxis tick={{fontSize:10}} />
-                  <Bar dataKey="v" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <div>
+            <p className="text-sm text-foreground mb-2">משתתפים בפיילוט (מצטבר)</p>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={ENROLLMENT}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="m" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="v" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Sites Table */}
-      <div className="libi-card overflow-hidden">
-        <div className="p-5 border-b border-border">
-          <h3 className="text-base font-semibold text-foreground">טבלת אתרים</h3>
+      <section className="libi-card p-5" aria-labelledby="hoods-h">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 id="hoods-h" className="text-base font-semibold text-foreground flex items-center gap-2">
+            <MapPinned className="w-5 h-5 text-primary" aria-hidden="true" /> השכונות: מה יש ואיפה הפער
+          </h2>
+          <a href="./hq/" className="min-h-[44px] inline-flex items-center gap-1 text-sm font-semibold text-primary">
+            פערים וחלופות באטלס המטה <ExternalLink className="w-4 h-4" aria-hidden="true" />
+          </a>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="טבלת שכונות">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">שם אתר</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">אזרחים</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מלוות</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">ספקים</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מיצוי</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">מניעה %</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">תקציב</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">סטטוס</th>
+              <tr className="border-b border-border text-right text-muted-foreground">
+                <th scope="col" className="py-2 font-semibold">שכונה</th>
+                <th scope="col" className="py-2 font-semibold">שירותים לתושבים</th>
+                <th scope="col" className="py-2 font-semibold">בשכונה ובאזור</th>
+                <th scope="col" className="py-2 font-semibold">תחומי ליבה ברצפה</th>
+                <th scope="col" className="py-2 font-semibold">סטטוס</th>
               </tr>
             </thead>
             <tbody>
-              {SITES.map((site) => (
-                <tr key={site.name} className="border-b border-border/50 hover:bg-muted/30">
-                  <td className="px-4 py-3 font-medium flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-muted-foreground" /> ירושלים — {site.name}
+              {hoods.map(({ name, c }) => {
+                const green = c?.categories.filter((x) => x.level === "green").length ?? 0;
+                const total = c?.categories.length ?? 0;
+                return (
+                  <tr key={name} className="border-b border-border/60 last:border-0">
+                    <td className="py-2.5 font-semibold text-foreground">{name}</td>
+                    <td className="py-2.5 text-foreground">{c?.reachable ?? "-"}</td>
+                    <td className="py-2.5 text-foreground">{c?.services ?? "-"}</td>
+                    <td className="py-2.5">
+                      <span className={cn("inline-flex items-center gap-1 font-semibold", green === total ? "text-success" : "text-destructive")}>
+                        {green === total ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : null}
+                        {green} מתוך {total}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-muted-foreground">{name === "פסגת זאב" ? "פעיל" : "מתוכנן"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          לפי ההחלטות: פסגת זאב, תלפיות מזרח, רוממה, הר נוף, בית וגן, ובית חנינא בתגבור (מרץ 2027). הר נוף עוד לא בקטלוג ההדגמה. קטלוג הדגמה, נתונים בדויים.
+        </p>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="kpi-h">
+        <h2 id="kpi-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <Activity className="w-5 h-5 text-primary" aria-hidden="true" /> מדדי הפיילוט לפי שכונה
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">
+          מהדיווח המצטבר של השטח, חודש {kpiMonth}. מיצוי מול יעד {pctOf(Number(settings.utilization_target))} ודגל אדום {pctOf(Number(settings.red_flag_avg))} (מפגש 2). אותן פונקציות כמו באטלס המטה.
+        </p>
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="טבלת מדדי השטח">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-right text-muted-foreground">
+                <th scope="col" className="py-2 font-semibold">שכונה</th>
+                <th scope="col" className="py-2 font-semibold">מחזיקי סל</th>
+                <th scope="col" className="py-2 font-semibold">פעילים מתוך הזכאים</th>
+                <th scope="col" className="py-2 font-semibold">מיצוי הארנק</th>
+                <th scope="col" className="py-2 font-semibold">ימים לשירות ראשון</th>
+              </tr>
+            </thead>
+            <tbody>
+              {kpis.map((k) => (
+                <tr key={k.name} className="border-b border-border/60 last:border-0">
+                  <td className="py-2.5 font-semibold text-foreground">{k.name}</td>
+                  <td className="py-2.5 text-foreground">{k.enrolled ?? "-"}</td>
+                  <td className="py-2.5 text-foreground">{k.pen.suppressed ? "פחות מ-5" : k.pen.rate === null ? "-" : pctOf(k.pen.rate)}</td>
+                  <td className={cn("py-2.5 font-semibold", k.util.flag === "red" ? "text-red-700" : k.util.flag === "below_target" ? "text-amber-800" : k.util.flag === "on_target" ? "text-emerald-800" : "text-muted-foreground")}>
+                    {k.util.rate === null ? "-" : pctOf(k.util.rate)}
+                    <span className="font-normal text-muted-foreground"> {k.util.flag === "red" ? "· דגל אדום" : k.util.flag === "below_target" ? "· מתחת ליעד" : k.util.flag === "on_target" ? "· ביעד" : ""}</span>
                   </td>
-                  <td className="px-4 py-3">{site.citizens || "—"}</td>
-                  <td className="px-4 py-3">{site.coordinators || "—"}</td>
-                  <td className="px-4 py-3">{site.providers || "—"}</td>
-                  <td className="px-4 py-3">{site.utilization ? `${site.utilization}%` : "—"}</td>
-                  <td className="px-4 py-3">{site.prevention ? `${site.prevention}%` : "—"}</td>
-                  <td className="px-4 py-3">{site.budget}</td>
-                  <td className="px-4 py-3">
-                    <Chip tone={site.status === "פעיל" ? "success" : "muted"}>{site.status}</Chip>
-                  </td>
+                  <td className={cn("py-2.5", k.first.overMax ? "text-red-700 font-semibold" : "text-foreground")}>{k.first.avgDays === null ? "-" : k.first.avgDays}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-muted-foreground mt-2">נתוני הדגמה בדויים. בפיילוט: מהדוח המצטבר של ספק העל, בלי פירוט לפי אדם, ותא קטן מוסתר.</p>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="budget-h">
+        <h2 id="budget-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <Wallet className="w-5 h-5 text-primary" aria-hidden="true" /> התקציב החודשי של הפיילוט
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">חישוב: {participants} משתתפים כפול חלוקת הסל שהוכרעה.</p>
+        <dl className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {[
+            ["סך הכל", participants * basket.total],
+            ["ארנקים אישיים", participants * basket.personal_wallet],
+            ["ליווי", participants * basket.companion],
+            ["קהילה", participants * basket.community],
+            ["תפעול", participants * basket.overhead],
+          ].map(([label, v]) => (
+            <div key={String(label)} className="rounded-lg border border-border p-3">
+              <dt className="text-xs text-muted-foreground">{label}</dt>
+              <dd className="text-lg font-bold text-foreground">₪{Number(v).toLocaleString("he-IL")}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="decided-h">
+        <h2 id="decided-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-2">
+          <Scale className="w-5 h-5 text-primary" aria-hidden="true" /> מה הוכרע במפגש 2 (ו-28.10)
+        </h2>
+        {/* הרשימה נגזרת מאותו מקור כמו המונה למעלה: כל כלל שהוכרע, שורה אחת. */}
+        <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          {decidedRules.map((k) => (
+            <li key={k} className="flex items-start gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" />
+              <span>{settingLabel(k)}: {decidedValue(k, catalogState.seed.settings as unknown as Record<string, unknown>)}</span>
+            </li>
+          ))}
+        </ul>
+        <h3 className="text-sm font-semibold text-foreground mt-3">ועקרונות שהוכרעו</h3>
+        <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 mt-1">
+          {DECIDED_PRINCIPLES_MEETING_2.map((x) => (
+            <li key={x} className="flex items-start gap-1.5"><CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" /> {x}</li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground mt-2">{count(decidedRules.length, "כלל אחד הוכרע", "כללים הוכרעו")}. כל שאר הכללים בהגדרות מסומנים כהצעה, גם כאן וגם באטלס המטה.</p>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <BasketBreakdown headingId="basket-h" />
+
+        <section className="libi-card p-5" aria-labelledby="engine-h">
+          <div className="flex items-center justify-between mb-3">
+            <h2 id="engine-h" className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Layers className="w-5 h-5 text-primary" aria-hidden="true" /> מנוע ההתאמה
+            </h2>
+            <Link to="/executive/algorithm" className="min-h-[44px] inline-flex items-center text-sm font-semibold text-primary">לפירוט</Link>
+          </div>
+          <ul className="space-y-1.5 text-sm">
+            {MATCHING_LAYER_SOURCES.map((l) => (
+              <li key={l.key} className="flex items-center justify-between">
+                <span className="text-foreground">{l.label}</span>
+                <span className="font-semibold text-foreground">{Math.round((weights[l.key] ?? 0) * 100)}%</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground mt-3">{statusNote(catalogState.seed.settings, "matching_weights")}</p>
+          <h3 className="text-sm font-semibold text-foreground mt-4">דירוג ספק: חמישה רכיבים</h3>
+          <p className="text-sm text-foreground mt-1">{SUPPLIER_RATING_COMPONENTS.join(" · ")}</p>
+          <p className="text-xs text-muted-foreground mt-1">ההרכב והמשקלות ייקבעו בהמשך. מוצג בשוק, ולא משנה את סדר ההתאמה.</p>
+        </section>
       </div>
 
+      {appSettings.incentives ? (
+        <section className="libi-card p-5" aria-labelledby="inc-h">
+          <h2 id="inc-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-2">
+            <Award className="w-5 h-5 text-primary" aria-hidden="true" /> תמריצים לאזרחים: הצעה
+          </h2>
+          <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+            <li>התנדבות: {amount(appSettings.incentives.rates.volunteer_hour)} לשעה</li>
+            <li>הדרכת חוג או הרצאה: {amount(appSettings.incentives.rates.teach_session)} למפגש</li>
+            <li>התמדה במנוי (לפחות {Math.round(appSettings.incentives.persistence_min_share * 100)}% מהמפגשים): {amount(appSettings.incentives.rates.persistence_month)} לחודש</li>
+            <li>עמידה ביעד אישי: {amount(appSettings.incentives.rates.goal)}</li>
+          </ul>
+          <p className="text-sm text-foreground mt-2">מותאם אישית ולא לכולם: המלווה מסמנת למי זה מתאים ומאשרת כל תמריץ. תקרה של {amount(appSettings.incentives.monthly_cap)} לאזרח בחודש.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            מקור המימון פתוח ({(appSettings.incentives.funding_note ?? "תקציב הקהילה או מקור נפרד").replace(/^להכרעה:\s*/, "")}). {incentivesOn() ? "מופעל בהדגמה אצל המלווה ובארנק." : "עד ההכרעה לא מוצג לאזרחים ולמלווה."}
+          </p>
+        </section>
+      ) : null}
+
+      <section className="libi-card p-5" aria-labelledby="hq-h">
+        <h2 id="hq-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-3">
+          <BookOpen className="w-5 h-5 text-primary" aria-hidden="true" /> כלי המטה באטלס
+        </h2>
+        <p className="text-sm text-foreground">
+          אותו קטלוג, באטלס המטה: תמונה ארצית, פערים וחלופות, מחירי ייחוס, ספרייה וכללים, ייצוא תקן הקליטה לכל ספק, ופנקס למידה שמייצא רישום דרישות למכרז.
+        </p>
+        <a href="./hq/" className="mt-3 inline-flex items-center gap-2 min-h-[44px] px-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+          לאטלס המטה <ExternalLink className="w-4 h-4" aria-hidden="true" />
+        </a>
+      </section>
     </div>
   );
 }

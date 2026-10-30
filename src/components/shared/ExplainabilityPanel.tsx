@@ -1,5 +1,5 @@
 /**
- * ExplainabilityPanel — ויזואליזציית 5 שכבות ציון ההתאמה
+ * ExplainabilityPanel - ויזואליזציית 5 שכבות ציון ההתאמה
  * מציג למה שירות הומלץ: progress bars צבעוניים + הסברים בעברית
  */
 import { cn } from "@/lib/utils";
@@ -58,7 +58,7 @@ export function ExplainabilityPanel({ layers, totalScore, explanations, compact 
                   <span className="text-xs font-medium text-gray-800">{label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gray-400">{weight}%</span>
+                  <span className="text-[10px] text-gray-600">{weight}%</span>
                   <span className="text-xs font-bold text-gray-700 tabular-nums w-7 text-left">{value}</span>
                 </div>
               </div>

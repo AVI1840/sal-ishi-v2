@@ -45,7 +45,7 @@ export default function PolicyIntelligence() {
       subtitle="קול קורא 3.0 · תשתית AI לסיעוד ולהזדקנות מיטבית · בסיס: החלטת ממשלה 127"
     >
       <div className="space-y-6 max-w-7xl">
-        {/* Executive hero — the first thing the VP sees */}
+        {/* Executive hero - the first thing the VP sees */}
         <section className="bg-gradient-to-bl from-primary via-primary to-primary-glow text-primary-foreground rounded-2xl p-6 md:p-8 shadow-lg">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
             <div className="flex-1">
@@ -57,7 +57,7 @@ export default function PolicyIntelligence() {
                 תשתית AI לאומית להזדקנות מיטבית
               </h1>
               <p className="text-sm md:text-base opacity-90 mt-3 max-w-2xl leading-relaxed">
-                הרחבה של מודל שטח מוכח מפיילוט "עכשיו אני" — מ-286 משתתפים בפסגת זאב ל-240,000 זכאים ארציים,
+                הרחבה של מודל שטח מוכח מפיילוט "עכשיו אני" - מ-286 משתתפים בפסגת זאב ל-240,000 זכאים ארציים,
                 באמצעות 5 שכבות AI על נימבוס. שותפות של 4 משרדים. חיסכון פוטנציאלי: 2 מיליארד ₪/שנה.
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
@@ -156,7 +156,7 @@ export default function PolicyIntelligence() {
 
         {/* KPIs Table */}
         <Card>
-          <CardHeader title="KPIs לוועדת ההיגוי" subtitle="מדדים אופרטיביים מהקול קורא — בסיס המדידה הרבעונית" />
+          <CardHeader title="KPIs לוועדת ההיגוי" subtitle="מדדים אופרטיביים מהקול קורא - בסיס המדידה הרבעונית" />
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -228,7 +228,7 @@ export default function PolicyIntelligence() {
                         {fmt.format(p.targetGroup)} זכאי יעד · {fmt.format(p.participants)} משתתפים פעילים
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground">מתוכנן — שלב 1 הרחבה</div>
+                      <div className="text-xs text-muted-foreground">מתוכנן - שלב 1 הרחבה</div>
                     )}
                   </div>
                   <Chip tone={p.status === "active" ? "success" : "muted"}>
@@ -243,7 +243,7 @@ export default function PolicyIntelligence() {
         {/* Scalability */}
         <Card>
           <CardHeader
-            title="סקיילביליות — הרבה מעבר לסיעוד"
+            title="סקיילביליות - הרבה מעבר לסיעוד"
             subtitle="הארכיטקטורה גנרית. מימוש ראשון: סיעוד. הרחבה לכל תחום שבו המדינה מחלקת זכויות ולא מודדת תוצאות."
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -276,7 +276,7 @@ export default function PolicyIntelligence() {
             <div>
               <div className="text-lg font-bold">20% דחיית הידרדרות = מעל 2 מיליארד ₪ חיסכון לשנה</div>
               <p className="text-sm opacity-90 mt-1 leading-relaxed">
-                לא פיילוט AI נוסף — הרחבת מודל שטח מוכח על תשתית לאומית. ההחלטה כבר התקבלה (החלטת ממשלה 127),
+                לא פיילוט AI נוסף - הרחבת מודל שטח מוכח על תשתית לאומית. ההחלטה כבר התקבלה (החלטת ממשלה 127),
                 הפיילוט פעיל (פסגת זאב), הארכיטקטורה מאושרת.
               </p>
               <div className="text-xs opacity-80 mt-3">מועד אחרון להגשה: 30/07/2026 · אישור עקרוני נדרש עד 15/06</div>

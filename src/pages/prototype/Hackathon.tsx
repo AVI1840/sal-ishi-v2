@@ -1,5 +1,5 @@
 /**
- * Hackathon — דף פיץ' AWS GenAI
+ * Hackathon - דף פיץ' AWS GenAI
  * פיץ' מובנה: צורך → פתרון → ערך → פריצה → ישימות
  * + כפתור "התחל הדגמה המודרכת" שמפעיל את ה-GuidedDemo overlay
  */
@@ -9,7 +9,7 @@ import { startGuidedDemo, DEMO_STEPS } from "@/components/GuidedDemo";
 import { useNavigate } from "react-router-dom";
 
 const AWS_SERVICES = [
-  { name: "Amazon Bedrock", desc: "Claude Sonnet — ניתוח, צ'אט, המלצות, אינטייק" },
+  { name: "Amazon Bedrock", desc: "Claude Sonnet - ניתוח, צ'אט, המלצות, אינטייק" },
   { name: "Amazon Transcribe", desc: "תמלול אינטייק קולי בזמן אמת" },
   { name: "Amazon Personalize", desc: "אלגוריתם המלצות מותאם אישית" },
   { name: "AWS Lambda", desc: "אייג'נטים שבועיים + Nudge engine" },
@@ -25,9 +25,9 @@ const PITCH_CARDS = [
     color: "border-red-200 bg-red-50",
     iconColor: "text-red-500",
     points: [
-      "₪20B/שנה לסיעוד — 80% הולך לבית, לא למניעה",
-      "שירותי מניעה מפחיתים אשפוזים 30-40% — לא בסל",
-      "ממוצע 760₪/חודש לאדם — ללא התאמה אישית",
+      "₪20B/שנה לסיעוד - 80% הולך לבית, לא למניעה",
+      "שירותי מניעה מפחיתים אשפוזים 30-40% - לא בסל",
+      "ממוצע 760₪/חודש לאדם - ללא התאמה אישית",
       "אין ניטור, אין ליווי, חסמי שפה ותרבות",
     ],
   },
@@ -38,9 +38,9 @@ const PITCH_CARDS = [
     color: "border-blue-200 bg-blue-50",
     iconColor: "text-blue-600",
     points: [
-      "AI matching — 5 שכבות × 102 שירותים × פרופיל אישי",
+      "AI matching - 5 שכבות × 102 שירותים × פרופיל אישי",
       "5 אייג'נטים אוטונומיים (Discovery, Matching, Monitor, Nudge, Super)",
-      "אינטייק קולי — Transcribe + Claude בזמן אמת",
+      "אינטייק קולי - Transcribe + Claude בזמן אמת",
       "Explainability: המשתמש רואה למה כל שירות הומלץ",
     ],
   },
@@ -49,9 +49,9 @@ const PITCH_CARDS = [
     label: "הערך",
     icon: TrendingUp,
     color: "border-emerald-200 bg-emerald-50",
-    iconColor: "text-emerald-600",
+    iconColor: "text-emerald-700",
     points: [
-      "54% מהתקציב → שירותי מניעה (לא בית) — מ-20%",
+      "54% מהתקציב → שירותי מניעה (לא בית) - מ-20%",
       "71% מיצוי ארנק · 4.7/5 שביעות רצון",
       "30-40% פחות אשפוזים עם מניעה פעילה",
       "חיסכון ₪2B שנתי בהרחבה לאומית",
@@ -64,9 +64,9 @@ const PITCH_CARDS = [
     color: "border-purple-200 bg-purple-50",
     iconColor: "text-purple-600",
     points: [
-      "אלגוריתם ראשון מסוגו — אישי, מוסבר, מדיד",
+      "אלגוריתם ראשון מסוגו - אישי, מוסבר, מדיד",
       "Agentic Loop מלא: תמלול → ניתוח → התאמה → CRM → Nudge",
-      "מודל 1:75 — מלווה ל-75 אזרחים בליווי AI",
+      "מודל 1:75 - מלווה ל-75 אזרחים בליווי AI",
       "ממשקים לכל שחקן: אזרח, מלווה, ניהולי, ספק",
     ],
   },
@@ -75,12 +75,12 @@ const PITCH_CARDS = [
     label: "ישימות",
     icon: CheckCircle,
     color: "border-amber-200 bg-amber-50",
-    iconColor: "text-amber-600",
+    iconColor: "text-amber-800",
     points: [
       "פיילוט חי: 286 אזרחים, פסגת זאב, ירושלים",
       "מבוסס החלטות ממשלה 127 ו-150",
       "3 מלוות חברתיות, 18 ספקים, 102 שירותים ממופים",
-      "מוכן להרחבה — 5 ערים + קול קורא ממשלתי",
+      "מוכן להרחבה - 5 ערים + קול קורא ממשלתי",
     ],
   },
 ];
@@ -102,9 +102,9 @@ export default function Hackathon() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#FF9900]/20 border border-[#FF9900]/40 mb-4">
             <span className="text-xs font-bold text-[#FF9900]">AWS GenAI Hackathon · 23/06/2026</span>
           </div>
-          <h1 className="text-3xl font-bold">סל אישי — להזדקנות מיטבית</h1>
+          <h1 className="text-3xl font-bold">סל אישי - להזדקנות מיטבית</h1>
           <p className="text-base text-white/70 mt-2 max-w-xl mx-auto">
-            הפניית תקציב הסיעוד ממניעה פסיבית למניעה פעילה — AI מותאם אישית, 54% לשירותי מניעה
+            הפניית תקציב הסיעוד ממניעה פסיבית למניעה פעילה - AI מותאם אישית, 54% לשירותי מניעה
           </p>
 
           {/* KPIs */}
@@ -118,7 +118,7 @@ export default function Hackathon() {
               <div key={s.num} className="bg-white/10 rounded-xl p-4 text-center border border-white/10">
                 <div className="text-2xl font-bold text-white">{s.num}</div>
                 <div className="text-xs text-white/70 mt-0.5">{s.label}</div>
-                <div className="text-[10px] text-white/40">{s.sub}</div>
+                <div className="text-[10px] text-white/80">{s.sub}</div>
               </div>
             ))}
           </div>
@@ -128,7 +128,7 @@ export default function Hackathon() {
             onClick={handleStartDemo}
             className="mt-8 inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#FF9900] text-[#1B3A5C] font-bold text-sm hover:bg-[#e8890a] transition-colors shadow-lg"
           >
-            <Play className="w-4 h-4 fill-current" /> התחל הדגמה מודרכת — 4 דקות
+            <Play className="w-4 h-4 fill-current" /> התחל הדגמה מודרכת - 4 דקות
           </button>
           <p className="mt-2 text-[11px] text-white/30">8 שלבים · מלווה בזמן אמת · על המוצר האמיתי</p>
         </div>
@@ -136,7 +136,7 @@ export default function Hackathon() {
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
-        {/* Pitch narrative — 5 cards */}
+        {/* Pitch narrative - 5 cards */}
         <div>
           <h2 className="text-base font-bold text-gray-900 mb-4">הסיפור</h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -145,7 +145,7 @@ export default function Hackathon() {
               return (
                 <div key={card.num} className={`rounded-xl border p-4 ${card.color}`}>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold text-gray-400">{card.num}</span>
+                    <span className="text-[10px] font-bold text-gray-600">{card.num}</span>
                     <Icon className={`w-4 h-4 ${card.iconColor}`} />
                     <span className="text-xs font-bold text-gray-900">{card.label}</span>
                   </div>
@@ -217,7 +217,7 @@ export default function Hackathon() {
             <div key={s.num} className="bg-[#1B3A5C] text-white rounded-xl p-4 text-center">
               <div className="text-2xl font-bold">{s.num}</div>
               <div className="text-xs text-white/70 mt-0.5">{s.label}</div>
-              <div className="text-[10px] text-white/40">{s.sub}</div>
+              <div className="text-[10px] text-white/80">{s.sub}</div>
             </div>
           ))}
         </div>
@@ -225,7 +225,7 @@ export default function Hackathon() {
         {/* Demo flow steps */}
         <div className="bg-white border border-gray-100 rounded-xl p-5">
           <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Play className="w-4 h-4 text-[#1B3A5C]" /> מסלול הדגמה מודרכת — 4 דקות
+            <Play className="w-4 h-4 text-[#1B3A5C]" /> מסלול הדגמה מודרכת - 4 דקות
           </h2>
           <div className="space-y-2">
             {DEMO_STEPS.map((step, i) => (
@@ -256,7 +256,7 @@ export default function Hackathon() {
             <div key={s.num} className="bg-[#1B3A5C] text-white rounded-xl p-5 text-center">
               <div className="text-xl font-bold">{s.num}</div>
               <div className="text-xs text-white/70 mt-0.5">{s.label}</div>
-              <div className="text-[10px] text-white/40">{s.sub}</div>
+              <div className="text-[10px] text-white/80">{s.sub}</div>
             </div>
           ))}
         </div>
@@ -287,7 +287,7 @@ export default function Hackathon() {
               <ExternalLink className="w-3.5 h-3.5" /> דשבורד מלווה
             </a>
           </div>
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-gray-600">
             Powered by Amazon Bedrock · Transcribe · Personalize · Lambda · S3 · DynamoDB
           </p>
         </div>

@@ -24,8 +24,7 @@ import {
   utilization,
   utilizationWindowMonths,
   windowMonths,
-  type UtilizationFlag,
-} from "@sal-ishi/core";
+  type UtilizationFlag, quarterText } from "@sal-ishi/core";
 import { Badge, Button, EmptyState, PageHeader, ProposalBadge, SelectField, TableWrap, type Tone, useToast } from "@sal-ishi/ui";
 import { ImportDialog } from "../components/ImportDialog";
 import { monthLabel, percent, shekel, useAnalysis } from "../analysis";
@@ -286,7 +285,7 @@ export default function ActivityScreen() {
           </section>
 
           <section className="card" aria-labelledby="hourly-h">
-            <h2 id="hourly-h">{metricName(seed, "hourly_price_index")}, {pricePeriod(asOf, seed.settings)}</h2>
+            <h2 id="hourly-h">{metricName(seed, "hourly_price_index")}, {quarterText(pricePeriod(asOf, seed.settings))}</h2>
             <p className="muted">ממוצע של מחיר ליחידה חלקי שעות השירות ביחידה, לפי קטגוריה. נכנסים שירותים שהתחילו עד סוף התקופה ולא נדחו, ושיש להם שעות ליחידה.</p>
             {prices.length ? (
               <TableWrap label={metricName(seed, "hourly_price_index")}>

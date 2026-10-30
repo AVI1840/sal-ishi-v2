@@ -1,5 +1,5 @@
 /**
- * CoordinatorAgents — מערכת אייג'נטים AI
+ * CoordinatorAgents - מערכת אייג'נטים AI
  * תצוגה מובנית, ברורה ומקצועית של כל האייג'נטים
  * כולל: תפקיד, קלט, פלט, טריגר, כלים, וסימולציית הרצה
  */
@@ -50,10 +50,10 @@ const AGENTS: AgentDef[] = [
     id: "super-agent",
     name: "Super Agent",
     nameHe: "מנהל מערכת",
-    role: "Supervisor / Orchestrator — מנתב בקשות לאייג'נט המתאים ומתזמן שרשראות",
+    role: "Supervisor / Orchestrator - מנתב בקשות לאייג'נט המתאים ומתזמן שרשראות",
     description: "האייג'נט המרכזי שמנהל את כל המערכת. מקבל כל אירוע (הודעת משתמש, טריגר מתוזמן, התראה) ומחליט איזה אייג'נט צריך לטפל. מתאם שרשראות: למשל שירות חדש → חישוב מחדש → nudge לאזרחים מתאימים.",
     model: "Claude 3.5 Sonnet",
-    schedule: "24/7 — event-driven",
+    schedule: "24/7 - event-driven",
     trigger: "כל אירוע במערכת (הודעה, scheduling, alert)",
     lastRun: "05.06.26, 08:05",
     lastResult: "כל 4 אייג'נטים פעילים · ללא תקלות · זמן ריצה ממוצע: 2.3s",
@@ -127,7 +127,7 @@ const AGENTS: AgentDef[] = [
     id: "matching-engine",
     name: "Matching Engine Agent",
     nameHe: "מנוע התאמה",
-    role: "מחשב ציוני התאמה 286×102 לפי 5 שכבות — ומייצר המלצות אישיות",
+    role: "מחשב ציוני התאמה 286×102 לפי 5 שכבות - ומייצר המלצות אישיות",
     description: "האלגוריתם המרכזי של סל אישי. לכל אזרח מחשב ציון התאמה לכל שירות בקטלוג לפי 5 שכבות: מניעת הידרדרות (30%), מוטיבציות אישיות (25%), פרופיל (20%), הוכחה חברתית (15%), קרבה גיאוגרפית (10%). מייצר רשימת Top-5 המלצות מנומקות.",
     model: "Claude 3.5 Haiku (מהיר)",
     schedule: "אחרי אינטייק חדש + שבועי (ראשון 07:00)",
@@ -206,7 +206,7 @@ const AGENTS: AgentDef[] = [
     name: "Nudge & Engagement Agent",
     nameHe: "חיזוקים ומעורבות",
     role: "שולח הודעות מותאמות אישית שמעודדות אזרחים להשתמש בשירותים",
-    description: "מייצר ושולח חיזוקים מותאמים — תזכורות לפעילות מחר, חגיגת milestones (\"10 פעילויות החודש!\"), reactivation לאזרחים שנעלמו, והודעות חברתיות (\"חברתך מרים תהיה שם\"). מבוסס על פרסונה, מוטיבציות, ושלב מוכנות.",
+    description: "מייצר ושולח חיזוקים מותאמים - תזכורות לפעילות מחר, חגיגת milestones (\"10 פעילויות החודש!\"), reactivation לאזרחים שנעלמו, והודעות חברתיות (\"חברתך מרים תהיה שם\"). מבוסס על פרסונה, מוטיבציות, ושלב מוכנות.",
     model: "Claude 3.5 Haiku (מהיר)",
     schedule: "יומי, 08:00 + event-driven",
     trigger: "EventBridge daily + post-Matching + post-Monitor",
@@ -370,34 +370,34 @@ export default function CoordinatorAgents() {
           </div>
           <div>
             <h1 className="text-xl font-bold">מערכת Multi-Agent · סל אישי</h1>
-            <p className="text-sm text-white/60 mt-0.5">Amazon Bedrock AgentCore · Strands Agents SDK · Claude 3.5</p>
+            <p className="text-sm text-white/80 mt-0.5">Amazon Bedrock AgentCore · Strands Agents SDK · Claude 3.5</p>
           </div>
         </div>
         <p className="text-sm text-white/80 leading-relaxed max-w-3xl">
-          5 אייג'נטים אוטונומיים שפועלים 24/7 — סורקים שירותים, מחשבים התאמות, מזהים הידרדרות, ושולחים חיזוקים מותאמים.
+          5 אייג'נטים אוטונומיים שפועלים 24/7 - סורקים שירותים, מחשבים התאמות, מזהים הידרדרות, ושולחים חיזוקים מותאמים.
           כל אייג'נט מתמחה בתפקיד אחד. ה-Super Agent מתזמן ומתאם ביניהם.
         </p>
         {/* Architecture summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6 pt-6 border-t border-white/10">
           <div className="text-center">
             <div className="text-xl font-bold">5</div>
-            <div className="text-[11px] text-white/40">אייג'נטים</div>
+            <div className="text-[11px] text-white/80">אייג'נטים</div>
           </div>
           <div className="text-center">
             <div className="text-xl font-bold">24/7</div>
-            <div className="text-[11px] text-white/40">זמינות</div>
+            <div className="text-[11px] text-white/80">זמינות</div>
           </div>
           <div className="text-center">
             <div className="text-xl font-bold">29K+</div>
-            <div className="text-[11px] text-white/40">ציונים/שבוע</div>
+            <div className="text-[11px] text-white/80">ציונים/שבוע</div>
           </div>
           <div className="text-center">
             <div className="text-xl font-bold">286</div>
-            <div className="text-[11px] text-white/40">אזרחים מנוטרים</div>
+            <div className="text-[11px] text-white/80">אזרחים מנוטרים</div>
           </div>
           <div className="text-center">
             <div className="text-xl font-bold">~$10</div>
-            <div className="text-[11px] text-white/40">עלות יומית</div>
+            <div className="text-[11px] text-white/80">עלות יומית</div>
           </div>
         </div>
       </div>
@@ -405,7 +405,7 @@ export default function CoordinatorAgents() {
       {/* Flow Diagram - simplified */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-          <Layers className="w-4 h-4 text-gray-400" /> זרימת עבודה בין האייג'נטים
+          <Layers className="w-4 h-4 text-gray-600" /> זרימת עבודה בין האייג'נטים
         </h3>
         <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2">
           {[
@@ -459,7 +459,7 @@ export default function CoordinatorAgents() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-gray-900">{agent.nameHe}</h3>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{agent.name}</p>
+                  <p className="text-[10px] text-gray-600 mt-0.5">{agent.name}</p>
                 </div>
                 <StatusBadge status={agent.status} />
               </div>
@@ -481,11 +481,11 @@ export default function CoordinatorAgents() {
                 <div>
                   <div className="flex items-center gap-3">
                     <h2 className="text-lg font-bold text-gray-900">{selected.nameHe}</h2>
-                    <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{selected.name}</span>
+                    <span className="text-xs font-mono text-gray-600 bg-gray-50 px-2 py-0.5 rounded">{selected.name}</span>
                     <StatusBadge status={selected.status} />
                   </div>
                   <p className="text-sm text-gray-600 mt-1 font-medium">{selected.role}</p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
                     <span className="flex items-center gap-1"><Server className="w-3 h-3" /> {selected.model}</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {selected.schedule}</span>
                     <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> {selected.trigger}</span>
@@ -498,7 +498,7 @@ export default function CoordinatorAgents() {
                 className={cn(
                   "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
                   runningAgent
-                    ? "bg-gray-100 text-gray-400 cursor-wait"
+                    ? "bg-gray-100 text-gray-600 cursor-wait"
                     : "bg-[#1B3A5C] text-white hover:bg-[#15304d] shadow-md hover:shadow-lg"
                 )}
               >
@@ -531,7 +531,7 @@ export default function CoordinatorAgents() {
           {/* Run result */}
           {runResult && runResult.agentId === selected.id && !runningAgent && (
             <div className="mx-6 mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50 flex items-start gap-3 animate-fade-in">
-              <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+              <CheckCircle className="w-5 h-5 text-emerald-700 mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-emerald-800">הריצה הושלמה בהצלחה</p>
                 <p className="text-xs text-emerald-700 mt-1">{runResult.text}</p>
@@ -560,7 +560,7 @@ export default function CoordinatorAgents() {
             {/* I/O Section */}
             <div className="bg-white rounded-xl p-5 border border-gray-100">
               <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Workflow className="w-4 h-4 text-gray-400" /> קלט ופלט
+                <Workflow className="w-4 h-4 text-gray-600" /> קלט ופלט
               </h3>
               <IOSection io={selected.io} />
             </div>
@@ -568,7 +568,7 @@ export default function CoordinatorAgents() {
             {/* Tools */}
             <div>
               <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" /> כלים (Tools) — {selected.tools.length}
+                <Zap className="w-4 h-4 text-amber-500" /> כלים (Tools) - {selected.tools.length}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {selected.tools.map((tool) => (
@@ -594,7 +594,7 @@ export default function CoordinatorAgents() {
 
             {/* Last run info */}
             <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <Clock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+              <Clock className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-xs font-medium text-gray-700">ריצה אחרונה: {selected.lastRun}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{selected.lastResult}</p>

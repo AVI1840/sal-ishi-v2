@@ -1,351 +1,250 @@
 /**
- * DemoHome — Landing page
- * Visual architecture: צורך → פתרון → ערך → כניסה
- * Images: trust-building, not decorative
+ * דף הבית: סיפור אחד, שלוש דלתות. האדם במרכז, ושלוש הדלתות הן מערכת אחת: בחירה,
+ * ליווי ולמידה מערכתית. כל מספר מההגדרות, מהקטלוג או מ-app-settings.json, ומספר
+ * שלא אומת מסומן [לאמת]. כלי ההדגמה (איפוס, מצבי קצה) בתפריט "הדגמה" שבפס העליון.
  */
-import { useState, type ReactNode } from "react";
+import type { MouseEvent } from "react";
 import { Link } from "react-router-dom";
-import { SHOW_DEMO_LAYERS } from "@/lib/edition";
-import {
-  Wallet, Phone, Heart, Building2, Users,
-  ChevronLeft, CheckCircle, AlertCircle, TrendingUp, Brain,
-  Play, MapPin,
-} from "lucide-react";
+import { BookOpen, Building2, ChevronLeft, Compass, FileJson, Heart, HeartHandshake, LineChart, MapPin, Network, Phone, Scale, ShieldCheck, Sprout, Store, UserRound, Wallet } from "lucide-react";
+import { catalogState } from "@/data/catalogSource";
+import { realServices } from "@/data/realServices";
+import { appSettings, shownBackground } from "@/pilot/settings";
 
-const MODULES = [
+const basket = () => catalogState.seed.settings as unknown as Record<"total" | "personal_wallet", number>;
+
+const DOORS = () => [
   {
-    num: "01", title: "ממשק האזרח הוותיק",
-    description: "סל שירותים אישי, המלצות AI מוסברות, ארנק דיגיטלי",
-    href: "/citizen", external: false, icon: Phone,
-    badge: "65+", badgeCls: "bg-blue-50 border-blue-200 text-blue-700",
+    to: "/citizen",
+    icon: Phone,
+    role: "בחירה",
+    who: "שרה, 78, פסגת זאב",
+    title: "האזרחית",
+    text: `${basket().personal_wallet} נקודות לבחירת שירותים בקהילה, לפי מה שחשוב לה.`,
+    note: null as string | null,
+    img: "./images/choir.png",
   },
   {
-    num: "02", title: "מערכת המלווה החברתית",
-    description: "75 אזרחים, SDI/RDI, משימות יומיות, ניטור הידרדרות",
-    href: "/coordinator", external: false, icon: Heart,
-    badge: "יומי", badgeCls: "bg-emerald-50 border-emerald-200 text-emerald-700",
+    to: "/coordinator",
+    icon: Heart,
+    role: "ליווי",
+    who: appSettings.companion.name,
+    title: "המלווה החברתית קהילתית",
+    text: "ניהול תיקי האזרחים, זיהוי מי זקוק לפנייה היום, וחיבור בין צורכי האנשים לשירותים בקהילה.",
+    note: null,
+    img: "./images/community-club.png",
   },
   {
-    num: "03", title: "מלווה מורחב — AI ואייג'נטים",
-    description: "102 שירותים, 5 אייג'נטים, אינטייק AI, אלגוריתם 5 שכבות",
-    href: "/coordinator/agents", external: false, icon: Brain,
-    badge: "AI", badgeCls: "bg-purple-50 border-purple-200 text-purple-700",
-  },
-  {
-    num: "04", title: "דשבורד ניהולי",
-    description: "KPIs, מפת פיילוטים, 286 אזרחים, תקציב, בקרה",
-    href: "/executive", external: false, icon: Building2,
-    badge: "מנהלים", badgeCls: "bg-amber-50 border-amber-200 text-amber-700",
-  },
-  {
-    num: "05", title: "פורטל ספקי שירות",
-    description: "הזמנות, שירותים, תשלומים, דירוגים",
-    href: "/providers", external: false, icon: Users,
-    badge: "ספקים", badgeCls: "bg-gray-50 border-gray-200 text-gray-600",
-  },
-  // האטלס והקטלוג הם אתרים נפרדים באותו פרסום (dist/field, dist/hq), ולכן קישור רגיל ולא Link.
-  {
-    num: "06", title: "אטלס וקטלוג - שטח",
-    description: "רכזת ומנהלת שכונה: אטלס ספקים, קטלוג לשכונה, מבחן כיסוי, חבילת פיילוט",
-    href: "./field/", external: true, icon: MapPin,
-    badge: "רשויות", badgeCls: "bg-sky-50 border-sky-200 text-sky-700",
-  },
-  {
-    num: "07", title: "אטלס וקטלוג - מטה",
-    description: "איחוד פיילוטים, תמונה ארצית, מחירי ייחוס, כללים וייצוא לאינטגרטור",
-    href: "./hq/", external: true, icon: Building2,
-    badge: "ביטוח לאומי", badgeCls: "bg-sky-50 border-sky-200 text-sky-700",
+    to: "/executive",
+    icon: Building2,
+    role: "למידה מערכתית",
+    who: "כיום: ביטוח לאומי וירושלים",
+    title: "המטה",
+    text: "כללים וקטלוג שירותים, זיהוי פערים בשכונות, עבודה מול ספקים ולמידה מהשטח. מיקוד בתפקיד, באתגר ובהזדמנות של כל שותף.",
+    note: "בהרחבה המערכתית: משרד הרווחה, רשויות מקומיות, מערכת הבריאות, קופות החולים ומשרד האוצר.",
+    img: "./images/services-mosaic.png",
   },
 ];
 
-const STATS = [
-  { num: "220K", label: "זכאי סיעוד",         sub: "בישראל" },
-  { num: "80%",  label: "לשירותי בית",         sub: "לא למניעה" },
-  { num: "₪20B", label: "תקציב שנתי",          sub: "רפורמה" },
-  { num: "286",  label: "אזרחים בפיילוט",       sub: "פסגת זאב" },
+const STEPS = () => [
+  { icon: ShieldCheck, title: "הצטרפות לתכנית", text: "אזרח ותיק הזכאי לגמלת סיעוד מצטרף לתכנית." },
+  { icon: HeartHandshake, title: "היכרות וליווי (אינטייק)", text: "מבררים מה חשוב לאדם, מה מתאים לו, מה הוא רוצה וצריך: מוטיבציות, כוחות, יעדים ואתגרים." },
+  { icon: Wallet, title: "סל אישי להזדקנות מיטבית", text: `ארנק חודשי של ${basket().personal_wallet} נקודות בתרחיש ההדגמה. נקודה אחת שווה שקל.` },
+  { icon: MapPin, title: "בחירת שירותים", text: "בחירה מתוך קטלוג שירותים מקומי, לפי התאמה, נגישות וזמינות." },
+  { icon: LineChart, title: "למידה ושיפור", text: "המדינה מזהה פערים, עוקבת אחר השימוש ולומדת מהשטח ומהתוצאות." },
 ];
 
-const SERVICES_GRID = [
-  { label: "מיצוי זכויות",   img: "./images/volunteering.png" },
-  { label: "שירה ומוזיקה",   img: "./images/choir.png" },
-  { label: "בריאות ופעילות", img: "./images/exercise-weights.png" },
-  { label: "חיבור משפחתי",   img: "./images/telemedicine.png" },
-  { label: "יצירה ואמנות",   img: "./images/art-class.png" },
-  { label: "קהילה ושייכות",  img: "./images/community-club.png" },
+const SHIFT = [
+  { icon: UserRound, title: "האדם במרכז", text: "לא הקצבה, לא הארנק ולא הטכנולוגיה. מה שחשוב לאדם מוביל את הבחירה." },
+  { icon: Network, title: "מערכת אחת", text: "בחירה, ליווי ולמידה מערכתית, על אותם נתונים ואותם כללים." },
+  { icon: Sprout, title: "משעות לתוצאות", text: "מהקצאת משאבים למענים מותאמים, וללמידה על מה שהם תורמים לאדם." },
 ];
+
+const STATE_GETS = [
+  { icon: Scale, title: "קטלוג וכללים בבעלות המדינה", text: "מה נכנס לסל, במחיר ובתנאים, עם רצפה בכל תחום ושכונה.", to: "/executive", label: "למבט מטה" },
+  { icon: FileJson, title: "תקן קליטה פתוח לכל ספק", text: "כל ספק נכנס לשוק דרך אותו תקן. אין נעילת ספק.", to: "/providers", label: "לפורטל הספקים" },
+  { icon: BookOpen, title: "פנקס למידה שהופך לדרישות", text: "תובנות מהשטח נרשמות, ומיוצאות כרישום דרישות למכרז.", href: "./hq/", label: "לאטלס המטה" },
+];
+
+const jump = (id: string) => (e: MouseEvent) => {
+  e.preventDefault();
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+};
 
 export default function DemoHome() {
-  const [clicks, setClicks] = useState(0);
-  const [showHackathon, setShowHackathon] = useState(false);
-
-  const handleLogoClick = () => {
-    const n = clicks + 1;
-    setClicks(n);
-    if (n >= 3 && SHOW_DEMO_LAYERS) { setShowHackathon(true); setClicks(0); }
-    setTimeout(() => { if (n < 3) setClicks(0); }, 2000);
-  };
-
+  const s = basket();
+  const bg = shownBackground();
   return (
     <div dir="rtl" className="min-h-screen bg-white">
-
-      {/* ── HERO ── */}
+      {/* פתיחה */}
       <section className="relative bg-[#1B3A5C] overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="./images/activities-hero.png"
-            alt="אזרחים ותיקים פעילים בקהילה"
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-[#1B3A5C]/95 via-[#1B3A5C]/70 to-[#1B3A5C]/50" />
-        </div>
-
-        <div className="relative max-w-5xl mx-auto px-6 py-16">
-          <div className="max-w-2xl">
-            <div
-              className="inline-flex items-center gap-2.5 cursor-pointer select-none mb-6"
-              onClick={handleLogoClick}
-            >
-              <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                <Wallet className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-white font-bold text-lg">סל אישי</span>
-            </div>
-
-            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-              הזדקנות מיטבית
-              <br />
-              <span className="text-white/60">מתחילה בהתאמה אישית</span>
-            </h1>
-            <p className="mt-4 text-base text-white/65 leading-relaxed max-w-lg">
-              מנגנון AI שמתאים שירותי מניעה לכל אזרח ותיק לפי פרופיל ייחודי —
-              ומסביר בדיוק למה כל שירות הומלץ.
-            </p>
-
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link
-                to="/demo"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[#1B3A5C] font-bold text-sm hover:bg-white/90 transition-colors shadow-lg animate-pulse hover:animate-none"
-              >
-                <Play className="w-4 h-4 fill-current" /> ▶ דמו 30 שניות
-              </Link>
-              <Link
-                to="/coordinator"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium text-sm hover:bg-white/20 transition-colors"
-              >
-                ממשק מלווה <ChevronLeft className="w-3.5 h-3.5" />
-              </Link>
-              <Link
-                to="/citizen"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-medium text-sm hover:bg-white/20 transition-colors"
-              >
-                ממשק האזרח <ChevronLeft className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 border border-white/12">
-              <MapPin className="w-3.5 h-3.5 text-white/50" />
-              <span className="text-xs text-white/50">פיילוט חי — פסגת זאב, ירושלים · החלטות ממשלה 127 ו-150</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats bar */}
-        <div className="relative border-t border-white/10 bg-black/20">
-          <div className="max-w-5xl mx-auto px-6 py-5 grid grid-cols-2 md:grid-cols-4 divide-x divide-x-reverse divide-white/10">
-            {STATS.map((s) => (
-              <div key={s.num} className="px-6 text-center first:pr-0 last:pl-0">
-                <div className="text-2xl font-bold text-white">{s.num}</div>
-                <div className="text-xs text-white/60 mt-0.5">{s.label}</div>
-                <div className="text-[10px] text-white/30">{s.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── PROBLEM + IMAGE ── */}
-      <section className="bg-gray-50 border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-red-400 mb-3 block">הבעיה</span>
-            <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-              הכסף מנוצל — אבל ל-בית ולניקיון, לא למניעת הידרדרות
-            </h2>
-            <p className="mt-3 text-sm text-gray-500 leading-relaxed">
-              80% מתקציב הסיעוד הולך לשירותי בית (ניקיון, ליווי).
-              שירותי מניעה שמפחיתים אשפוזים ב-30-40% — כמעט לא מקבלים מימון.
-            </p>
-            <div className="mt-5 space-y-2.5">
-              {[
-                "ממוצע 760₪/חודש לאזרח — אך 80% לניקיון, לא לשייכות",
-                "שירותי מניעה = ירידת 30-40% באשפוזים — לא בסל",
-                "אין ליווי אישי, אין ניטור, אין התאמה לפרופיל",
-              ].map((p) => (
-                <div key={p} className="flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-                  <span className="text-sm text-gray-600">{p}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative rounded-2xl overflow-hidden h-64 shadow-md group">
-            <img
-              src="./images/volunteering.png"
-              alt="יחד בקהילה"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-4 right-4">
-              <p className="text-white text-sm font-bold">יחד בקהילה</p>
-              <p className="text-white/60 text-xs">מתנדבים עזרה לתקווה</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SERVICE IMAGE GRID ── */}
-      <section className="max-w-5xl mx-auto px-6 py-12">
-        <div className="text-center mb-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/50 mb-2 block">הפתרון</span>
-          <h2 className="text-2xl font-bold text-gray-900">102 שירותי מניעה — מותאמים אישית</h2>
-          <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
-            כל שירות מדורג לפי 5 שכבות: מניעה · מוטיבציה · פרופיל · קרבה · הוכחה חברתית
+        <img src="./images/activities-hero.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+        <div className="relative max-w-5xl mx-auto px-6 pt-14 pb-16 text-white">
+          <p className="text-sm font-semibold text-white/85">
+            <span className="font-bold text-white">מגמלה לצמיחה</span> · סל אישי להזדקנות מיטבית
           </p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {SERVICES_GRID.map((s) => (
-            <div key={s.label} className="relative rounded-xl overflow-hidden group cursor-pointer shadow-sm" style={{ aspectRatio: "16/9" }}>
-              <img
-                src={s.img}
-                alt={s.label}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <div className="absolute bottom-2.5 right-3">
-                <p className="text-white text-xs font-bold drop-shadow-sm">{s.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Value props row */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { icon: Brain,      title: "AI מוסבר",        desc: "כל המלצה מפורקת ל-5 שכבות — ניתן לסמוך ולתקן" },
-            { icon: TrendingUp, title: "מניעה, לא תגובה",  desc: "5 אייג'נטים מנטרים 24/7 ומתריעים לפני הידרדרות" },
-            SHOW_DEMO_LAYERS
-              ? { icon: CheckCircle, title: "פיילוט חי", desc: "286 אזרחים ממשיים, פסגת זאב — לא PoC" }
-              : { icon: CheckCircle, title: "גרסת תצוגה", desc: "כל הנתונים במערכת הזו סינתטיים, לצורך התרשמות ומשוב" },
-          ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="flex items-start gap-3 p-4 rounded-xl bg-[#1B3A5C]/[0.03] border border-[#1B3A5C]/10">
-              <div className="w-9 h-9 rounded-lg bg-[#1B3A5C]/10 flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-[#1B3A5C]" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-900">{title}</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{desc}</p>
-              </div>
-            </div>
-          ))}
+          <h1 className="text-3xl md:text-5xl font-bold leading-tight mt-3 max-w-3xl">
+            האזרח הוותיק בוחר מה חשוב לו.
+            <span className="block text-white/90">המדינה לומדת מה עובד.</span>
+          </h1>
+          <p className="text-lg text-white/90 mt-5 max-w-2xl">
+            סל אישי שמחבר בין העדפות האדם לשירותים בקהילה. מלווה חברתית מסייעת בבחירה ובמימוש, והמטה מזהה פערים ולומד מנתוני השימוש.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 mt-8">
+            <a href="#doors-h" onClick={jump("doors")} className="inline-flex items-center gap-2 min-h-[52px] px-6 rounded-xl bg-white text-[#1B3A5C] font-bold hover:bg-white/90">
+              <Compass className="w-5 h-5" aria-hidden="true" /> לבחור דלת
+            </a>
+            <a href="#how-h" onClick={jump("how")} className="inline-flex items-center gap-2 min-h-[52px] px-5 rounded-xl border border-white/50 text-white font-semibold hover:bg-white/10">
+              איך זה עובד
+            </a>
+            <Link to="/scope" className="text-sm text-white/90 underline underline-offset-4 min-h-[44px] leading-[44px] px-1">
+              מה הכלי כן ולא עושה
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* ── MODULE CARDS ── */}
-      <section className="bg-gray-50 border-t border-gray-100">
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="mb-6">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#1B3A5C]/50 mb-2 block">הממשקים</span>
-            <h2 className="text-xl font-bold text-gray-900">{MODULES.length} ממשקים — לכל שחקן במערכת</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {MODULES.map((mod) => {
-              const Icon = mod.icon;
-              const Wrapper = ({ children }: { children: ReactNode }) =>
-                mod.external ? <a href={mod.href}>{children}</a> : <Link to={mod.href}>{children}</Link>;
-              return (
-                <Wrapper key={mod.title}>
-                  <div className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-[#1B3A5C]/40 hover:shadow-md transition-all h-full">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-[#1B3A5C]/5 flex items-center justify-center shrink-0">
-                        <Icon className="w-5 h-5 text-[#1B3A5C]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] text-gray-400 font-bold">{mod.num}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${mod.badgeCls}`}>{mod.badge}</span>
-                        </div>
-                        <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1B3A5C] transition-colors">
-                          {mod.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">{mod.description}</p>
-                        <span className="mt-3 inline-flex items-center gap-0.5 text-xs text-[#1B3A5C] font-medium">
-                          כניסה <ChevronLeft className="w-3 h-3" />
-                        </span>
-                      </div>
-                    </div>
+      {/* סיפור אחד, שלוש דלתות */}
+      <section id="doors" className="max-w-5xl mx-auto px-6 py-12 scroll-mt-16" aria-labelledby="doors-h">
+        <h2 id="doors-h" className="text-2xl md:text-3xl font-bold text-gray-900">סיפור אחד, שלוש דלתות</h2>
+        <p className="text-lg text-gray-700 mt-2 max-w-3xl">
+          אותם נתונים ואותם כללים בכל הדלתות: שרה בוחרת, רונית מלווה, והמטה מכוון מדיניות, מזהה פערים ולומד מה עובד.
+        </p>
+        <div className="relative mt-8">
+          {/* קו שמחבר את שלוש הדלתות: מערכת אחת */}
+          <span className="hidden md:block absolute top-4 right-[16%] left-[16%] h-0.5 bg-[#1B3A5C]/25" aria-hidden="true" />
+          <ul className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+            {DOORS().map((d) => (
+              <li key={d.to} className="flex flex-col">
+                <span className="self-center relative z-10 mb-3 px-4 py-1 rounded-full bg-[#1B3A5C] text-white text-sm font-semibold">{d.role}</span>
+                <Link to={d.to} className="group flex flex-col flex-1 rounded-2xl border border-gray-200 bg-white overflow-hidden hover:shadow-md hover:border-[#1B3A5C]/40 transition-shadow">
+                  <div className="h-40 overflow-hidden">
+                    <img src={d.img} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" loading="lazy" />
                   </div>
-                </Wrapper>
+                  <div className="p-5 flex flex-col flex-1">
+                    <p className="text-sm text-gray-600">{d.who}</p>
+                    <h3 className="text-xl font-bold text-gray-900 mt-0.5 flex items-center gap-2">
+                      <d.icon className="w-5 h-5 text-[#1B3A5C] shrink-0" aria-hidden="true" /> {d.title}
+                    </h3>
+                    <p className="text-base text-gray-800 mt-2">{d.text}</p>
+                    {d.note ? <p className="text-sm text-gray-600 mt-2">{d.note}</p> : null}
+                    <p className="mt-auto pt-4 text-sm font-semibold text-[#1B3A5C] inline-flex items-center gap-1">
+                      כניסה <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* איך זה עובד: רצף של חמישה שלבים */}
+      <section id="how" className="bg-gray-50 border-y border-gray-200 scroll-mt-16" aria-labelledby="how-h">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <h2 id="how-h" className="text-2xl md:text-3xl font-bold text-gray-900">איך זה עובד</h2>
+          <div className="relative mt-8">
+            <span className="hidden md:block absolute top-7 right-[10%] left-[10%] h-0.5 bg-[#1B3A5C]/30" aria-hidden="true" />
+            <span className="md:hidden absolute top-7 bottom-7 right-7 w-0.5 bg-[#1B3A5C]/30" aria-hidden="true" />
+            <ol className="relative grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-4">
+              {STEPS().map((st, i) => (
+                <li key={st.title} className="flex md:flex-col md:items-center md:text-center gap-4">
+                  <span className="relative z-10 shrink-0 w-14 h-14 rounded-full bg-[#1B3A5C] text-white flex items-center justify-center ring-4 ring-gray-50">
+                    <st.icon className="w-6 h-6" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold text-[#1B3A5C]">שלב {i + 1}</p>
+                    <h3 className="text-base font-bold text-gray-900">{st.title}</h3>
+                    <p className="text-sm text-gray-700 mt-1">{st.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      {/* שינוי תפיסתי */}
+      <section className="max-w-5xl mx-auto px-6 py-12" aria-labelledby="shift-h">
+        <h2 id="shift-h" className="text-2xl md:text-3xl font-bold text-gray-900">מגמלה לצמיחה: שינוי תפיסתי</h2>
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+          {SHIFT.map((x) => (
+            <li key={x.title} className="border-r-4 border-[#1B3A5C] pr-4">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <x.icon className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> {x.title}
+              </h3>
+              <p className="text-base text-gray-800 mt-1">{x.text}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* מה המדינה מקבלת */}
+      <section className="bg-gray-50 border-y border-gray-200" aria-labelledby="state-h">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <h2 id="state-h" className="text-2xl font-bold text-gray-900">מה המדינה מקבלת</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+            {STATE_GETS.map((g) => {
+              const body = (
+                <>
+                  <g.icon className="w-7 h-7 text-[#1B3A5C]" aria-hidden="true" />
+                  <h3 className="text-lg font-bold text-gray-900 mt-3">{g.title}</h3>
+                  <p className="text-base text-gray-800 mt-1">{g.text}</p>
+                  <p className="text-sm font-semibold text-[#1B3A5C] mt-3 inline-flex items-center gap-1">
+                    {g.label} <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+                  </p>
+                </>
+              );
+              const cls = "block rounded-2xl border border-gray-200 bg-white p-6 hover:shadow-md hover:border-[#1B3A5C]/30";
+              return g.to ? (
+                <Link key={g.title} to={g.to} className={cls}>{body}</Link>
+              ) : (
+                <a key={g.title} href={g.href} className={cls}>{body}</a>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* ── FULL-WIDTH COMMUNITY PHOTO ── */}
-      <section className="relative h-44 md:h-56 overflow-hidden">
-        <img
-          src="./images/community-club.png"
-          alt="קהילה חיה ופעילה — מתנס נווה יעקב"
-          className="w-full h-full object-cover object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1B3A5C]/85 via-[#1B3A5C]/40 to-transparent" />
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-5xl mx-auto px-6">
-            <p className="text-white text-xl md:text-2xl font-bold max-w-xs leading-snug">
-              "קהילה תומכת מאריכה חיים"
-            </p>
-            <p className="text-white/55 text-xs mt-1.5">Harvard School of Public Health</p>
+      {/* מה ידוע והצעד הבא */}
+      <section className="bg-[#1B3A5C] text-white" aria-labelledby="next-h">
+        <div className="max-w-5xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h2 className="text-2xl font-bold">מה כבר ידוע מהפיילוט</h2>
+            <ul className="mt-4 space-y-2 text-base text-white/90">
+              <li>{bg ? `${bg.pilot_months} חודשי פיילוט בפסגת זאב, ${appSettings.program.pilot_participants} משתתפים.` : `${appSettings.program.pilot_participants} משתתפים בפסגת זאב.`}</li>
+              {bg ? <li>קשרים חברתיים: מ-{bg.social_ties_from}% ל-{bg.social_ties_to}% מהמשתתפים.</li> : null}
+              {bg ? <li>דחייה של כ-{bg.delay_months} חודשים בהידרדרות.</li> : null}
+            </ul>
+            {bg ? <p className="text-xs text-white/75 mt-3">{bg.source}.</p> : null}
+            <dl className="grid grid-cols-3 gap-3 mt-6 text-white">
+              <div><dt className="text-xs text-white/80">סל לאזרח בחודש</dt><dd className="text-xl font-bold">₪{s.total}</dd></div>
+              <div><dt className="text-xs text-white/80">שירותים מאושרים</dt><dd className="text-xl font-bold">{realServices.length}</dd></div>
+              <div><dt className="text-xs text-white/80">שכונות באטלס</dt><dd className="text-xl font-bold">{catalogState.neighborhoods}</dd></div>
+            </dl>
+          </div>
+          <div>
+            <h2 id="next-h" className="text-2xl font-bold">הצעד הבא</h2>
+            <ul className="mt-4 space-y-2 text-base text-white/90">
+              <li>{bg ? `פיילוט 2027 ב-${bg.authorities_2027} רשויות, ${bg.budget_label}, עם ספק העל על חבילת הפיילוט.` : "פיילוט 2027 עם ספק העל על חבילת הפיילוט."}</li>
+              {bg ? <li>האוכלוסייה בהרחבה: {bg.level3_population_label}.</li> : null}
+              <li>מכרז על בסיס הכלי: התקן, הכללים ורישום הדרישות.</li>
+            </ul>
+            <div className="flex flex-wrap gap-3 mt-6">
+              <a href="./field/" className="inline-flex items-center gap-2 min-h-[48px] px-4 rounded-xl border border-white/40 font-semibold">
+                <MapPin className="w-4 h-4" aria-hidden="true" /> אטלס השטח
+              </a>
+              <a href="./hq/" className="inline-flex items-center gap-2 min-h-[48px] px-4 rounded-xl border border-white/40 font-semibold">
+                <Store className="w-4 h-4" aria-hidden="true" /> אטלס המטה
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-[#1B3A5C] text-white">
-        <div className="max-w-5xl mx-auto px-6 py-8 flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-              <Wallet className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-sm font-bold">סל אישי</p>
-              <p className="text-[10px] text-white/40">להזדקנות מיטבית</p>
-            </div>
-          </div>
-          <p className="text-xs text-white/30">פיילוט ירושלים · 5 שכונות · 102 שירותים · 5 אייג'נטים AI</p>
-          <p className="text-[10px] text-white/25">
-            Powered by <span className="text-[#FF9900] font-semibold">Amazon Bedrock</span> · Transcribe · Personalize
-          </p>
-        </div>
+      <footer className="max-w-5xl mx-auto px-6 py-6 text-sm text-gray-600 flex flex-wrap items-center justify-between gap-2">
+        <span>הסל האישי · {appSettings.demo.data_label} · גרסה {appSettings.version} · בנייה {__BUILD_COMMIT__}</span>
+        <Link to="/scope" className="underline underline-offset-4 min-h-[44px] leading-[44px]">מה הכלי כן ולא עושה</Link>
       </footer>
-
-      {/* Hidden hackathon entry */}
-      {showHackathon && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl border border-dashed border-[#1B3A5C]/30 bg-white shadow-xl text-center">
-          <Link
-            to="/hackathon"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B3A5C] text-white rounded-lg text-sm font-bold hover:bg-[#15304d] transition-colors"
-          >
-            <Play className="w-4 h-4 fill-current" /> דף האקתון AWS
-          </Link>
-          <button onClick={() => setShowHackathon(false)} className="block mx-auto mt-2 text-[10px] text-gray-400">
-            סגור
-          </button>
-        </div>
-      )}
     </div>
   );
 }

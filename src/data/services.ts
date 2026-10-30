@@ -45,6 +45,6 @@ export const getServiceOrFallback = (id: string): Service => {
     units: 0,
     subsidy: 0,
     description: "",
-    vendor: "—",
+    vendor: "-",
   };
 };

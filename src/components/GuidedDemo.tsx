@@ -1,5 +1,5 @@
 /**
- * GuidedDemo — floating golden-path overlay for the 4-minute hackathon demo.
+ * GuidedDemo - floating golden-path overlay for the 4-minute hackathon demo.
  * State stored in localStorage so it survives route navigation.
  * Triggered from Hackathon.tsx via startGuidedDemo() helper.
  */
@@ -21,28 +21,28 @@ export const DEMO_STEPS: DemoStep[] = [
     time: "0:00",
     route: "/",
     title: "דף הבית",
-    callout: "5 ממשקים — לאזרח, מלווה, ניהולי, ספקים, האקתון",
-    focus: "לחץ על 'מלווה מורחב — AI ואייג'נטים'",
+    callout: "5 ממשקים - לאזרח, מלווה, ניהולי, ספקים, האקתון",
+    focus: "לחץ על 'מלווה מורחב - AI ואייג'נטים'",
   },
   {
     time: "0:30",
     route: "/citizen",
-    title: "ממשק אזרח — שרה",
-    callout: "שרה כהן מקבלת המלצות מותאמות AI — מניעת הידרדרות, מוטיבציות, קרבה",
+    title: "ממשק אזרח - שרה",
+    callout: "שרה כהן מקבלת המלצות מותאמות AI - מניעת הידרדרות, מוטיבציות, קרבה",
     focus: "לחץ על שירות מומלץ כדי לראות פירוק 5 שכבות",
   },
   {
     time: "1:00",
     route: "/citizen/services",
-    title: "102 שירותים — ציוני התאמה",
-    callout: "כל שירות מדורג 0-100 לפי פרופיל אישי — לא ממוצע",
+    title: "102 שירותים - ציוני התאמה",
+    callout: "כל שירות מדורג 0-100 לפי פרופיל אישי - לא ממוצע",
     focus: "לחץ על שירות כלשהו ← ראה Explainability",
   },
   {
     time: "1:30",
     route: "/coordinator",
-    title: "דשבורד מלווה — Agentic Flow",
-    callout: "לחץ 'הפעל הדגמה' לראות לולאת AI מקצה לקצה — ללא התערבות ידנית",
+    title: "דשבורד מלווה - Agentic Flow",
+    callout: "לחץ 'הפעל הדגמה' לראות לולאת AI מקצה לקצה - ללא התערבות ידנית",
     focus: "לחץ 'הפעל הדגמה' בכרטיס ה-Agentic Flow",
   },
   {
@@ -69,7 +69,7 @@ export const DEMO_STEPS: DemoStep[] = [
   {
     time: "3:30",
     route: "/executive",
-    title: "ניהולי — ROI ₪2B",
+    title: "ניהולי - ROI ₪2B",
     callout: "286 אזרחים, 5 שכונות, 67% מימוש זכויות, חיסכון ₪2B בהרחבה לאומית",
     focus: "הראה timeline הרפורמה ומפת הפיילוטים",
   },
@@ -147,7 +147,7 @@ export function GuidedDemo() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-bold text-gray-900">{current.title}</span>
-              <span className="hidden sm:inline text-[10px] text-gray-400">·</span>
+              <span className="hidden sm:inline text-[10px] text-gray-600">·</span>
               <span className="hidden sm:inline text-xs text-gray-600 truncate">{current.callout}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -189,7 +189,7 @@ export function GuidedDemo() {
 
             <button
               onClick={close}
-              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors"
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
               aria-label="סגור הדגמה"
             >
               <X className="w-4 h-4" />

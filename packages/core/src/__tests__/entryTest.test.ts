@@ -19,10 +19,21 @@ describe("מבחן כניסה", () => {
     expect(entryTest(svc("a", { categoryCode: "3.3", serviceTypeId: "T38" }), seed).status).toBe(ENTRY_STATUS.outside);
   });
 
-  it("מממן אחר: בחוץ: מממן אחר", () => {
+  it("מממן אחר בלי כיסוי מוגדר: חסרים נתונים (סל משלים בלבד)", () => {
     const r = entryTest(svc("a", { otherFunder: true }), seed);
-    expect(r.status).toBe(ENTRY_STATUS.otherFunder);
+    expect(r.status).toBe(ENTRY_STATUS.missingData);
     expect(r.step).toBe(2);
+  });
+
+  it("מממן אחר שמכסה הכל: בחוץ, הפניה בלבד", () => {
+    const r = entryTest(svc("a", { otherFunder: true, otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 100 } }), seed);
+    expect(r.status).toBe(ENTRY_STATUS.otherFunder);
+    expect(r.reason).toContain("הפניה");
+  });
+
+  it("מממן אחר שמכסה חלק: נכנס כהשלמה", () => {
+    const r = entryTest(svc("a", { otherFunder: true, otherFunderName: "משרד הבריאות", otherFunderCoverage: { kind: "amount", value: 50 } }), seed);
+    expect(r.status).toBe(ENTRY_STATUS.in);
   });
 
   it("בלי קטגוריה וסוג שירות: מוחזר למיפוי", () => {
@@ -45,7 +56,7 @@ describe("מבחן כניסה", () => {
 
   it("עוצר בכישלון הראשון לפי הסדר", () => {
     const r = entryTest(svc("a", { otherFunder: true, unitPrice: undefined, enforceable: false }), seed);
-    expect(r.status).toBe(ENTRY_STATUS.otherFunder);
+    expect(r.step).toBe(2);
   });
 
   it("איכות חיים מתוך qol_rules נכנסת", () => {

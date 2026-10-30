@@ -26,7 +26,7 @@ describe("operator_onboarding_standard", () => {
   it("עובר בדיקת סכמה, עם השתתפות עצמית ונקודות", async () => {
     const { export: exp } = await buildOnboardingStandard(demoAuthority(), seed, NOW);
     expect(() => validateOnboardingStandard(exp)).not.toThrow();
-    expect(exp).toMatchObject({ schema: "operator_onboarding_standard", version: "1.1", owner: "המוסד לביטוח לאומי", seedVersion: "0.4" });
+    expect(exp).toMatchObject({ schema: "operator_onboarding_standard", version: "1.2", owner: "המוסד לביטוח לאומי", seedVersion: "0.4" });
     const s2 = exp.services.find((s) => s.serviceId === "s2")!;
     expect(s2.copayTier).toBe("classes");
     expect(s2.copayRate).toBe(0.2);

@@ -1,407 +1,481 @@
 /**
- * CitizenServices: הקטלוג המאושר לשכונה (מהאטלס), עם חיפוש חכם והצעות לפי תחום.
+ * CitizenServices: מסך הכניסה של האזרחית, והשוק של הסל. ברכה ומיקום, הארנק מתוך
+ * 500, חיפוש, הפעילות הבאה, שלוש המלצות ממה שסיפרה, נושאים צבעוניים, וכל
+ * השירותים המאושרים בשכונה (אותו קטלוג שהמלווה והמטה רואים), עם סדר, סינון ושתי
+ * תצוגות. ההתאמה היא של המנוע, בלי ציונים מול האזרחית.
  */
-import { useState, useMemo } from "react";
-import { Search, MapPin, Phone, Clock, Filter, ChevronLeft, ChevronDown, ChevronUp, Sparkles, TrendingUp, Award, Globe2, UserCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import {
-  filterServices, NEIGHBORHOODS_LIST, CATEGORY_FILTERS, COST_FILTERS,
-  type CostType, type RealService,
-} from "@/data/realServices";
+  Award, Check, ChevronLeft, Clock, Grid2x2, Home as HomeIcon, LayoutList, ListChecks, MapPin, Search,
+  Sparkles, Star, UserCheck, Users, Wallet, Heart, CalendarCheck, Bell,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { RealService } from "@/data/realServices";
+import { catalogState } from "@/data/catalogSource";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { useShowImages } from "@/hooks/use-visual-mode";
-import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
-import { CITIZENS } from "@/data/mockData";
-import { catalogState } from "@/data/catalogSource";
-import { DEMAND_LABEL, REACH_LABEL, selectionRules, suggestByDomain } from "@/lib/suggestions";
-import { needsCompanion, termLines } from "@/lib/serviceTerms";
+import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { personalRecommendations } from "@/lib/personalMatch";
+import { citizenReasons } from "@/lib/citizenReasons";
+import { amount } from "@/lib/wallet";
+import { SUPPLIER_RATING_NOTE_CITIZEN } from "@/lib/supplierRating";
+import { formatSlot } from "@/pilot/i18n";
+import { he } from "@/pilot/i18n/he";
+import { usePilot } from "@/pilot/store";
+import { isCoordinated, isProduct, isSubscription, priceLabel, priceOf, servicesFor, slotsFor } from "@/pilot/services";
+import { weeklyText } from "@/components/citizen/BookingPanel";
+import { whereText } from "@/pilot/citizen/Service";
+import { useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
+import { WalletSummary } from "@/components/citizen/WalletSummary";
+import { nextSession, useReminders, whenWords } from "@/pilot/citizen/myServices";
 
-// Cost badge is now rendered by SubsidyBadge component
+const QOL = "qol";
+const PAGE = 12;
+/** "מומלץ לך": שלוש המלצות בראש המסך. */
+const FIRST = 3;
 
-const MOBILITY_HE: Record<string, string> = {
-  independent: "עצמאי", "frail-light": "תפקוד נמוך-קל",
-  frail: "תפקוד נמוך", homebound: "מרותק בית", any: "כולם",
+type Mode = "forme" | "all" | "near" | "popular";
+const MODES: { id: Mode; label: string; hint: string; icon: typeof Star }[] = [
+  { id: "all", label: "הכי מתאים לי קודם", hint: "כל השירותים", icon: ListChecks },
+  { id: "forme", label: "רק מה שמתאים לי", hint: "לפי מה שסיפרת", icon: Sparkles },
+  { id: "near", label: "קרוב לבית", hint: "בבית, בשכונה, באזור", icon: HomeIcon },
+  { id: "popular", label: "פופולרי בשכונה", hint: "מה שאחרים בוחרים", icon: Users },
+];
+
+/** שמות הנושאים בשפת האזרח, ותמונה לכל נושא. */
+const TOPIC: Record<string, { name: string; img: string; tone: string }> = {
+  belonging: { name: "שייכות ומשמעות", img: "./images/community-club.png", tone: "bg-amber-800/90" },
+  health_function: { name: "בריאות ותנועה", img: "./images/exercise-balls.png", tone: "bg-emerald-800/90" },
+  resilience: { name: "חוסן ותמיכה", img: "./images/volunteering.png", tone: "bg-violet-800/90" },
+  digital: { name: "טלפון ומחשב", img: "./images/telemedicine.png", tone: "bg-sky-800/90" },
+  prevention_products: { name: "בטיחות בבית", img: "./images/services-mosaic.png", tone: "bg-orange-800/90" },
+  [QOL]: { name: "איכות חיים", img: "./images/art-class.png", tone: "bg-rose-800/90" },
 };
 
-function ServiceRow({ service }: { service: RealService }) {
-  const [expanded, setExpanded] = useState(false);
+const DEMAND_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+const VIEW_KEY = "sal-ishi-market-view";
+
+/** כמה קרוב לבית: בבית, בשכונה, באזור, מרחוק או בטלפון, ארצי. */
+function nearRank(s: RealService, home: string): number {
+  if (s.deliveryMode === "home" || s.serviceMode === "home") return 0;
+  if (s.deliveryMode === "remote" || s.serviceMode === "remote") return 3;
+  if (s.reach === "national") return 4;
+  if (s.neighborhood === home) return 1;
+  return 2;
+}
+const NEAR_LABEL = ["מגיע אלייך הביתה", "בשכונה שלך", "באזור, קרוב לשכונה", "מהבית, בטלפון או במחשב", "ארצי"];
+
+const domainOf = (s: RealService) => s.coreCategoryId ?? QOL;
+
+function priceText(s: RealService): string {
+  const p = priceOf(s);
+  if (p.state === "full") return `${p.funder ?? he.otherFunder} מממן`;
+  return priceLabel(s, amount, true);
+}
+
+function whenText(s: RealService): string | null {
+  if (isProduct(s)) return null;
+  const slots = slotsFor(s);
+  if (isCoordinated(s) || slots.length === 0) return he.coordinated;
+  return isSubscription(s) ? weeklyText(slots[0]) : formatSlot(he, slots[0]);
+}
+
+function useView(): ["cards" | "list", (v: "cards" | "list") => void] {
+  const [view, setView] = useState<"cards" | "list">(() => {
+    try {
+      return localStorage.getItem(VIEW_KEY) === "list" ? "list" : "cards";
+    } catch {
+      return "cards";
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(VIEW_KEY, view);
+    } catch {
+      /* אחסון חסום */
+    }
+  }, [view]);
+  return [view, setView];
+}
+
+interface CardProps {
+  service: RealService;
+  view: "cards" | "list";
+  reason?: string;
+  reasons?: string[];
+  badge?: string;
+  Title?: "h3" | "h4";
+  /** כרטיס רחב (ההמלצה הראשונה): על כל השורה, עם תמונה גבוהה. */
+  wide?: boolean;
+}
+
+/** כרטיס שירות: גדול עם תמונה, או שורה קצרה. אותו מידע, שתי צורות. */
+function ServiceCard({ service, view, reason, reasons = [], badge, Title = "h3", wide = false }: CardProps) {
   const showImages = useShowImages();
-  const { image, gradient } = showImages
-    ? getServiceImageInfo(service)
-    : { image: undefined, gradient: "" };
-  // גוונים כהים מספיק לטקסט לבן (ניגודיות 4.5:1 לפחות).
-  const scoreBg = service.match_score >= 80 ? "#15803d" : service.match_score >= 60 ? "#b45309" : "#4b5563";
+  const { image, gradient } = getServiceImageInfo(service);
+  const when = whenText(service);
+  const topic = TOPIC[domainOf(service)]?.name;
+  const why = reason ?? reasons[0];
 
-  return (
-    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-[#1B3A5C]/20 transition-colors">
-      {/* Main row */}
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Thumbnail (images mode) or score circle (clean mode) */}
-          {showImages ? (
-            <div className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden">
-              {image ? (
-                <img src={image} alt={service.categoryLabel} className="w-full h-full object-cover" loading="lazy" />
-              ) : (
-                <div className={cn("w-full h-full", gradient)} />
-              )}
-              <div
-                className="absolute bottom-0 right-0 left-0 text-center py-0.5 text-[10px] font-bold text-white"
-                style={{ backgroundColor: scoreBg }}
-              >
-                {service.match_score}
-              </div>
-            </div>
-          ) : (
-            /* Original score circle */
-            <div className="shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold"
-              style={{ borderColor: scoreBg, color: scoreBg }}>
-              {service.match_score}
-            </div>
-          )}
-
-          {/* Content */}
+  if (view === "list") {
+    return (
+      <li>
+        <Link to={`/citizen/services/${service.id}`} className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-4 min-h-[72px] hover:border-[#1B3A5C]/40">
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <Link
-                to={`/citizen/services/${service.id}`}
-                className="text-sm font-semibold text-gray-900 hover:text-[#1B3A5C] leading-tight line-clamp-1 transition-colors"
-              >
-                {service.name}
-              </Link>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <SubsidyBadge cost={service.cost} />
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{service.provider}</p>
-            <AtlasBadges service={service} />
-
-            <div className="flex items-center gap-3 mt-2 flex-wrap">
-              <span className="flex items-center gap-1 text-xs text-gray-600">
-                <MapPin className="w-3 h-3" aria-hidden="true" /> {service.neighborhood}
-              </span>
-              {service.days && (
-                <span className="flex items-center gap-1 text-xs text-gray-600">
-                  <Clock className="w-3 h-3" aria-hidden="true" /> {service.days}
-                  {service.hours && ` · ${service.hours}`}
-                </span>
-              )}
-              {service.phone && (
-                <a href={`tel:${service.phone}`} className="flex items-center gap-1 text-xs text-[#1B3A5C] hover:underline">
-                  <Phone className="w-3 h-3" /> {service.phone}
-                </a>
-              )}
-            </div>
+            <Title className="text-lg font-bold text-gray-900 leading-tight">{service.name}</Title>
+            <p className="text-base text-gray-700 mt-0.5">
+              {priceText(service)} <span aria-hidden="true">·</span> {whereText(he, service)}
+            </p>
+            {why ? <p className="text-base text-[#1B3A5C] mt-0.5">{why}</p> : null}
           </div>
+          <ChevronLeft className="w-6 h-6 text-gray-500 shrink-0" aria-hidden="true" />
+        </Link>
+      </li>
+    );
+  }
 
-          {/* Expand */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="shrink-0 w-11 h-11 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors"
-            aria-label={expanded ? `כיווץ הפרטים של ${service.name}` : `הרחבת הפרטים של ${service.name}`}
-            aria-expanded={expanded}
-          >
-            {expanded ? <ChevronUp className="w-4 h-4 text-gray-600" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-gray-600" aria-hidden="true" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Expanded details */}
-      {expanded && (
-        <div className="border-t border-gray-100 px-4 pb-4 pt-3 bg-gray-50/50 space-y-3">
-          {service.cost_note && (
-            <p className="text-xs text-gray-600"><span className="font-medium">עלות:</span> {service.cost_note}</p>
-          )}
-          {service.notes && (
-            <p className="text-xs text-gray-600"><span className="font-medium">הערות:</span> {service.notes}</p>
-          )}
-          {termLines(service).map((t) => (
-            <p key={t.term} className="text-xs text-gray-600"><span className="font-medium">{t.term}:</span> {t.text}</p>
+  return (
+    <li className={wide ? "sm:col-span-2" : undefined}>
+      <Link
+        to={`/citizen/services/${service.id}`}
+        className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-[#1B3A5C]/40 hover:shadow-md transition-all"
+      >
+        {showImages ? (
+          <div className={cn("relative w-full", wide ? "h-52" : "h-36")}>
+            {image ? <img src={image} alt="" className="w-full h-full object-cover" loading="lazy" /> : <div className={cn("w-full h-full", gradient)} />}
+            {topic ? <span className="absolute top-2 right-2 text-sm font-semibold bg-white/95 text-[#1B3A5C] px-2 py-0.5 rounded-lg">{topic}</span> : null}
+            {badge ? <span className="absolute top-2 left-2 text-sm font-semibold bg-emerald-700 text-white px-2 py-0.5 rounded-lg">{badge}</span> : null}
+          </div>
+        ) : null}
+        <div className="p-4 flex flex-col gap-1.5 flex-1">
+          <Title className="text-xl font-bold text-gray-900 leading-tight">{service.name}</Title>
+          {!showImages && badge ? <span className="self-start text-sm font-semibold bg-emerald-50 text-emerald-900 px-2 py-0.5 rounded-lg">{badge}</span> : null}
+          {why ? (
+            <p className="text-base text-[#1B3A5C] font-medium flex items-start gap-1.5">
+              <Sparkles className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" /> <span>{why}</span>
+            </p>
+          ) : null}
+          {reasons.filter((r) => r !== why).slice(0, 1).map((r) => (
+            <p key={r} className="text-base text-emerald-900 flex items-start gap-1.5">
+              <Check className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" /> <span>{r}</span>
+            </p>
           ))}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs px-2 py-1 rounded-md bg-white border border-gray-200 text-gray-600">
-              {service.categoryLabel}
+          <p className="text-base text-gray-800 flex items-start gap-1.5">
+            <Wallet className="w-5 h-5 shrink-0 mt-0.5 text-[#1B3A5C]" aria-hidden="true" /> <span className="font-semibold">{priceText(service)}</span>
+          </p>
+          <p className="text-base text-gray-700 flex items-start gap-1.5">
+            <MapPin className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
+            <span>
+              {whereText(he, service)} <span aria-hidden="true">·</span> {service.provider}
             </span>
-            {service.accessibility.map((a) => (
-              <span key={a} className="text-xs px-2 py-1 rounded-md bg-teal-50 border border-teal-200 text-teal-700">
-                {a === "wheelchair" ? "נגיש" : a === "transport" ? "הסעות" : a === "home_visit" ? "ביקור בית" : a === "remote" ? "מרחוק" : a}
-              </span>
-            ))}
-            {service.languages.filter(l => l !== "hebrew").map((lang) => (
-              <span key={lang} className="text-xs px-2 py-1 rounded-md bg-purple-50 border border-purple-200 text-purple-700">
-                {lang === "arabic" ? "ערבית" : lang === "russian" ? "רוסית" : lang === "english" ? "אנגלית" : lang === "yiddish" ? "יידיש" : lang}
-              </span>
-            ))}
-            <span className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 mr-auto">
-              {MOBILITY_HE[service.target_mobility] ?? service.target_mobility}
-            </span>
-          </div>
-          <Link
-            to={`/citizen/services/${service.id}`}
-            className="inline-flex items-center gap-1 text-xs text-[#1B3A5C] font-semibold hover:underline"
-          >
-            פרטים מלאים ובקשת הצטרפות <ChevronLeft className="w-3 h-3" />
-          </Link>
+          </p>
+          {when ? (
+            <p className="text-base text-gray-700 flex items-start gap-1.5">
+              <Clock className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" /> <span>{when}</span>
+            </p>
+          ) : null}
+          {service.supplierScore ? (
+            <p className="text-sm text-gray-600 flex items-start gap-1.5">
+              <Award className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" aria-hidden="true" /> <span>דירוג הספק {service.supplierScore.toFixed(1)} מתוך 5</span>
+            </p>
+          ) : null}
+          {service.gatedByCompanion ? (
+            <p className="text-base text-violet-900 flex items-start gap-1.5">
+              <UserCheck className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" /> <span>נפתח יחד עם המלווה</span>
+            </p>
+          ) : null}
+          <span className="mt-auto pt-2 inline-flex items-center justify-center gap-1 min-h-[48px] rounded-xl bg-[#1B3A5C] text-white text-base font-bold">
+            לפרטים ולהצטרפות <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+          </span>
         </div>
-      )}
-    </div>
+      </Link>
+    </li>
   );
 }
 
-/** היקף, ביקוש ודירוג ספק, מהאטלס. טקסט וסמל, לא רק צבע. */
-function AtlasBadges({ service }: { service: RealService }) {
-  const reach = service.reach && service.reach !== "neighborhood" ? REACH_LABEL[service.reach] : null;
-  const demand = service.demand ? DEMAND_LABEL[service.demand] : null;
-  const gated = needsCompanion(service);
-  if (!reach && !demand && !service.supplierScore && !gated) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5 mt-1.5">
-      {reach && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-sky-50 border border-sky-300 text-sky-900">
-          <Globe2 className="w-3 h-3" aria-hidden="true" /> {reach}
-        </span>
-      )}
-      {gated && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-violet-50 border border-violet-300 text-violet-900">
-          <UserCheck className="w-3 h-3" aria-hidden="true" /> דרך המלווה
-        </span>
-      )}
-      {demand && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-900">
-          <TrendingUp className="w-3 h-3" aria-hidden="true" /> {demand}
-        </span>
-      )}
-      {service.supplierScore ? (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-300 text-amber-900">
-          <Award className="w-3 h-3" aria-hidden="true" /> דירוג ספק {service.supplierScore.toFixed(1)} מתוך 5
-        </span>
-      ) : null}
-    </div>
-  );
-}
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return "בוקר טוב";
+  if (h < 17) return "צהריים טובים";
+  return "ערב טוב";
+};
 
-// ההסברים של מנוע ההתאמה כתובים עם קו מפריד ארוך. בתצוגה מחליפים אותו בנקודתיים.
-const LONG_DASH = String.fromCharCode(0x2014);
-const plainDash = (text: string) => text.split(LONG_DASH).map((t) => t.trim()).join(": ");
-
-/** הצעות לפי תחום, מתוך מנוע ההתאמה הקיים. */
-function DomainSuggestions({ neighborhood }: { neighborhood: string }) {
-  const citizen = CITIZENS[0];
-  const rules = selectionRules();
-  // בלי בחירת שכונה, ההצעות הן לשכונה של האזרח (אם היא בקטלוג).
-  const home = NEIGHBORHOODS_LIST.includes(citizen.neighborhood) ? citizen.neighborhood : undefined;
-  const target = neighborhood === "הכל" ? home : neighborhood;
-  const domains = useMemo(() => suggestByDomain(citizen, target), [citizen, target]);
-  if (!domains.length) return null;
+/** הפעילות הבאה וכמה בקשות ממתינות: שורה אחת שמובילה ל"השירותים שלי". */
+function NextUp({ citizenId }: { citizenId: string }) {
+  const { derived } = usePilot();
+  const [reminders] = useReminders();
+  const now = new Date();
+  const next = derived.bookings
+    .filter((b) => b.citizenId === citizenId)
+    .map((b) => ({ b, at: nextSession(b, now) }))
+    .filter((x): x is { b: (typeof x)["b"]; at: Date } => !!x.at)
+    .sort((a, b) => a.at.getTime() - b.at.getTime())[0];
+  const pending = derived.requests.filter((r) => r.citizenId === citizenId && r.kind === "gated_service" && r.status === "open").length;
+  if (!next && !pending) return null;
   return (
-    <section aria-labelledby="sugg-h" className="space-y-3">
-      <div>
-        <h2 id="sugg-h" className="text-base font-bold text-gray-900 flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-[#1B3A5C]" aria-hidden="true" /> הצעות בשבילך לפי תחום{target ? `, ${target}` : ""}
-        </h2>
-        <p className="text-xs text-gray-600 mt-0.5">
-          לפי מנוע ההתאמה, עם הסבר קצר. מומלץ לבחור לפחות {rules.minPerDomain} מכל תחום ועד {rules.maxActive} שירותים במקביל, עם אפשרות החלפה כל {rules.changeMonths === 1 ? "חודש" : `${rules.changeMonths} חודשים`}
-          {rules.isProposal ? " (הצעה, ממתין להכרעה)" : ""}.
-        </p>
-      </div>
-      {domains.map((d) => (
-        <div key={d.domainId} className="bg-white border border-gray-200 rounded-xl p-3">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">{d.domainName}</h3>
-          <ul className="space-y-2">
-            {d.items.map(({ service, result }) => (
-              <li key={service.id} className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <Link to={`/citizen/services/${service.id}`} className="text-sm font-medium text-[#1B3A5C] hover:underline">
-                    {service.name}
-                  </Link>
-                  <p className="text-xs text-gray-600">{plainDash(result.explanations[0] ?? service.subcategory)}</p>
-                  {needsCompanion(service) && <p className="text-xs text-violet-900">נפתח באישור המלווה</p>}
-                </div>
-                <span className="shrink-0 text-xs font-bold text-gray-700" aria-label={`התאמה ${Math.round(result.totalScore)} מתוך 100`}>
-                  {Math.round(result.totalScore)}
+    <Link to="/citizen/activities" className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:border-[#1B3A5C]/40">
+      <span className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
+        <CalendarCheck className="w-6 h-6" aria-hidden="true" />
+      </span>
+      <span className="flex-1 min-w-0">
+        {next ? (
+          <>
+            <span className="block text-sm text-gray-700">הפעילות הבאה שלך, {whenWords(next.at, now)}</span>
+            <span className="block text-lg font-bold text-gray-900 leading-tight">{next.b.serviceName}</span>
+            <span className="block text-base text-gray-700">
+              {formatSlot(he, next.at.toISOString())}
+              {reminders.has(next.b.id) ? (
+                <span className="inline-flex items-center gap-1 text-emerald-800 font-semibold mr-2">
+                  <Bell className="w-4 h-4" aria-hidden="true" /> תזכורת פעילה
                 </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </section>
+              ) : null}
+            </span>
+          </>
+        ) : null}
+        {pending ? <span className="block text-base text-amber-900 font-semibold mt-0.5">{pending === 1 ? "בקשה אחת ממתינה לאישור המלווה" : `${pending} בקשות ממתינות לאישור המלווה`}</span> : null}
+      </span>
+      <span className="text-base font-semibold text-[#1B3A5C] inline-flex items-center shrink-0">
+        <span className="hidden sm:inline">השירותים שלי</span> <ChevronLeft className="w-6 h-6" aria-hidden="true" />
+      </span>
+    </Link>
   );
 }
 
 export default function CitizenServices() {
+  const { simulation } = usePilot().state;
+  const { firstName, profile: citizen } = useCitizen();
+  const chosen = usePilot().derived.interests.get(usePersonalProfile().id) ?? [];
+  const profile = usePersonalProfile();
+  const wallet = useWallet();
+  const [view, setView] = useView();
   const [query, setQuery] = useState("");
-  const [neighborhood, setNeighborhood] = useState("הכל");
-  const [category, setCategory] = useState(0);
-  const [cost, setCost] = useState<CostType | "all">("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const showImages = useShowImages();
+  const [mode, setMode] = useState<Mode>("all");
+  const [topic, setTopic] = useState<string | null>(null);
+  const [page, setPage] = useState(PAGE);
+  const [noCopay, setNoCopay] = useState(false);
+  const [fromHome, setFromHome] = useState(false);
+  const [myLanguage, setMyLanguage] = useState(false);
+  const month = he.monthNames[new Date().getMonth()];
 
-  const results = useMemo(
-    () => filterServices({ neighborhood, category, cost, query }),
-    [query, neighborhood, category, cost]
+  const all = useMemo(() => servicesFor(profile.neighborhood), [profile.neighborhood]);
+  const ranked = useMemo(() => {
+    const ids = new Set(all.map((s) => s.id));
+    return matchServicesForCitizen(profile, { topN: 500, minScore: 0, walletLeft: wallet.left * (catalogState.seed.settings.points_per_shekel || 1) }).filter((r) => ids.has(r.service.id));
+  }, [all, profile, wallet.left]);
+  const rank = useMemo(() => new Map(ranked.map((r, i) => [r.service.id, i])), [ranked]);
+  const picks = useMemo(() => personalRecommendations(profile, ranked, FIRST), [profile, ranked]);
+  const reasonOf = new Map(picks.map((p) => [p.result.service.id, p.reason]));
+  const whyOf = useMemo(() => new Map(ranked.map((r) => [r.service.id, citizenReasons(r.explanations)])), [ranked]);
+  const fitOf = useMemo(() => new Map(ranked.map((r) => [r.service.id, r.totalScore >= 70 ? "מתאים לך מאוד" : r.totalScore >= 55 ? "מתאים לך" : undefined])), [ranked]);
+  const recommended = picks.map((p) => all.find((s) => s.id === p.result.service.id)).filter((s): s is RealService => !!s);
+
+  const topics = useMemo(() => {
+    const present = new Set(all.map(domainOf));
+    const ids = [...catalogState.seed.core_categories.map((c) => c.id), QOL].filter((id) => present.has(id));
+    const ordered = [...ids.filter((d) => chosen.includes(d)), ...ids.filter((d) => !chosen.includes(d))];
+    return ordered.map((id) => ({ id, ...(TOPIC[id] ?? { name: id, img: "", tone: "bg-[#1B3A5C]" }), count: all.filter((s) => domainOf(s) === id).length }));
+  }, [all, chosen]);
+
+  const langCode: Record<string, string> = { עברית: "hebrew", ערבית: "arabic", רוסית: "russian" };
+  const q = query.trim();
+  const filtered = all.filter(
+    (s) =>
+      (!topic || domainOf(s) === topic) &&
+      (!q || s.name.includes(q) || (s.subcategory ?? "").includes(q) || (s.serviceTypeName ?? "").includes(q)) &&
+      (!noCopay || priceOf(s).copay === 0) &&
+      (!fromHome || [0, 3].includes(nearRank(s, profile.neighborhood))) &&
+      (!myLanguage || s.languages.includes(langCode[profile.language] ?? "hebrew")),
   );
+  const byRank = (a: RealService, b: RealService) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999);
+  const forMe = [...filtered.filter((s) => reasonOf.has(s.id)), ...filtered.filter((s) => !reasonOf.has(s.id) && fitOf.get(s.id)).sort(byRank)];
+  const list =
+    mode === "forme"
+      ? forMe
+      : [...filtered].sort((a, b) =>
+          mode === "popular"
+            ? (DEMAND_RANK[a.demand ?? ""] ?? 3) - (DEMAND_RANK[b.demand ?? ""] ?? 3) || byRank(a, b)
+            : mode === "near"
+              ? nearRank(a, profile.neighborhood) - nearRank(b, profile.neighborhood) || byRank(a, b)
+              : byRank(a, b),
+        );
+  const badgeOf = (s: RealService) =>
+    mode === "popular" ? (s.demand === "high" ? "פופולרי מאוד" : s.demand === "medium" ? "פופולרי" : undefined) : mode === "near" ? NEAR_LABEL[nearRank(s, profile.neighborhood)] : fitOf.get(s.id);
+  const gridClass = view === "cards" ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-3";
+  const toResults = () => requestAnimationFrame(() => document.getElementById("results-h")?.scrollIntoView({ behavior: "smooth", block: "start" }));
 
-  const freeCount = results.filter(s => s.cost === "free").length;
+  if (simulation.noServices) {
+    return (
+      <main id="main" tabIndex={-1} className="px-6 pt-6 pb-6 space-y-3" dir="rtl">
+        <h1 className="text-2xl font-bold text-gray-900">{he.noServicesTitle}</h1>
+        <p className="text-base text-gray-800">{he.noServicesText}</p>
+      </main>
+    );
+  }
+
+  const chip = (on: boolean) =>
+    cn("min-h-[48px] px-4 rounded-full text-base font-semibold border inline-flex items-center gap-1.5", on ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-gray-800 border-gray-300");
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-4" dir="rtl">
-
-      {/* Header */}
-      <div>
-        <h1 className="text-lg font-bold text-gray-900">שירותים זמינים</h1>
-        <p className="text-xs text-gray-600 mt-0.5" role="status" aria-live="polite">
-          {results.length} שירותים · {freeCount} בלי השתתפות עצמית
-          {neighborhood !== "הכל" && ` · ${neighborhood}`}
-        </p>
-        <p className="text-[11px] text-gray-600 mt-0.5">
-          {catalogState.origin === "published" ? "מהקטלוג המאושר של הרשות" : "קטלוג הדגמה סינתטי מהאטלס"}
-        </p>
+    <div className="min-h-screen bg-gray-50" dir="rtl">
+      {/* ברכה, מיקום, ארנק וחיפוש */}
+      <div className="relative bg-[#1B3A5C] text-white px-6 pt-6 pb-6 overflow-hidden">
+        <img src="./images/community-club.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-15" />
+        <div className="relative">
+          <p className="text-xl font-semibold text-white">
+            {getGreeting()}, {firstName}
+          </p>
+          <h1 className="text-3xl font-bold mt-1">השירותים בשכונה שלך</h1>
+          <p className="text-lg text-white/90 mt-1 flex items-center gap-1.5">
+            <MapPin className="w-5 h-5 shrink-0" aria-hidden="true" />
+            <span>
+              {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
+            </span>
+          </p>
+          <div className="mt-4 bg-white/10 rounded-xl p-4 backdrop-blur-[2px]" aria-labelledby="wallet-title">
+            <p id="wallet-title" className="text-base text-white/90 flex items-center gap-1.5">
+              <Wallet className="w-5 h-5" aria-hidden="true" /> הארנק שלך לחודש {month}
+            </p>
+            <div className="mt-1">
+              <WalletSummary tone="dark" />
+            </div>
+          </div>
+          <div className="relative mt-4">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="חיפוש שירות"
+              value={query}
+              onChange={(e) => (setQuery(e.target.value), setPage(PAGE))}
+              onKeyDown={(e) => e.key === "Enter" && toResults()}
+              placeholder="מה מחפשים? למשל: שירה, הליכה, טלפון"
+              className="w-full min-h-[56px] pr-11 pl-4 rounded-xl border-0 bg-white text-gray-900 text-lg placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-white/40"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" aria-hidden="true" />
-        <input
-          type="search"
-          aria-label="חיפוש שירות"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="למשל: ספורט, זיכרון, סמארטפון, מועדון"
-          className="w-full h-11 pr-10 pl-12 rounded-xl border border-gray-300 bg-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1B3A5C]/20 focus:border-[#1B3A5C]/40"
-          dir="rtl"
-        />
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          aria-expanded={showFilters}
-          className={cn(
-            "absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors",
-            showFilters ? "bg-[#1B3A5C] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          )}
-        >
-          <Filter className="w-3.5 h-3.5" />
-          {showFilters ? "סגור" : "סינון"}
-        </button>
-      </div>
+      <main id="main" tabIndex={-1} className="px-4 sm:px-6 pt-5 pb-6 space-y-8" data-read>
+        <NextUp citizenId={citizen.id} />
 
-      {!query.trim() && category === 0 && cost === "all" && <DomainSuggestions neighborhood={neighborhood} />}
-
-      {/* Category chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {CATEGORY_FILTERS.map((cat) => (
-          <button
-            key={cat.value}
-            onClick={() => setCategory(cat.value)}
-            aria-pressed={category === cat.value}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border shrink-0",
-              category === cat.value
-                ? "bg-[#1B3A5C] text-white border-[#1B3A5C]"
-                : "bg-white text-gray-700 border-gray-300 hover:border-[#1B3A5C]/30"
-            )}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Category banner - only in image mode */}
-      {showImages && category !== 0 && (() => {
-        const { image, gradientDark } = getServiceImageInfo({ category, name: "" });
-        const catLabel = CATEGORY_FILTERS.find(c => c.value === category)?.label ?? "";
-        return (
-          <div className="relative rounded-xl overflow-hidden h-28">
-            {image ? (
-              <img src={image} alt={catLabel} className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className={cn("w-full h-full", gradientDark)} />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-l from-[#1B3A5C]/80 via-[#1B3A5C]/30 to-transparent" />
-            <div className="absolute inset-0 flex items-center justify-end pr-5">
+        {/* מומלץ לך: ממה שסיפרה, עד שלוש */}
+        {!q && !topic && recommended.length ? (
+          <section aria-labelledby="rec-title" className="space-y-3">
+            <div className="flex flex-wrap items-end justify-between gap-2">
               <div>
-                <p className="text-white font-bold text-base">{catLabel}</p>
-                <p className="text-white/60 text-xs mt-0.5">
-                  {results.length} שירותים · {results.filter(s => s.cost === "free").length} חינם
-                </p>
+                <h2 id="rec-title" className="text-2xl font-bold text-gray-900">
+                  מומלץ לך, {firstName}
+                </h2>
+                <p className="text-base text-gray-700">לפי מה שסיפרת לנו ולמלווה.</p>
               </div>
+              <Link to="/citizen/needs" className="min-h-[44px] inline-flex items-center gap-1 text-base font-semibold text-[#1B3A5C] underline underline-offset-4">
+                <Heart className="w-4 h-4" aria-hidden="true" /> לעדכן מה חשוב לי
+              </Link>
             </div>
-          </div>
-        );
-      })()}
-
-      {/* Filters panel */}
-      {showFilters && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
-          <div>
-            <p className="text-xs font-semibold text-gray-700 mb-2">שכונה</p>
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
-              {NEIGHBORHOODS_LIST.map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setNeighborhood(n)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs whitespace-nowrap border transition-colors shrink-0",
-                    neighborhood === n
-                      ? "bg-[#1B3A5C] text-white border-[#1B3A5C]"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-[#1B3A5C]/30"
-                  )}
-                >
-                  {n}
-                </button>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {recommended.map((sv, i) => (
+                <ServiceCard key={sv.id} service={sv} view="cards" reason={reasonOf.get(sv.id)} reasons={whyOf.get(sv.id)} badge={fitOf.get(sv.id)} wide={i === 0} />
               ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-gray-700 mb-2">עלות</p>
-            <div className="flex gap-2 flex-wrap">
-              {COST_FILTERS.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => setCost(c.value)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs border transition-colors",
-                    cost === c.value
-                      ? "bg-[#1B3A5C] text-white border-[#1B3A5C]"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-[#1B3A5C]/30"
-                  )}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={() => { setQuery(""); setNeighborhood("הכל"); setCategory(0); setCost("all"); }}
-            className="text-xs text-gray-700 hover:text-gray-900 underline min-h-11"
-          >
-            נקה סינון
-          </button>
-        </div>
-      )}
+            </ul>
+          </section>
+        ) : null}
 
-      {/* Results */}
-      {results.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-            <Search className="w-5 h-5 text-gray-600" aria-hidden="true" />
+        {/* לפי נושא: אריחים צבעוניים, בחירה מסננת את כל השירותים */}
+        <section aria-labelledby="topics-h">
+          <h2 id="topics-h" className="text-2xl font-bold text-gray-900 mb-3">לפי נושא</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" role="group" aria-label="נושא">
+            {topics.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                aria-pressed={topic === t.id}
+                onClick={() => {
+                  setTopic(topic === t.id ? null : t.id);
+                  setPage(PAGE);
+                  if (topic !== t.id) toResults();
+                }}
+                className={cn("relative h-32 rounded-2xl overflow-hidden border-2 text-right shadow-sm", topic === t.id ? "border-[#1B3A5C] ring-4 ring-[#1B3A5C]/30" : "border-transparent")}
+              >
+                {t.img ? <img src={t.img} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" /> : null}
+                <span className={cn("absolute bottom-0 right-0 left-0 px-3 py-2 text-white", t.tone)}>
+                  <span className="block text-lg font-bold leading-tight">{t.name}</span>
+                  <span className="block text-sm">{t.count} שירותים</span>
+                </span>
+                {topic === t.id ? <Check className="absolute top-2 left-2 w-8 h-8 p-1 rounded-full bg-white text-[#1B3A5C]" aria-hidden="true" /> : null}
+              </button>
+            ))}
           </div>
-          <p className="text-sm font-medium text-gray-600">לא נמצאו שירותים</p>
-          <button
-            onClick={() => { setQuery(""); setNeighborhood("הכל"); setCategory(0); setCost("all"); }}
-            className="mt-2 text-xs text-[#1B3A5C] underline"
-          >
-            נקה חיפוש
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {results.map((service) => (
-            <ServiceRow key={service.id} service={service} />
-          ))}
-        </div>
-      )}
+        </section>
+
+        {/* כל השירותים: איך לסדר, סינון ותצוגה */}
+        <section aria-labelledby="results-h" className="space-y-3 scroll-mt-4">
+          <h2 id="results-h" className="text-2xl font-bold text-gray-900">
+            {topic ? TOPIC[topic]?.name ?? "" : q ? `תוצאות: ${q}` : "כל השירותים"}
+            <span className="text-base font-normal text-gray-600"> · {list.length} שירותים</span>
+          </h2>
+          {topic ? (
+            <button type="button" onClick={() => setTopic(null)} className="min-h-[44px] text-base font-semibold text-[#1B3A5C] underline underline-offset-4">
+              לכל הנושאים
+            </button>
+          ) : null}
+          <p className="text-base font-semibold text-gray-900" id="how-h">איך לחפש?</p>
+          <div role="radiogroup" aria-labelledby="how-h" className="flex flex-wrap gap-2">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                role="radio"
+                aria-checked={mode === m.id}
+                onClick={() => (setMode(m.id), setPage(PAGE))}
+                className={cn(
+                  "min-h-[48px] px-4 rounded-full border text-base font-semibold inline-flex items-center gap-1.5",
+                  mode === m.id ? "bg-[#1B3A5C] text-white border-[#1B3A5C]" : "bg-white text-gray-900 border-gray-300 hover:border-[#1B3A5C]/50",
+                )}
+              >
+                <m.icon className="w-5 h-5 shrink-0" aria-hidden="true" /> {m.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="סינון">
+            <button type="button" aria-pressed={noCopay} onClick={() => setNoCopay(!noCopay)} className={chip(noCopay)}>
+              {noCopay ? <Check className="w-4 h-4" aria-hidden="true" /> : null} בלי תשלום ממני
+            </button>
+            <button type="button" aria-pressed={fromHome} onClick={() => setFromHome(!fromHome)} className={chip(fromHome)}>
+              {fromHome ? <Check className="w-4 h-4" aria-hidden="true" /> : null} בבית או בטלפון
+            </button>
+            <button type="button" aria-pressed={myLanguage} onClick={() => setMyLanguage(!myLanguage)} className={chip(myLanguage)}>
+              {myLanguage ? <Check className="w-4 h-4" aria-hidden="true" /> : null} ב{profile.language}
+            </button>
+            <span className="flex-1" />
+            <div className="inline-flex rounded-full border border-gray-300 bg-white p-1" role="group" aria-label="תצוגה">
+              <button type="button" aria-pressed={view === "cards"} onClick={() => setView("cards")} className={cn("min-h-[44px] px-3 rounded-full text-base font-semibold inline-flex items-center gap-1", view === "cards" ? "bg-[#1B3A5C] text-white" : "text-gray-800")}>
+                <Grid2x2 className="w-5 h-5" aria-hidden="true" /> כרטיסים
+              </button>
+              <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")} className={cn("min-h-[44px] px-3 rounded-full text-base font-semibold inline-flex items-center gap-1", view === "list" ? "bg-[#1B3A5C] text-white" : "text-gray-800")}>
+                <LayoutList className="w-5 h-5" aria-hidden="true" /> רשימה
+              </button>
+            </div>
+          </div>
+          <p className="sr-only" role="status" aria-live="polite">{list.length} שירותים</p>
+          <ul className={gridClass}>
+            {list.slice(0, page).map((sv) => (
+              <ServiceCard key={sv.id} service={sv} view={view} reason={reasonOf.get(sv.id)} reasons={whyOf.get(sv.id)} badge={badgeOf(sv)} />
+            ))}
+          </ul>
+          {list.length > page ? (
+            <button type="button" className="w-full min-h-[52px] rounded-xl border-2 border-[#1B3A5C] text-[#1B3A5C] text-lg font-bold bg-white" onClick={() => setPage(page + PAGE)}>
+              להראות עוד {Math.min(PAGE, list.length - page)} (מתוך {list.length})
+            </button>
+          ) : null}
+          {list.length === 0 ? (
+            <p className="text-lg text-gray-800 bg-white border border-gray-200 rounded-xl p-4">
+              לא מצאנו. אפשר לנסות מילה אחרת, להוריד סינון, או לבקש מהמלווה.
+            </p>
+          ) : null}
+        </section>
+
+        <p className="text-sm text-gray-600">{SUPPLIER_RATING_NOTE_CITIZEN}</p>
+      </main>
     </div>
   );
 }

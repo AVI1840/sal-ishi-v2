@@ -81,7 +81,7 @@ export default function NationalScreen() {
     <>
       <PageHeader
         title="תמונה ארצית"
-        description={`כל הפיילוטים לפי אותם כללים (גרסת בסיס ${seed.meta.version}): רצפה של ${seed.settings.core_floor} שירותים רציפים לכל קטגוריית ליבה, יעד מיצוי ${percent(seed.settings.utilization_target)} ודגל אדום מתחת ל-${percent(seed.settings.red_flag_avg)}.`}
+        description={`כל הפיילוטים לפי אותם כללים (גרסת כללים ${seed.meta.version}): רצפה של ${seed.settings.core_floor} שירותים רציפים לכל קטגוריית ליבה, יעד מיצוי ${percent(seed.settings.utilization_target)} ודגל אדום מתחת ל-${percent(seed.settings.red_flag_avg)}.`}
       />
 
       <div className="grid grid--kpi">

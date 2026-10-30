@@ -5,3 +5,5 @@ export * from "./download";
 export * from "./feedback-notes";
 export * from "./guide";
 export * from "./terms";
+export * from "./appMode";
+export * from "./learning";

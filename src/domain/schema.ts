@@ -1,5 +1,5 @@
 // Canonical, domain-agnostic, pseudonymized data model for Sal Ishi.
-// Shared by the web app (src/) and the AWS Lambda handlers (infra/lambda/) —
+// Shared by the web app (src/) and the AWS Lambda handlers (infra/lambda/) -
 // this is the single source of truth for entity shapes. See
 // PROMPT_SONNET5_PRODUCTION.md "Data model" for the design rationale.
 //
@@ -15,13 +15,13 @@ export type PersonStatus = "active" | "paused" | "closed";
 export interface Person {
   personId: string; // ULID
   tenantId: TenantId;
-  alias: string; // first name or a chosen alias — never a full legal name
+  alias: string; // first name or a chosen alias - never a full legal name
   birthYear: number; // not a full date of birth
   gender: "male" | "female" | "other";
   neighborhood: string; // never a street address
   languages: string[];
   sector: "secular" | "arab" | "haredi" | "mixed";
-  companionId: string; // owning companion — enforced server-side on every query
+  companionId: string; // owning companion - enforced server-side on every query
   consentAt: string; // ISO timestamp captured at intake
   status: PersonStatus;
   createdAt: string;
@@ -29,7 +29,7 @@ export interface Person {
 }
 
 // Nursing-specific fields live in programProfile. Nothing outside this
-// interface may reference nursing-specific concepts — new programs get
+// interface may reference nursing-specific concepts - new programs get
 // their own programProfile shape instead of widening this one.
 export interface NursingProgramProfile {
   icfFunctionalLevel: 1 | 2 | 3 | 4 | 5;
@@ -56,7 +56,7 @@ export interface Wallet {
   personId: string;
   period: WalletPeriod;
   allocatedUnits: number;
-  // Balance is NEVER stored as mutable truth — it is always folded from
+  // Balance is NEVER stored as mutable truth - it is always folded from
   // Transaction records at read time (see foldWalletBalance below).
 }
 

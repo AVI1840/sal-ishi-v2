@@ -1,227 +1,111 @@
 /**
- * CitizenProfile — פרופיל אישי
- * מקצועי, מדויק, מרשים
+ * CitizenProfile: "הפרופיל שלי".
+ *
+ * מה שהאזרחית רואה על עצמה: מה חשוב לה (והעדכון שלו), הארנק, ההרשמות ואיש קשר.
+ * בלי רמת סיכון, מוכנות, חסמים, ציונים ואחוזים: אלה כלים של המלווה, ונמצאים בתיק.
+ * העדפות שמתעדכנות כאן ממשיכות להזין את מנוע ההמלצות הקיים, בלי שינוי בכללים.
  */
-import { User, Phone, MapPin, Heart, Wallet, Target, Calendar, Sparkles, ChevronLeft, CheckCircle, Clock } from "lucide-react";
+import { Phone, MapPin, Heart, Wallet, Calendar, ChevronLeft, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
-import { CITIZENS } from "@/data/mockData";
-import { BARRIER_LABELS, MOTIVATION_LABELS, READINESS_LABELS } from "@/data/types";
-import { ProgressBar } from "@/components/shared/ProgressBar";
-import { cn } from "@/lib/utils";
+import { MOTIVATION_LABELS } from "@/data/types";
+import { WalletSummary } from "@/components/citizen/WalletSummary";
+import { he } from "@/pilot/i18n/he";
+import { usePilot } from "@/pilot/store";
+import { useCitizen } from "@/pilot/citizen/common";
+import { nextSession } from "@/pilot/citizen/myServices";
 
-const citizen = CITIZENS[0];
-
-const BOOKINGS = [
-  { id: 1, name: "התעמלות קבוצתית", date: "12.06.26", time: "10:00", status: "confirmed" },
-  { id: 2, name: "חוג ציור", date: "14.06.26", time: "14:00", status: "confirmed" },
-  { id: 3, name: "ביקור בית — רונית לוי", date: "18.06.26", time: "09:00", status: "pending" },
-];
-
-const RISK_LEVEL_MAP = {
-  low:      { label: "נמוך",    cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  medium:   { label: "בינוני",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  high:     { label: "גבוה",    cls: "bg-orange-50 text-orange-700 border-orange-200" },
-  critical: { label: "קריטי",   cls: "bg-red-50 text-red-700 border-red-200" },
+/** שמות התחומים שבחרה, בשפת האזרח (כמו בנושאים בשוק). */
+const DOMAIN_LABEL: Record<string, string> = {
+  belonging: "שייכות ומשמעות",
+  health_function: "בריאות ותנועה",
+  resilience: "חוסן ותמיכה",
+  digital: "טלפון ומחשב",
+  prevention_products: "בטיחות בבית",
+  qol: "איכות חיים",
 };
 
 export default function CitizenProfile() {
-  // ארנק רמה 2 — 32 יחידות/חודש (775₪ שווי), מיצוי פיילוט ממוצע 71%
-  const total = 32;
-  const used = Math.round(total * 0.71); // 23 יחידות נוצלו
-  const balance = total - used;          // 9 יחידות נותרו
-  const risk = RISK_LEVEL_MAP[citizen.riskLevel];
+  const { derived } = usePilot();
+  const { profile: citizen, interests } = useCitizen();
+  const active = derived.bookings.filter((b) => b.citizenId === citizen.id && b.status !== "cancelled");
+  const upcoming = active.filter((b) => nextSession(b)).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
-
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 h-14 flex items-center justify-between">
-        <h1 className="text-sm font-bold text-gray-900">הפרופיל שלי</h1>
-        <Link to="/citizen" className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
-          <ChevronLeft className="w-4 h-4 text-gray-500 rotate-180" />
-        </Link>
-      </header>
-
-      <main className="px-5 pt-5 space-y-4">
-
-        {/* Identity card */}
-        <div className="bg-[#1B3A5C] rounded-xl p-5 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
-              {citizen.name.charAt(0)}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-bold">{citizen.name}</h2>
-              <p className="text-sm text-white/70 mt-0.5 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" /> {citizen.city} · בת {citizen.age}
-              </p>
-              <p className="text-xs text-white/50 mt-1">{citizen.familyStatus} · {citizen.language}</p>
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
-            <div className="text-center">
-              <p className="text-lg font-bold">{citizen.weeklyActivities}</p>
-              <p className="text-xs text-white/50">פעילויות/שבוע</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold">{citizen.persistenceRate}%</p>
-              <p className="text-xs text-white/50">התמדה</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold">{citizen.engagementScore}%</p>
-              <p className="text-xs text-white/50">מעורבות</p>
-            </div>
+    <div className="min-h-screen bg-gray-50 pb-6" dir="rtl">
+      <div className="bg-[#1B3A5C] text-white px-6 pt-6 pb-6">
+        <div className="flex items-center gap-4">
+          <span className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold shrink-0" aria-hidden="true">
+            {citizen.name.charAt(0)}
+          </span>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold">הפרופיל שלי</h1>
+            <p className="text-lg text-white/90">{citizen.name}</p>
+            <p className="text-base text-white/85 flex items-center gap-1.5">
+              <MapPin className="w-4 h-4" aria-hidden="true" /> {citizen.neighborhood}, {citizen.city} · {citizen.language}
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Risk + Readiness */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">רמת סיכון</p>
-            <span className={cn("text-xs px-3 py-1.5 rounded-md font-semibold border", risk.cls)}>
-              {risk.label}
-            </span>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100">
-            <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">מוכנות לשינוי</p>
-            <span className="text-xs px-3 py-1.5 rounded-md font-semibold bg-[#1B3A5C]/5 text-[#1B3A5C] border border-[#1B3A5C]/10">
-              {READINESS_LABELS[citizen.readiness]}
-            </span>
-          </div>
-        </div>
-
-        {/* Wallet */}
-        <div className="bg-white rounded-xl p-5 border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Wallet className="w-4 h-4 text-[#1B3A5C]" />
-            <h2 className="text-sm font-semibold text-gray-900">ארנק יחידות</h2>
-          </div>
-          <div className="flex items-end gap-3 mb-3">
-            <div>
-              <p className="text-3xl font-bold text-[#1B3A5C]">{balance}</p>
-              <p className="text-xs text-gray-400">יחידות נותרו</p>
-            </div>
-            <div className="pb-0.5">
-              <p className="text-sm text-gray-500">מתוך <span className="font-semibold">{total}</span> יחידות</p>
-              <p className="text-xs text-gray-400">{used} יחידות נוצלו (≈ {used * 24}₪)</p>
-            </div>
-            <div className="mr-auto text-left pb-0.5">
-              <p className="text-xs text-gray-400">שווי חודשי</p>
-              <p className="text-sm font-bold text-emerald-700">775₪</p>
-            </div>
-          </div>
-          <ProgressBar value={used} max={total} tone="primary" size="sm" />
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-gray-400">שירותי מניעה — 100% ממומנים · שירותי חוסן — 50%</p>
-            <p className="text-xs font-medium text-[#1B3A5C]">רמה 2</p>
-          </div>
-        </div>
-
-        {/* Motivations */}
-        <div className="bg-white rounded-xl p-5 border border-gray-100">
-          <div className="flex items-center gap-2 mb-3">
-            <Heart className="w-4 h-4 text-[#1B3A5C]" />
-            <h2 className="text-sm font-semibold text-gray-900">מוטיבציות</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <main id="main" tabIndex={-1} className="px-4 sm:px-6 pt-5 space-y-5" data-read>
+        {/* מה חשוב לי: ההעדפות שמזינות את ההמלצות */}
+        <section className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm" aria-labelledby="matter-h">
+          <h2 id="matter-h" className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Heart className="w-6 h-6 text-rose-700" aria-hidden="true" /> מה חשוב לי
+          </h2>
+          <p className="text-base text-gray-700 mt-1">ממה שסיפרת לנו ולמלווה. ההמלצות בשוק מתחילות מכאן.</p>
+          {citizen.dream ? (
+            <p className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-100 text-base text-gray-900">
+              <span className="font-semibold">החלום שלי:</span> {citizen.dream}
+            </p>
+          ) : null}
+          <div className="flex flex-wrap gap-2 mt-3">
             {citizen.motivations.map((m) => (
-              <span key={m} className="px-3 py-1.5 bg-[#1B3A5C]/5 text-[#1B3A5C] rounded-lg text-xs font-medium border border-[#1B3A5C]/10">
+              <span key={m} className="px-3 py-1.5 bg-[#1B3A5C]/5 text-[#1B3A5C] rounded-full text-base font-medium border border-[#1B3A5C]/15">
                 {MOTIVATION_LABELS[m]}
               </span>
             ))}
-          </div>
-          {citizen.dream && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-xs text-gray-400 mb-1">המטרה האישית</p>
-              <p className="text-sm text-gray-700">{citizen.dream}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Barriers */}
-        {citizen.barriers.length > 0 && (
-          <div className="bg-white rounded-xl p-5 border border-gray-100">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="w-4 h-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-gray-900">חסמים מזוהים</h2>
-              <span className="text-xs text-gray-400">— המערכת מתאימה שירותים בהתאם</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {citizen.barriers.map((b) => (
-                <span key={b} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium border border-amber-200">
-                  {BARRIER_LABELS[b]}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Bookings */}
-        <div className="bg-white rounded-xl p-5 border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#1B3A5C]" />
-              <h2 className="text-sm font-semibold text-gray-900">פעילויות קרובות</h2>
-            </div>
-            <Link to={CITIZEN_CHAT_ENABLED ? "/citizen/chat" : "/citizen/services"} className="text-xs text-[#1B3A5C] hover:underline flex items-center gap-0.5">
-              הוסף <ChevronLeft className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {BOOKINGS.map((b) => (
-              <div key={b.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{b.name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {b.date} · {b.time}
-                  </p>
-                </div>
-                {b.status === "confirmed" ? (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200">
-                    <CheckCircle className="w-3 h-3 text-emerald-600" />
-                    <span className="text-xs text-emerald-700">אושר</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-50 border border-amber-200">
-                    <Clock className="w-3 h-3 text-amber-600" />
-                    <span className="text-xs text-amber-700">ממתין</span>
-                  </div>
-                )}
-              </div>
+            {interests.map((d) => (
+              <span key={d} className="px-3 py-1.5 bg-emerald-50 text-emerald-900 rounded-full text-base font-medium border border-emerald-200">
+                {DOMAIN_LABEL[d] ?? d}
+              </span>
             ))}
           </div>
-        </div>
+          <Link to="/citizen/needs" className="mt-4 w-full min-h-[52px] bg-[#1B3A5C] text-white rounded-xl text-lg font-bold flex items-center justify-center gap-2">
+            <Sparkles className="w-5 h-5" aria-hidden="true" /> לעדכן מה חשוב לי
+          </Link>
+        </section>
 
-        {/* Emergency */}
-        <div className="bg-white rounded-xl p-5 border border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">איש קשר לחירום</h2>
-          <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+        <section className="bg-white rounded-2xl p-5 border border-gray-200" aria-labelledby="wallet-h">
+          <h2 id="wallet-h" className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-3">
+            <Wallet className="w-5 h-5 text-[#1B3A5C]" aria-hidden="true" /> הארנק שלך לחודש {he.monthNames[new Date().getMonth()]}
+          </h2>
+          <WalletSummary tone="light" />
+        </section>
+
+        <Link to="/citizen/activities" className="bg-white rounded-2xl p-5 border border-gray-200 flex items-center gap-3 hover:border-[#1B3A5C]/40">
+          <Calendar className="w-6 h-6 text-[#1B3A5C] shrink-0" aria-hidden="true" />
+          <span className="flex-1">
+            <span className="block text-xl font-bold text-gray-900">השירותים שלי</span>
+            <span className="block text-base text-gray-700">
+              {active.length ? `${active.length} הרשמות, ${upcoming} עם מפגש קרוב` : he.noActivities}
+            </span>
+          </span>
+          <ChevronLeft className="w-5 h-5 text-gray-600" aria-hidden="true" />
+        </Link>
+
+        <section className="bg-white rounded-2xl p-5 border border-gray-200" aria-labelledby="sos-h">
+          <h2 id="sos-h" className="text-xl font-bold text-gray-900 mb-3">איש קשר לחירום</h2>
+          <div className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-xl">
             <div>
-              <p className="text-sm font-medium text-gray-900">אורי רוזנברג</p>
-              <p className="text-xs text-gray-400">בן · 054-9876543</p>
+              <p className="text-base font-medium text-gray-900">אורי רוזנברג</p>
+              <p className="text-base text-gray-700">בן · 050-0000000</p>
             </div>
-            <a href="tel:054-9876543"
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#1B3A5C] text-white rounded-lg text-xs font-medium hover:bg-[#15304d] transition-colors">
-              <Phone className="w-3.5 h-3.5" /> חייג
+            <a href="tel:050-0000000" className="min-h-[44px] flex items-center gap-1.5 px-4 bg-[#1B3A5C] text-white rounded-xl text-base font-semibold">
+              <Phone className="w-4 h-4" aria-hidden="true" /> חייג
             </a>
           </div>
-        </div>
-
-        {/* Digital literacy */}
-        <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100">
-          <Sparkles className="w-4 h-4 text-[#1B3A5C] shrink-0" />
-          <div className="flex-1">
-            <p className="text-xs font-medium text-gray-700">אוריינות דיגיטלית</p>
-            <div className="flex gap-1 mt-1.5">
-              {[1,2,3,4,5].map((n) => (
-                <div key={n} className={cn("h-1.5 flex-1 rounded-full", n <= citizen.digitalLiteracy ? "bg-[#1B3A5C]" : "bg-gray-200")} />
-              ))}
-            </div>
-          </div>
-          <span className="text-sm font-bold text-[#1B3A5C]">{citizen.digitalLiteracy}/5</span>
-        </div>
-
+        </section>
       </main>
     </div>
   );
