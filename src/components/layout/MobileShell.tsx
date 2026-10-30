@@ -86,8 +86,8 @@ export default function MobileShell() {
         </div>
       </div>
 
-      {/* כלי נגישות: להקריא, א+, תמונות. בפינת הכותרת, בכל מסכי האזרח */}
-      <div className="fixed top-12 left-3 z-40 flex items-center gap-2" role="toolbar" aria-label="כלי נגישות">
+      {/* כלי נגישות: להקריא, א+, תמונות. בפינת הכותרת, בכל מסכי האזרח. נגללים עם הכותרת, כדי לא לכסות טקסט. */}
+      <div className="absolute top-12 left-3 z-40 flex items-center gap-2" role="toolbar" aria-label="כלי נגישות">
         {supported ? (
           <button type="button" className={toolClass} aria-pressed={speaking} onClick={speaking ? stop : read}>
             {speaking ? <Square className="w-4 h-4" aria-hidden="true" /> : <Volume2 className="w-4 h-4" aria-hidden="true" />}

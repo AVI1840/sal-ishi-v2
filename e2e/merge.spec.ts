@@ -355,3 +355,18 @@ test("בלי אינטרנט: אחרי ההכנה, האזרחית, המלווה �
   await expect(page.locator("main")).not.toBeEmpty();
   await context.setOffline(false);
 });
+
+// טלפון צר (360) וטקסט מוגדל (137%): בלי גלילה לצדדים במסכים של האזרחית.
+test("טקסט מוגדל בטלפון צר: בלי גלילה לצדדים", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.goto("./#/citizen");
+  const size = page.getByRole("button", { name: /גודל טקסט/ });
+  await size.click();
+  await size.click();
+  await expect(size).toHaveAttribute("aria-label", /137 אחוז/);
+  for (const r of ["citizen", "citizen/services", "citizen/services/demoj-choir", "citizen/activities", "citizen/needs", "citizen/profile"]) {
+    await page.goto(`./#/${r}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await noHorizontalScroll(page);
+  }
+});

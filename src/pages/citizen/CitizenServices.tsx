@@ -54,43 +54,48 @@ function ServiceCard({ service, reason }: { service: RealService; reason?: strin
     <li>
       <Link
         to={`/citizen/services/${service.id}`}
-        className="flex items-start gap-3 bg-white border border-gray-200 rounded-xl p-4 hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
+        className="block bg-white border border-gray-200 rounded-xl p-4 hover:border-[#1B3A5C]/30 hover:shadow-sm transition-all"
       >
-        {showImages ? (
-          <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
-            {image ? <img src={image} alt="" className="w-full h-full object-cover" loading="lazy" /> : <div className={cn("w-full h-full", gradient)} />}
-          </div>
-        ) : null}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+        {/* למעלה: תמונה, שם ומחיר. מתחת: הפרטים לכל רוחב הכרטיס, כך שגם בטלפון צר ובטקסט מוגדל אין טור צר. */}
+        <div className="flex items-start gap-3">
+          {showImages ? (
+            <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0">
+              {image ? <img src={image} alt="" className="w-full h-full object-cover" loading="lazy" /> : <div className={cn("w-full h-full", gradient)} />}
+            </div>
+          ) : null}
+          <div className="flex-1 min-w-0">
             <h3 className="text-base font-bold text-gray-900 leading-tight">{service.name}</h3>
-            <span className="shrink-0 text-sm px-2 py-0.5 rounded-lg font-semibold bg-blue-50 text-[#1B3A5C]">{priceText(service)}</span>
+            <span className="inline-block max-w-full mt-1 text-sm px-2 py-0.5 rounded-lg font-semibold bg-blue-50 text-[#1B3A5C]">{priceText(service)}</span>
           </div>
+          <ChevronLeft className="w-5 h-5 text-gray-500 shrink-0 self-center" aria-hidden="true" />
+        </div>
+        <div className="mt-2 space-y-0.5 text-sm text-gray-700">
           {reason ? (
-            <p className="text-sm text-[#1B3A5C] font-medium mt-1 flex items-start gap-1">
-              <Sparkles className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /> {reason}
+            <p className="text-[#1B3A5C] font-medium flex items-start gap-1">
+              <Sparkles className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /> <span>{reason}</span>
             </p>
           ) : null}
-          <p className="text-sm text-gray-700 mt-1 flex items-center gap-1">
-            <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" /> {whereText(he, service)}
-            <span className="text-gray-500" aria-hidden="true">·</span> {service.provider}
+          <p className="flex items-start gap-1">
+            <MapPin className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+            <span>
+              {whereText(he, service)} <span className="text-gray-500" aria-hidden="true">·</span> {service.provider}
+            </span>
           </p>
           {when ? (
-            <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
-              <Clock className="w-4 h-4 shrink-0" aria-hidden="true" /> {when}
+            <p className="flex items-start gap-1">
+              <Clock className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /> <span>{when}</span>
             </p>
           ) : null}
-          <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
-            <Award className="w-4 h-4 shrink-0 text-amber-700" aria-hidden="true" />
-            {service.supplierScore ? `דירוג הספק ${service.supplierScore.toFixed(1)} מתוך 5` : "ספק חדש בשוק"}
+          <p className="flex items-start gap-1">
+            <Award className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" aria-hidden="true" />
+            <span>{service.supplierScore ? `דירוג הספק ${service.supplierScore.toFixed(1)} מתוך 5` : "ספק חדש בשוק"}</span>
           </p>
           {service.gatedByCompanion ? (
-            <p className="text-sm text-violet-900 mt-1 flex items-center gap-1">
-              <UserCheck className="w-4 h-4 shrink-0" aria-hidden="true" /> נפתח יחד עם המלווה
+            <p className="text-violet-900 flex items-start gap-1">
+              <UserCheck className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" /> <span>נפתח יחד עם המלווה</span>
             </p>
           ) : null}
         </div>
-        <ChevronLeft className="w-5 h-5 text-gray-500 shrink-0 self-center" aria-hidden="true" />
       </Link>
     </li>
   );
