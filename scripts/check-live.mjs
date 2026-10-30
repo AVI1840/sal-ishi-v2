@@ -21,11 +21,7 @@ const MUST = {
 };
 /** מה אסור שיופיע באף מסך. */
 const NEVER = /₪2B|הכסף מנוצל|ארנק בשקלים|760 נקודות|תוספת 3|supplier_|גרסת בסיס|\(השלמה\)|\(הפניה\)|Nudges|Timeline|—|לא לפרסום|ליווי למפגש|approved services|any resident data/;
-<<<<<<< HEAD
-const EXTRA = ["#/citizen/activities", "#/citizen/profile", "#/citizen/needs", "#/coordinator/patients", "#/coordinator/patients/c1", "#/coordinator/community", "#/coordinator/services-map", "#/executive/catalog", "#/executive/algorithm", "#/executive/agents", "#/executive/suppliers", "#/providers", "#/scope"];
-=======
-const EXTRA = ["#/citizen/activities", "#/citizen/profile", "#/citizen/companion", "#/coordinator/patients/c1", "#/coordinator/community", "#/providers", "#/scope"];
->>>>>>> 92d617c (feat(v0.5-merge): citizen app around the marketplace, my services, profile and companion)
+const EXTRA = ["#/citizen/activities", "#/citizen/profile", "#/citizen/companion", "#/citizen/needs", "#/coordinator/patients", "#/coordinator/patients/c1", "#/coordinator/community", "#/coordinator/services-map", "#/executive/catalog", "#/executive/algorithm", "#/executive/agents", "#/executive/suppliers", "#/providers", "#/scope"];
 const ATLAS = ["hq/#/", "hq/#/rules", "hq/#/export", "field/#/"];
 
 const fails = [];
