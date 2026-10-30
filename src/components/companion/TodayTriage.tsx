@@ -91,7 +91,7 @@ function Row(props: { item: TriageItem }) {
   const request = reasons.find((r) => r.request)?.request;
   // תובנה אנושית: מה האדם אמר שחשוב לו (בדמויות ההדגמה).
   const persona = CITIZENS.find((c) => c.id === person.id);
-  const quote = persona ? `${persona.name.split(" ")[0]} אמר/ה: "${persona.meaningStatement}"` : null;
+  const quote = persona ? `${persona.name.split(" ")[0]} ${persona.gender === "male" ? "אמר" : "אמרה"}: "${persona.meaningStatement}"` : null;
   return (
     <li className={cn("p-3 rounded-lg border", props.item.bucket === "today" ? "border-destructive/30 bg-destructive-soft/40" : "border-border")}>
       <div className="flex items-start gap-3">

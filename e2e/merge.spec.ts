@@ -270,3 +270,69 @@ for (const day of ["2026-11-01T06:00:00Z", "2026-11-02T08:00:00Z", "2026-11-03T0
     await expect(companion.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
   });
 }
+
+// התסריט עצמו (docs/v05-merge/תסריט_הדגמה_מאוחד.md), שורה אחר שורה, ביום ההדגמה.
+// כל מה שהמציג אומר על המסך נבדק כאן: אם התסריט והכלי נפרדים, הבדיקה נופלת.
+test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה", async ({ page, context }) => {
+  await context.clock.setFixedTime(new Date("2026-11-03T08:00:00Z"));
+  // 0:00 בית
+  await page.goto("./#/");
+  for (const t of ["משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא"]) await expect(page.getByText(t).first()).toBeVisible();
+  // 1:00 שרה: הארנק
+  await page.goto("./#/citizen");
+  const wallet = page.locator("[aria-labelledby=wallet-title]");
+  await expect(wallet).toContainText("נשארו 374 נקודות מתוך 500");
+  await expect(wallet).toContainText("שמור 63 נקודות");
+  await expect(wallet).toContainText("נוצל 63 נקודות");
+  // 1:30 ההמלצה מתחילה ממה שסיפרה, ואפשר להקריא
+  const rec = page.locator(`section[aria-labelledby=rec-title] a[href^="#/citizen/services/"]`).first();
+  await expect(rec).toContainText("מקהלה קהילתית");
+  await expect(rec).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
+  await expect(page.getByRole("button", { name: /להקריא/ }).first()).toBeVisible();
+  // 2:00 השוק בשכונה: המקהלה אצל המתנ"ס, 84 נקודות בחודש
+  await page.goto("./#/citizen/services");
+  await expect(page.getByRole("heading", { level: 1, name: "השוק בשכונה שלך" })).toBeVisible();
+  const card = page.getByRole("link", { name: /מקהלה קהילתית/ }).first();
+  await expect(card).toContainText("84 נקודות בחודש");
+  await expect(card).toContainText('המתנ"ס הקהילתי');
+  // 2:30 להצטרף לקבוצה: שמור עולה, היתרה יורדת
+  await card.click();
+  await expect(page.getByText(/כל יום \S+ בשעה/).first()).toBeHidden();
+  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
+  await expect(page.getByText(/כל יום \S+ בשעה/).first()).toBeVisible();
+  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+  await page.goto("./#/citizen");
+  await expect(wallet).toContainText("נשארו 290 נקודות");
+  await expect(wallet).toContainText("שמור 147 נקודות");
+
+  // 3:00 רונית: חדש בתיק
+  const ronit = await context.newPage();
+  await ronit.goto("./#/coordinator");
+  await expect(ronit.getByText("שרה נרשמה למקהלה קהילתית.")).toBeVisible();
+  await ronit.getByRole("button", { name: /התקשרתי והצעתי ליווי/ }).first().click();
+  // 3:30 לפנות היום: הבקשה של בוריס, לאשר, סיבה, לאשר ולתעד
+  await ronit.getByRole("button", { name: /^לאשר: .*בוריס/ }).click();
+  await ronit.getByRole("radio").first().check();
+  await ronit.getByRole("button", { name: "לאשר ולתעד" }).click();
+  await expect(ronit.getByRole("button", { name: /^לאשר: .*בוריס/ })).toHaveCount(0);
+  // 4:00 הספק מדווח נוכחות, ובתיק של שרה: התמדה
+  await ronit.getByRole("button", { name: "הדגמה" }).click();
+  await ronit.getByRole("button", { name: "הספק מדווח נוכחות של שרה" }).click();
+  await ronit.goto("./#/coordinator/patients/c1");
+  await expect(ronit.getByText(/שרה השתתפה ב-3 מתוך 4 מפגשים/)).toBeVisible();
+  await expect(ronit.getByRole("button", { name: /להעניק תמריץ התמדה/ })).toBeVisible();
+  // 4:45 הקהילה שלי: תקציב קהילה
+  await ronit.goto("./#/coordinator/community");
+  await expect(ronit.getByText("₪1,520 בחודש")).toBeVisible();
+  await expect(ronit.getByText(/הוכרע במפגש 2/).first()).toBeVisible();
+  // 5:15 מטה
+  await ronit.goto("./#/executive");
+  for (const t of ["מה הוכרע במפגש 2", "חלוקת ₪760: ארנק 500, ליווי 181, קהילה 20, תפעול 59", "דירוג ספק: חמישה רכיבים"]) await expect(ronit.getByText(t).first()).toBeVisible();
+  // 6:00 ספקים ואטלס המטה
+  await ronit.goto("./#/providers");
+  await expect(ronit.getByText("מוכן").first()).toBeVisible();
+  await ronit.goto("./hq/#/export");
+  await expect(ronit.getByText(/גרסה 1\.2/).first()).toBeVisible();
+  await ronit.goto("./hq/#/learning");
+  await expect(ronit.getByText(/רישום דרישות למכרז/).first()).toBeVisible();
+});
