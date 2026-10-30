@@ -4,6 +4,7 @@
  * app-settings.json, ומספר שלא אומת מסומן [לאמת]. בלי תחזיות חיסכון ובלי
  * מגמות בלי נתונים.
  */
+import { count } from "@/lib/hebrew";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { BasketBreakdown } from "@/components/shared/BasketBreakdown";
@@ -65,7 +66,7 @@ export default function ExecutiveOverview() {
         <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
         <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
         <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2) · ${proposals} הצעה`} />
-        <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${bookings} הזמנות · ${requests} בקשות למלווה`} />
+        <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}`} />
       </div>
 
       <section className="libi-card p-5" aria-labelledby="hoods-h">

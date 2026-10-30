@@ -1,4 +1,4 @@
-// תקן קליטת מפעילים (operator_onboarding_standard 1.1) לספק העל, והקטלוג
+// תקן קליטת מפעילים (operator_onboarding_standard 1.2) לספק העל, והקטלוג
 // שמתפרסם לאזרח, לפי export_contract. נכנסים רק שירותים מאושרים. ספק עובר כקוד
 // וסוג בלבד, בלי שם ובלי פרטי קשר, גם כשפרטי הספק עוברים למטה. אין נתוני
 // תושבים, אין פעילות גולמית ואין מחיר בשקלים (המחיר בנקודות).
@@ -166,7 +166,7 @@ export function validateOnboardingStandard(value: unknown): OnboardingStandard {
 }
 
 /**
- * operator_onboarding_standard 1.1. שירות מאושר שחסרים לו שדות 0.4 לא נכנס,
+ * operator_onboarding_standard 1.2. שירות מאושר שחסרים לו שדות 0.4 לא נכנס,
  * ומופיע ב-skipped עם מה שחסר, כדי שיושלם ולא יימחק.
  */
 export async function buildOnboardingStandard(
@@ -189,19 +189,22 @@ export async function buildOnboardingStandard(
       skipped.push({ serviceId: s.id, reason: `דורש השלמה: ${gaps.join(", ")}` });
       continue;
     }
+    const c = complementOf(s, seed);
     items.push({
       ...item,
       ...paymentFields(s, item.pricePoints, seed, bindingOf),
       capacityLimited: s.capacityLimited ?? false,
       productQuarterlyCap: isProduct(seed, s.categoryCode),
       countsInFloor: countsInFloor(seed, s.categoryCode),
+      ...(s.fitProfile ? { fitProfile: s.fitProfile } : {}),
+      ...(c.state !== "none" ? { otherFunderName: c.funder, complementState: c.state, otherPaysPoints: c.otherPays } : {}),
     });
   }
   const contract = seed.export_contract;
   const { settings } = seed;
   const result: OnboardingStandard = {
     schema: "operator_onboarding_standard",
-    version: "1.1",
+    version: "1.2",
     owner: contract.owner,
     generatedAt: now.toISOString(),
     seedVersion: seed.meta.version,

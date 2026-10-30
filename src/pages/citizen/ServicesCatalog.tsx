@@ -92,7 +92,7 @@ const DOMAINS: Domain[] = [
         { name: "סדנאות בישול בריא", level: "local" },
       ]},
       { icon: Home, label: "בטיחות ומניעה", services: [
-        { name: "התאמת הבית למניעת נפילות", level: "local", linkedIds: ["srv_040"] },
+        { name: "התאמת הבית לבטיחות", level: "local", linkedIds: ["srv_040"] },
         { name: "בדיקות בריאות מונעות", level: "local", linkedIds: ["srv_038"] },
         { name: "מניעת נפילות - הדרכה", level: "local", linkedIds: ["srv_097"] },
       ]},

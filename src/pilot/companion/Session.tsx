@@ -165,7 +165,7 @@ export default function CompanionSession() {
         <h1>הסל נבחר</h1>
         <Alert tone="success" live>
           <p>
-            נרשמו {pickedItems.length} שירותים בשביל {person.name}. נשאר בארנק החודש {amount(Math.max(0, left - pickedCost))}.
+            {pickedItems.length === 1 ? "נרשם שירות אחד" : `נרשמו ${pickedItems.length} שירותים`} בשביל {person.name}. נשאר בארנק החודש {amount(Math.max(0, left - pickedCost))}.
           </p>
         </Alert>
         <ul className="p-list">

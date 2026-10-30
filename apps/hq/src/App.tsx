@@ -76,7 +76,7 @@ export default function App() {
               preview ? (
                 <div className="demo-banner" role="note">
                   גרסת תצוגה לשותפים, לפני שימוש בפיילוטים. כל הנתונים סינתטיים.{" "}
-                  <a href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>להחלפת דמות</a>
+                  <a href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
                 </div>
               ) : isDemo ? (
                 <div className="demo-banner" role="note">מוצגים נתוני הדגמה סינתטיים.</div>
@@ -84,6 +84,7 @@ export default function App() {
             }
             headerMeta={
               <>
+                <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
                 {preview ? <FeedbackButton /> : null}
                 <span>{pilots} פיילוטים</span>
                 <span aria-hidden="true">|</span>

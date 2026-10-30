@@ -4,6 +4,7 @@
  * פעולה, לא ייפוי כוח), אשפוז ושחרור, ומעבר לפגישה המשותפת ולמעקב החודשי.
  * הכל נרשם כאירוע (pilot/store) ומופיע אצל האזרח ובסנכרון לספק.
  */
+import { count } from "@/lib/hebrew";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { BedDouble, CalendarPlus, ClipboardList, NotebookPen, Users } from "lucide-react";
@@ -180,7 +181,7 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
         <div>
           <h2 id="actions-h" className="text-base font-semibold text-foreground">פעולות בתיק</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            ארנק אישי: נשארו {amount(wallet.left)} מתוך {amount(wallet.total + wallet.bonus)} · שמור {amount(wallet.reserved)} · נוצל {amount(wallet.used)}. {bookings.length === 1 ? "פעילות אחת" : `${bookings.length} פעילויות`}.
+            ארנק אישי: נשארו {amount(wallet.left)} מתוך {amount(wallet.total + wallet.bonus)} · שמור {amount(wallet.reserved)} · נוצל {amount(wallet.used)}. {count(bookings.length, "פעילות אחת", "פעילויות")}.
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">{basketSentence()}.</p>
         </div>
@@ -234,7 +235,7 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
           <p className="text-sm text-foreground">
             {hospitalized
               ? "הפעילויות שהוקפאו יחזרו לפעול."
-              : `${bookings.length} פעילויות יוקפאו. לפי הכלל: בפעילות קבוצתית החזר מלא לסל, בפרטני לפי החוזה. הספקים יקבלו עדכון בסנכרון.`}
+              : `${bookings.length === 1 ? "פעילות אחת תוקפא" : `${bookings.length} פעילויות יוקפאו`}. לפי הכלל: בפעילות קבוצתית החזר מלא לסל, בפרטני לפי החוזה. הספקים יקבלו עדכון בסנכרון.`}
           </p>
           {!hospitalized ? <p className="text-xs font-semibold text-warning-foreground">הכלל: הצעה, ממתין להכרעה</p> : null}
           <button

@@ -74,6 +74,7 @@ export default function App() {
             }
             headerMeta={
               <>
+                <a className="btn btn--secondary btn--small" href={import.meta.env.DEV ? "http://localhost:5173/" : "../"}>לסל האישי</a>
                 {preview ? <FeedbackButton /> : null}
                 <span>{authority || "רשות לא הוגדרה"}</span>
                 <span aria-hidden="true">|</span>

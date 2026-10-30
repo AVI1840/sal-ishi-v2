@@ -89,11 +89,10 @@ export default function CitizenNeeds() {
         <p className="text-base text-white/85">
           שאלה {step + 1} מתוך {QUESTIONS.length}
         </p>
-        <h1 className="text-3xl font-bold mt-1">{q.text}</h1>
+        <h1 id="q-title" className="text-3xl font-bold mt-1">{q.text}</h1>
       </div>
       <main id="main" tabIndex={-1} className="px-6 pt-5 pb-6 space-y-4" data-read>
-        <fieldset className="space-y-3">
-          <legend className="sr-only">{q.text}</legend>
+        <fieldset className="space-y-3" aria-labelledby="q-title">
           {q.options.map((o) => (
             <label
               key={o.value}

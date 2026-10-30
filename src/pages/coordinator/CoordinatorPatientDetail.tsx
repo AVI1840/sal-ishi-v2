@@ -151,19 +151,16 @@ export default function CoordinatorPatientDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">אין חסמים מזוהים 🌿</p>
+                <p className="text-sm text-muted-foreground">אין חסמים מזוהים</p>
               )}
 
               <h4 className="text-sm font-semibold text-foreground mt-5 mb-2">מוכנות לשינוי</h4>
-              <div className="flex gap-1">
+              <div className="flex gap-1" role="img" aria-label={`מוכנות לשינוי: ${READINESS_LABELS[citizen.readiness]}`}>
                 {(["precontemplation", "contemplation", "preparation", "action", "maintenance"] as const).map((stage, i) => (
                   <div key={stage} className={cn("flex-1 h-3 rounded-full", citizen.readiness === stage ? "bg-primary" : i < ["precontemplation", "contemplation", "preparation", "action", "maintenance"].indexOf(citizen.readiness) ? "bg-primary/40" : "bg-muted")} />
                 ))}
               </div>
-              <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-muted-foreground">לא מודע</span>
-                <span className="text-[10px] text-muted-foreground">מתמיד/ה</span>
-              </div>
+              <p className="text-sm text-foreground mt-1.5">שלב נוכחי: <span className="font-semibold">{READINESS_LABELS[citizen.readiness]}</span></p>
             </div>
 
             {/* מצב תפקודי */}

@@ -60,9 +60,9 @@ const SPECS: Spec[] = [
   { n: 0, type: "T35", sup: "S-006", fit: G, price: 200, pattern: "cont", base: 10, status: "הוגש" },
   { n: 0, type: "T40", sup: "S-007", fit: G, price: 280, pattern: "cont", base: 13, status: "אושר" },
   { n: 0, type: "T42", sup: "S-007", fit: G, price: 300, pattern: "cont", base: 12, status: "אושר" },
-  { n: 0, type: "T45", sup: "S-007", fit: G, price: 150, pattern: "cont", base: 11, status: "אושר", reach: "authority", name: "תמיכה טכנית בבית (לכל הרשות)" },
+  { n: 0, type: "T45", sup: "S-007", fit: G, price: 150, pattern: "cont", base: 11, status: "אושר", reach: "authority", name: "תמיכה טכנית בבית, בכל העיר" },
   { n: 0, type: "T48", sup: "S-008", fit: G, price: 50, pattern: "cont", base: 40, status: "אושר", copay: "qol" },
-  { n: 0, type: "T28", sup: "S-001", fit: G, price: 0, pattern: "event", base: 35, otherFunder: true, status: "טיוטה", name: "הרצאת קופת חולים (הדגמה)" },
+  { n: 0, type: "T28", sup: "S-001", fit: G, price: 0, pattern: "event", base: 35, otherFunder: true, status: "טיוטה", name: "הרצאה בקופת חולים" },
 
   // שכונה ב (חרדית): שייכות טובה, חוסן חסר
   { n: 1, type: "T01", sup: "S-002", fit: H, price: 130, pattern: "cont", base: 20, status: "אושר" },
@@ -90,7 +90,7 @@ const SPECS: Spec[] = [
   // שכונה ה (ערבית)
   { n: 4, type: "T01", sup: "S-001", fit: A, price: 115, pattern: "cont", base: 20, status: "אושר" },
   { n: 4, type: "T06", sup: "S-001", fit: A, price: 40, pattern: "event", base: 60, status: "אושר" },
-  { n: 4, type: "T09", sup: "S-005", fit: A, price: 90, pattern: "cont", base: 25, status: "אושר", reach: "regional", name: "טיולים וסיורים (אזורי)" },
+  { n: 4, type: "T09", sup: "S-005", fit: A, price: 90, pattern: "cont", base: 25, status: "אושר", reach: "regional", name: "טיולים וסיורים באזור" },
   { n: 4, type: "T12", sup: "S-005", fit: A, price: 55, pattern: "cont", base: 10, status: "הוגש" },
   { n: 4, type: "T17", sup: "S-003", fit: A, price: 90, pattern: "cont", base: 16, status: "אושר" },
   { n: 4, type: "T19", sup: "S-003", fit: A, price: 85, pattern: "cont", base: 11, status: "אושר" },
@@ -120,7 +120,7 @@ const SPECS_J: Spec[] = [
   { key: "intergen", n: 0, type: "T04", sup: "S-001", fit: G, price: 70, pattern: C, base: 12, status: "אושר", reach: "regional", name: "פעילות בין-דורית", fp: fp(WALK_ONLY, { goals: ["belonging", "meaning"] }) },
   { key: "volunteer", n: 0, type: "T12", sup: "S-002", fit: G, price: 40, pattern: C, base: 13, status: "אושר", name: "התנדבות מותאמת", fp: fp(WALK_AND_AID, { goals: ["meaning"] }) },
   { key: "project", n: 0, type: "T02", sup: "S-002", fit: G, price: 90, pattern: C, base: 13, status: "אושר", name: "פרויקט קהילתי בהובלה אישית", fp: fp(WALK_ONLY, { goals: ["meaning"] }) },
-  { key: "mentor", n: 0, type: "T13", sup: "S-007", fit: G, price: 80, pattern: C, base: 13, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "חונכות של ותיקים לצעירים (מרחוק)", fp: fp(BY_PHONE, { goals: ["meaning"] }) },
+  { key: "mentor", n: 0, type: "T13", sup: "S-007", fit: G, price: 80, pattern: C, base: 13, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "חונכות לצעירים, מהבית", fp: fp(BY_PHONE, { goals: ["meaning"] }) },
   { key: "culture", n: 0, type: "T11", sup: "S-001", fit: G, price: 60, pattern: C, base: 30, status: "אושר", name: "תרבות מקומית", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
   { key: "learning", n: 0, type: "T10", sup: "S-006", fit: G, price: 90, pattern: C, base: 16, status: "אושר", reach: "regional", name: "למידה לאורך החיים", fp: fp(WALK_AND_AID, { goals: ["curiosity"], suitableMildCognitiveDecline: true }) },
   { key: "tours", n: 0, type: "T09", sup: "S-005", fit: G, price: 95, pattern: C, base: 20, status: "אושר", reach: "regional", name: "סיורים קבוצתיים", fp: fp(WALK_ONLY, { goals: ["curiosity"], intensity: "medium" }) },
@@ -134,9 +134,9 @@ const SPECS_J: Spec[] = [
   { key: "games", n: 0, type: "T21", sup: "S-001", fit: G, price: 70, pattern: C, base: 13, status: "אושר", name: "משחקי חשיבה קבוצתיים", fp: fp(WALK_AND_AID, { goals: ["curiosity"], suitableMildCognitiveDecline: true }) },
   { key: "cooking", n: 0, type: "T27", sup: "S-008", fit: G, price: 120, pattern: C, base: 13, status: "אושר", name: "סדנת בישול בריא קבוצתית", fp: fp(WALK_AND_AID, { goals: ["health"] }) },
   { key: "support", n: 0, type: "T32", sup: "S-006", fit: G, price: 250, pattern: C, base: 12, status: "אושר", name: "קבוצת תמיכה נושאית", fp: fp(WALK_AND_AID, { goals: ["belonging"], evidenceLevel: "high" }) },
-  { key: "grief", n: 0, type: "T34", sup: "S-006", fit: G, price: 260, pattern: C, base: 13, status: "אושר", reach: "regional", name: "התמודדות עם אבל ואובדן", fp: fp(WALK_AND_AID, { evidenceLevel: "high" }) },
-  { key: "phonegroup", n: 0, type: "T32", sup: "S-007", fit: G, price: 120, pattern: C, base: 14, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "קבוצה טלפונית נגד בדידות", fp: fp(BY_PHONE, { goals: ["belonging"], evidenceLevel: "medium" }) },
-  { key: "counsel", n: 0, type: "T33", sup: "S-006", fit: G, price: 220, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ פרטני להתמודדות", fp: fp(AT_HOME, { evidenceLevel: "high" }) },
+  { key: "grief", n: 0, type: "T34", sup: "S-006", fit: G, price: 260, pattern: C, base: 13, status: "אושר", reach: "regional", name: "תמיכה אחרי אובדן", fp: fp(WALK_AND_AID, { evidenceLevel: "high" }) },
+  { key: "phonegroup", n: 0, type: "T32", sup: "S-007", fit: G, price: 120, pattern: C, base: 14, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "קבוצת שיחה בטלפון", fp: fp(BY_PHONE, { goals: ["belonging"], evidenceLevel: "medium" }) },
+  { key: "counsel", n: 0, type: "T33", sup: "S-006", fit: G, price: 220, pattern: C, base: 13, status: "אושר", mode: "individual", name: "שיחה אישית עם יועצת", fp: fp(AT_HOME, { evidenceLevel: "high" }) },
   { key: "smartphone", n: 0, type: "T40", sup: "S-007", fit: G, price: 280, pattern: C, base: 13, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone", goals: ["independence"] }) },
   { key: "apps", n: 0, type: "T40", sup: "S-007", fit: G, price: 200, pattern: C, base: 13, status: "אושר", name: "אפליקציות יומיומיות", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone", goals: ["independence"] }) },
   { key: "gov", n: 0, type: "T41", sup: "S-007", fit: G, price: 150, pattern: C, base: 13, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "שירותים ממשלתיים דיגיטליים", fp: fp(BY_SMARTPHONE) },
@@ -144,7 +144,7 @@ const SPECS_J: Spec[] = [
   { key: "techhome", n: 0, type: "T45", sup: "S-007", fit: G, price: 150, pattern: C, base: 13, status: "אושר", reach: "authority", mode: "home", delivery: "home", name: "תמיכה טכנית בבית", fp: fp(AT_HOME, { digitalRequired: "basic_phone" }) },
   { key: "install", n: 0, type: "T47", sup: "S-007", fit: G, price: 130, pattern: C, base: 13, status: "אושר", mode: "home", delivery: "home", name: "התקנת ציוד", fp: fp(AT_HOME) },
   { key: "video", n: 0, type: "T44", sup: "S-007", fit: G, price: 110, pattern: C, base: 12, status: "אושר", reach: "national", mode: "remote", delivery: "remote", name: "שיחות וידאו עם המשפחה", fp: fp(BY_SMARTPHONE, { goals: ["family", "belonging"] }) },
-  { key: "homeadapt", n: 0, type: "T29", sup: "S-003", fit: G, price: 300, pattern: C, base: 13, status: "אושר", mode: "home", delivery: "home", name: "התאמת הבית למניעת נפילות", fp: fp(AT_HOME, { goals: ["independence"], evidenceLevel: "high" }) },
+  { key: "homeadapt", n: 0, type: "T29", sup: "S-003", fit: G, price: 300, pattern: C, base: 13, status: "אושר", mode: "home", delivery: "home", name: "התאמת הבית לבטיחות", fp: fp(AT_HOME, { goals: ["independence"], evidenceLevel: "high" }) },
   // השלמה בלבד: ייעוץ תזונה (סל הבריאות מממן חלק), בדיקות מונעות (הפניה בלבד)
   { key: "nutrition", n: 0, type: "T26", sup: "S-006", fit: G, price: 240, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ תזונה", fp: fp(AT_HOME, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 50 } } },
   { key: "checkups", n: 0, type: "T31", sup: "S-001", fit: G, price: 120, pattern: C, base: 20, status: "אושר", mode: "individual", name: "בדיקות מונעות בקופה", fp: fp(WALK_AND_AID, { goals: ["health"] }), funder: { otherFunderName: "סל בריאות", otherFunderCoverage: { kind: "percent", value: 100 } } },
@@ -160,8 +160,8 @@ const SPECS_J: Spec[] = [
   { key: "k-walk", n: 1, type: "T18", sup: "S-004", fit: G, price: 60, pattern: C, base: 12, status: "אושר", name: "קבוצות הליכה", fp: WALK_ONLY },
   { key: "k-games", n: 1, type: "T21", sup: "S-001", fit: G, price: 70, pattern: C, base: 13, status: "אושר", name: "משחקי חשיבה קבוצתיים", fp: WALK_AND_AID },
   { key: "k-support", n: 1, type: "T32", sup: "S-006", fit: G, price: 250, pattern: C, base: 13, status: "אושר", name: "קבוצת תמיכה נושאית", fp: WALK_AND_AID },
-  { key: "k-counsel", n: 1, type: "T33", sup: "S-006", fit: G, price: 220, pattern: C, base: 13, status: "אושר", mode: "individual", name: "ייעוץ פרטני להתמודדות", fp: AT_HOME },
-  { key: "k-grief", n: 1, type: "T34", sup: "S-006", fit: G, price: 260, pattern: C, base: 13, status: "אושר", name: "התמודדות עם אבל ואובדן", fp: WALK_AND_AID },
+  { key: "k-counsel", n: 1, type: "T33", sup: "S-006", fit: G, price: 220, pattern: C, base: 13, status: "אושר", mode: "individual", name: "שיחה אישית עם יועצת", fp: AT_HOME },
+  { key: "k-grief", n: 1, type: "T34", sup: "S-006", fit: G, price: 260, pattern: C, base: 13, status: "אושר", name: "תמיכה אחרי אובדן", fp: WALK_AND_AID },
   { key: "k-smart", n: 1, type: "T40", sup: "S-007", fit: G, price: 280, pattern: C, base: 12, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
   { key: "k-apps", n: 1, type: "T40", sup: "S-007", fit: G, price: 200, pattern: C, base: 13, status: "אושר", name: "אפליקציות יומיומיות", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
 
@@ -205,6 +205,8 @@ interface Variant {
   names?: string[];
   /** רשימת שירותים משלה. בלי זה: SPECS. */
   specs?: Spec[];
+  /** שמות ספקים בדויים ומלאים (לפי קוד). בלי זה: שם גנרי עם התווית. */
+  supplierNames?: Record<string, string>;
 }
 
 // וריאציה 0 משמשת את משטח השטח. וריאציה 1 היא פיילוט שני להדגמת המטה:
@@ -214,7 +216,17 @@ interface Variant {
 const VARIANTS: Variant[] = [
   { authority: "רשות הדגמה", prefix: "demo", label: "הדגמה", communities: ["general", "haredi", "haredi", "haredi", "arab"], enrolled: [60, 58, 47, 13, 56], priceFactor: 1, rngSeed: 2026 },
   { authority: "רשות הדגמה ב", prefix: "demob", label: "הדגמה ב", communities: ["general", "haredi", "general", "general", "arab"], enrolled: [75, 98, 27, 20, 77], priceFactor: 1.15, rngSeed: 7 },
-  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"], specs: SPECS_J },
+  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"], specs: SPECS_J,
+    supplierNames: {
+      "S-001": 'המתנ"ס הקהילתי',
+      "S-002": "עמותת יחד בשכונה",
+      "S-003": "גוף בריא בגיל בע\"מ",
+      "S-004": "סטודיו יוצרים ביחד",
+      "S-005": "צעד בשכונה, הדרכת הליכה",
+      "S-006": "לב פתוח, ייעוץ ותמיכה",
+      "S-007": "עמותת דיגיטל לכל גיל",
+      "S-008": "בית הקפה פינה חמה",
+    } },
 ];
 
 // הערכות רבעוניות לדוגמה: דירוג מלווה, תוצאות, דירוג לקוחות, התאמה לקהל היעד,
@@ -282,7 +294,7 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
     { code: "S-006", type: "licensed", displayName: `יועצת לדוגמה 3 (${v.label})`, neighborhoods: all, languages: ["עברית", "אנגלית"], communityFit: ["general", "haredi"], accessible: true, deliveryModes: ["home", "remote"], contact: { email: "demo3@example.test" } },
     { code: "S-007", type: "npo", displayName: `עמותת ${v.label} לדיגיטל`, neighborhoods: all, languages: ["עברית", "ערבית", "יידיש"], communityFit: ["general", "haredi", "arab"], accessible: true, deliveryModes: ["community", "home", "remote"] },
     { code: "S-008", type: "company", displayName: `בית קפה ${v.label}`, neighborhoods: [nid(0)], languages: ["עברית"], communityFit: ["general"], accessible: true, deliveryModes: ["community"] },
-  ].map((s) => ({ ...s, authority: v.authority, evaluations: EVALUATIONS[s.code] }) as Supplier);
+  ].map((s) => ({ ...s, displayName: v.supplierNames?.[s.code] ?? s.displayName, authority: v.authority, evaluations: EVALUATIONS[s.code] }) as Supplier);
 
   const services: Service[] = [];
   const activity: MonthlyActivity[] = [];

@@ -53,7 +53,7 @@ export default function CitizenProfile() {
             </div>
           </div>
           <p className="mt-4 pt-4 border-t border-white/10 text-sm text-white/90">
-            {bookings.length ? `${bookings.length} פעילויות קרובות` : "עוד אין פעילויות קרובות"}
+            {bookings.length ? (bookings.length === 1 ? "פעילות קרובה אחת" : `${bookings.length} פעילויות קרובות`) : "עוד אין פעילויות קרובות"}
           </p>
         </div>
 

@@ -85,6 +85,12 @@ const PROVIDER_LABEL: Record<string, string> = {
   licensed: "איש מקצוע עצמאי",
 };
 
+/**
+ * שמות הספקים בקטלוג ההדגמה (בדויים). בקטלוג שפורסם אין שם של ספק יחיד בתקן לאזרח,
+ * ולכן שם יוצג סוג המפעיל.
+ */
+const DEMO_SUPPLIER_NAMES = new Map<string, string>();
+
 export function socialProofScore(item: Pick<CitizenCatalogItem, "demand" | "supplierScore">): number {
   let score = 50;
   if (item.demand === "high") score += 30;
@@ -116,7 +122,7 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
       byId.set(item.serviceId, {
         id: item.serviceId,
         name: item.name,
-        provider: PROVIDER_LABEL[item.supplierType] ?? supplierTypes.get(item.supplierType)?.name ?? "מפעיל מאושר",
+        provider: DEMO_SUPPLIER_NAMES.get(item.supplierCode) ?? PROVIDER_LABEL[item.supplierType] ?? supplierTypes.get(item.supplierType)?.name ?? "מפעיל מאושר",
         category: legacyCategory(item.categoryCode),
         subcategory: item.categoryName,
         neighborhood: home,
@@ -176,6 +182,7 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
 export function buildDemoCatalogs(seed: Seed): CitizenCatalog[] {
   const data = buildDemoAuthority(DEMO_JERUSALEM);
   const national = buildDemoNationalChannel();
+  for (const sup of [...data.suppliers, ...national.suppliers]) if (sup.displayName) DEMO_SUPPLIER_NAMES.set(sup.code, sup.displayName.replace(/\s*\(הדגמה\)$/, ""));
   const source = { ...data, suppliers: [...data.suppliers, ...national.suppliers], services: [...data.services, ...national.services] };
   return data.neighborhoods.map((n) => buildCitizenCatalog(source, n.id, seed).catalog);
 }

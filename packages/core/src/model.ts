@@ -275,6 +275,11 @@ export const onboardingItemSchema = catalogItemSchema
     productQuarterlyCap: z.boolean(),
     countsInFloor: z.boolean(),
     ...pointsSplit,
+    // 1.2: שדות ההצעה לפיילוט (פרופיל התאמה וסל משלים), אופציונליים כדי שקליטה לפי 1.1 תמשיך לעבוד.
+    fitProfile: fitProfileSchema.optional(),
+    otherFunderName: z.string().nullable().optional(),
+    complementState: z.enum(["none", "partial", "prior_claim", "full", "varies", "missing"]).optional(),
+    otherPaysPoints: nonNegative.nullable().optional(),
   })
   .strict();
 
@@ -306,7 +311,8 @@ export const citizenCatalogItemSchema = catalogItemSchema
 export const onboardingStandardSchema = z
   .object({
     schema: z.literal("operator_onboarding_standard"),
-    version: z.literal("1.1"),
+    /** 1.2: שדות ההצעה לפיילוט נוספו כאופציונליים. 1.1 נקרא עדיין. */
+    version: z.enum(["1.1", "1.2"]),
     owner: z.string(),
     generatedAt: z.string(),
     seedVersion: z.string(),

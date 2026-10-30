@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { Download, FileJson, ShieldCheck } from "lucide-react";
 // ה-JSON Schema נגזר מהסכמה בקוד (packages/core/scripts), ובדיקה בליבה מוודאת שהוא מעודכן.
-import onboardingSchemaText from "../../../../schema/operator_onboarding_standard_1.1.schema.json?raw";
+import onboardingSchemaText from "../../../../schema/operator_onboarding_standard_1.2.schema.json?raw";
 import {
   EXPORT_FORBIDDEN_KEYS,
   FileSyncAdapter,
@@ -90,7 +90,7 @@ export default function ExportScreen() {
               variant="secondary"
               icon={<FileJson size={18} />}
               onClick={() => {
-                downloadBytes("operator_onboarding_standard_1.1.schema.json", new TextEncoder().encode(onboardingSchemaText), "application/schema+json");
+                downloadBytes("operator_onboarding_standard_1.2.schema.json", new TextEncoder().encode(onboardingSchemaText), "application/schema+json");
                 toast("success", "ה-JSON Schema ירד");
               }}
             >

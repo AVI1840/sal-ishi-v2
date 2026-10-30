@@ -114,7 +114,9 @@ export default function ProviderDashboard() {
 
       {referrals.length ? (
         <p className="text-sm text-muted-foreground">
-          {referrals.length === 1 ? "הפניה אחת" : `${referrals.length} הפניות`} (מימון מלא ממממן אחר) לא מופיעות כאן: הן לא שירות של הספק בשוק.
+          {referrals.length === 1
+            ? "הפניה אחת (מימון מלא ממממן אחר) לא מופיעה כאן: היא לא שירות של הספק בשוק."
+            : `${referrals.length} הפניות (מימון מלא ממממן אחר) לא מופיעות כאן: הן לא שירות של הספק בשוק.`}
         </p>
       ) : null}
 
