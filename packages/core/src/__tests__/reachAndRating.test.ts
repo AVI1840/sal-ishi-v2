@@ -101,7 +101,7 @@ describe("קטלוג לאזרח עם ערוץ ארצי, ביקוש וציון ס
   const source = { ...data, suppliers: [...data.suppliers, ...national.suppliers], services: [...data.services, ...national.services] };
 
   it("שכונה מקבלת את השירותים שלה, את הרשותיים ואת הארציים", () => {
-    const n = data.neighborhoods.find((x) => x.name === "גילה")!;
+    const n = data.neighborhoods.find((x) => x.name === "בית וגן")!;
     const { catalog } = buildCitizenCatalog(source, n.id, seed);
     expect(catalog.services.filter((s) => s.reach === "national" && s.categoryCode === "6")).toHaveLength(national.services.length);
     expect(catalog.services.some((s) => s.reach === "authority")).toBe(true);

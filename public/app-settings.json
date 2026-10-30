@@ -1,7 +1,10 @@
 {
   "mode": "demo",
   "version": "0.5",
-  "mode_options": ["demo", "pilot"],
+  "mode_options": [
+    "demo",
+    "pilot"
+  ],
   "mode_note": "demo: שלוש דמויות בדויות, נתוני דמה וכפתור איפוס. pilot: בלי פס הדגמה, בלי איפוס ובלי נתוני פתיחה בדויים. אין הבדל בקוד.",
   "program": {
     "pilot_participants": 286,
@@ -12,16 +15,45 @@
     "baseline_spent_this_month": 100,
     "max_choices_per_step": 3,
     "default_language": "he",
-    "languages": ["he", "ar", "ru"]
+    "languages": [
+      "he",
+      "ar",
+      "ru"
+    ]
+  },
+  "wallet": {
+    "unit": "points",
+    "unit_options": [
+      "points",
+      "shekel"
+    ],
+    "simulated": true,
+    "unit_note": "תוספת 3 ומפגש 2: ארנק של 500 נקודות, נקודה = ₪1. בפיילוט ירושלים ייתכנו שוברים מודפסים עד המעבר לספק העל: אז unit = shekel. הארנק בכלי מדומה, ספר החשבונות אצל ספק העל."
   },
   "companion": {
     "name": "רונית",
     "caseload_size": 74,
     "cover_name": "יעל",
-    "triage_order": ["hospitalization", "callback", "gated_request", "claim_task", "cognitive_alert", "no_first_service", "low_utilization"],
+    "triage_order": [
+      "hospitalization",
+      "callback",
+      "gated_request",
+      "claim_task",
+      "cognitive_alert",
+      "no_first_service",
+      "low_utilization"
+    ],
     "approval_reasons": {
-      "approve": ["צורך שזוהה בביקור", "בקשת האזרח, מתאים לתוכנית", "המלצת גורם מקצועי"],
-      "reject": ["לא מתאים כרגע לתוכנית", "יש שירות אחר שעונה על הצורך", "חסר מידע, אחזור לאזרח"]
+      "approve": [
+        "צורך שזוהה בביקור",
+        "בקשת האזרח, מתאים לתוכנית",
+        "המלצת גורם מקצועי"
+      ],
+      "reject": [
+        "לא מתאים כרגע לתוכנית",
+        "יש שירות אחר שעונה על הצורך",
+        "חסר מידע, אחזור לאזרח"
+      ]
     }
   },
   "demo": {

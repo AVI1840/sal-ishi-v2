@@ -103,7 +103,7 @@ const SPECS: Spec[] = [
 
 // ── קטלוג ההדגמה של ירושלים (תוספת 3) ─────────────────────
 // סוגי השירות לפי הטבלה בתוספת 3, על ספריית הסוגים שב-seed. ספקים בדויים,
-// מחירי דמה. פסגת זאב עשירה (יעד עושר), קטמון ובית חנינא ברצפה, בגילה אין
+// מחירי דמה. פסגת זאב עשירה (יעד עושר), תלפיות מזרח ובית חנינא ברצפה, בבית וגן אין
 // שירות בריאות נגיש, ורוממה דלה (פערים עם חלופות).
 const WALK_AND_AID: FitProfile = { functionalLevels: ["independent", "partial_help"], mobility: ["independent_walking", "walker_wheelchair"], digitalRequired: "none", evidenceLevel: "medium" };
 const WALK_ONLY: FitProfile = { functionalLevels: ["independent"], mobility: ["independent_walking"], digitalRequired: "none", evidenceLevel: "medium" };
@@ -152,7 +152,7 @@ const SPECS_J: Spec[] = [
   { key: "coffee", n: 0, type: "T48", sup: "S-008", fit: G, price: 53, pattern: C, base: 40, status: "אושר", copay: "qol", name: "שובר בית קפה זוגי", fp: fp(WALK_AND_AID, { goals: ["belonging"] }) },
   { key: "care", n: 0, type: "T51", sup: "S-008", fit: G, price: 105, pattern: C, base: 14, status: "אושר", copay: "qol", name: "סל טיפוח", fp: fp(AT_HOME) },
 
-  // קטמון: ברצפה
+  // תלפיות מזרח: ברצפה
   { key: "k-club", n: 1, type: "T01", sup: "S-001", fit: G, price: 120, pattern: C, base: 20, status: "אושר", name: "מועדון שכונתי", fp: WALK_AND_AID },
   { key: "k-crafts", n: 1, type: "T07", sup: "S-004", fit: G, price: 100, pattern: C, base: 12, status: "אושר", copay: "classes", name: "חוגי יצירה", fp: WALK_AND_AID },
   { key: "k-volunteer", n: 1, type: "T12", sup: "S-002", fit: G, price: 40, pattern: C, base: 13, status: "אושר", name: "התנדבות מותאמת", fp: WALK_AND_AID },
@@ -165,7 +165,7 @@ const SPECS_J: Spec[] = [
   { key: "k-smart", n: 1, type: "T40", sup: "S-007", fit: G, price: 280, pattern: C, base: 12, status: "אושר", name: "סמארטפון בסיסי", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
   { key: "k-apps", n: 1, type: "T40", sup: "S-007", fit: G, price: 200, pattern: C, base: 13, status: "אושר", name: "אפליקציות יומיומיות", fp: fp(WALK_AND_AID, { digitalRequired: "smartphone" }) },
 
-  // גילה: ברצפה, אבל אף שירות בריאות לא נגיש להליכון
+  // בית וגן: ברצפה, אבל אף שירות בריאות לא נגיש להליכון
   { key: "g-club", n: 2, type: "T01", sup: "S-001", fit: G, price: 115, pattern: C, base: 18, status: "אושר", name: "מועדון שכונתי", fp: WALK_AND_AID },
   { key: "g-interest", n: 2, type: "T03", sup: "S-004", fit: G, price: 60, pattern: C, base: 12, status: "אושר", name: "קבוצות עניין", fp: WALK_AND_AID },
   { key: "g-culture", n: 2, type: "T11", sup: "S-001", fit: G, price: 60, pattern: C, base: 22, status: "אושר", name: "תרבות מקומית", fp: WALK_AND_AID },
@@ -214,7 +214,7 @@ interface Variant {
 const VARIANTS: Variant[] = [
   { authority: "רשות הדגמה", prefix: "demo", label: "הדגמה", communities: ["general", "haredi", "haredi", "haredi", "arab"], enrolled: [60, 58, 47, 13, 56], priceFactor: 1, rngSeed: 2026 },
   { authority: "רשות הדגמה ב", prefix: "demob", label: "הדגמה ב", communities: ["general", "haredi", "general", "general", "arab"], enrolled: [75, 98, 27, 20, 77], priceFactor: 1.15, rngSeed: 7 },
-  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "קטמון", "גילה", "רוממה", "בית חנינא"], specs: SPECS_J },
+  { authority: "ירושלים (הדגמה)", prefix: "demoj", label: "הדגמה", communities: ["general", "general", "general", "haredi", "arab"], enrolled: [64, 70, 40, 18, 66], priceFactor: 1.05, rngSeed: 99, names: ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"], specs: SPECS_J },
 ];
 
 // הערכות רבעוניות לדוגמה (איכות, תוצאות מניעה, שביעות רצון, עלות-תועלת).
@@ -250,6 +250,12 @@ function rng(seed: number) {
 }
 
 export const DEMO_VARIANT_COUNT = VARIANTS.length;
+
+/**
+ * ירושלים (הדגמה): השכונות של הפיילוט לפי ההחלטות. מקור הנתונים המשותף לשלוש
+ * הדלתות: הכלי לאזרח ולמלווה, אטלס השטח והמטה בונים ממנו את אותו קטלוג.
+ */
+export const DEMO_JERUSALEM = 2;
 
 export function buildDemoAuthority(variant = 0): AuthorityData {
   const v = VARIANTS[variant] ?? VARIANTS[0]!;

@@ -1,7 +1,9 @@
+import { amount } from "@/lib/wallet";
+
 /**
  * כל הטקסטים שהאזרח רואה. עברית פשוטה: משפטים קצרים, פעלים בשם הפועל,
- * בלי מונחי מערכת. "נקודות", "מיצוי", "חדירה", "ציון" ו"אלגוריתם" לא
- * מופיעים כאן (נבדק אוטומטית ב-plainLanguage.test.ts). כסף תמיד בשקלים.
+ * בלי מונחי מערכת. "מיצוי", "חדירה", "ציון" ו"אלגוריתם" לא מופיעים כאן.
+ * הסל ביחידה שבהגדרות (נקודות או שקלים, src/lib/wallet.ts). מה שהאזרח משלם מכיסו: תמיד בשקלים.
  */
 
 export const he = {
@@ -23,11 +25,11 @@ export const he = {
   hello: (name: string) => `שלום, ${name}`,
   walletTitle: (month: string) => `הסל שלך לחודש ${month}`,
   walletLeft: "נשארו לך",
-  walletOf: (total: number) => `מתוך ₪${total} לחודש`,
+  walletOf: (total: number) => `מתוך ${amount(total)} לחודש`,
   walletRenews: "הסכום מתחדש בתחילת כל חודש.",
   walletDemoNote: "בהדגמה. בפיילוט הסכום מגיע מהמערכת של הספק.",
   walletEmpty: "הסל של החודש נגמר. בחודש הבא הוא יתמלא שוב.",
-  walletUsedBar: (used: number, total: number) => `השתמשת ב-₪${used} מתוך ₪${total}`,
+  walletUsedBar: (used: number, total: number) => `השתמשת ב-${amount(used)} מתוך ${amount(total)}`,
   nextActivity: "הפעילות הבאה שלך",
   noActivities: "עוד אין לך פעילויות. אפשר למצוא חוג או שירות.",
   findService: "למצוא חוג או שירות",
@@ -64,8 +66,8 @@ export const he = {
   nationwide: "בכל הארץ",
   coordinated: "המפעיל יתקשר אלייך לתאם מועד",
   slotsSummary: (first: string) => `המועד הקרוב: ${first}`,
-  costLine: (covered: number, copay: number) => (copay === 0 ? `הכל מהסל שלך: ₪${covered}. לך זה לא עולה כסף.` : `מהסל שלך ₪${covered}. ממך ₪${copay}.`),
-  costUnknown: (total: number) => `המחיר ₪${total}. כמה ממנו מהסל עוד לא נקבע.`,
+  costLine: (covered: number, copay: number) => (copay === 0 ? `הכל מהסל שלך: ${amount(covered)}. לך זה לא עולה כסף.` : `מהסל שלך ${amount(covered)}. ממך ₪${copay}.`),
+  costUnknown: (total: number) => `המחיר ${amount(total)}. כמה ממנו מהסל עוד לא נקבע.`,
   perUnit: (unit: string) => `לכל ${unit}`,
   rule: {
     free: "אפשר לבטל בכל זמן, בלי חיוב.",
@@ -75,7 +77,7 @@ export const he = {
     notFinal: "הכלל עוד לא סופי (הצעה, ממתין להכרעה).",
   },
   book: "להזמין",
-  complementPartial: (funder: string, basket: number, you: number) => `${funder} מממן חלק. הסל משלים עד ₪${basket}. את משלמת ₪${you}.`,
+  complementPartial: (funder: string, basket: number, you: number) => `${funder} מממן חלק. הסל משלים עד ${amount(basket)}. את משלמת ₪${you}.`,
   complementPrior: (funder: string) => `קודם מגישים ל${funder}. אחרי זה הסל משלים את השאר.`,
   complementFull: (funder: string) => `${funder} מממן את זה. לא צריך את הסל.`,
   complementVaries: (funder: string) => `${funder} מממן לפי המקרה. המלווה תבדוק, והסל ישלים את השאר.`,
@@ -123,7 +125,7 @@ export const he = {
   cancelYes: "כן, לבטל",
   cancelNo: "לא, להשאיר",
   cancelledTitle: "ההזמנה בוטלה",
-  cancelledRefund: (n: number) => `₪${n} חזרו לסל שלך.`,
+  cancelledRefund: (n: number) => `${amount(n)} חזרו לסל שלך.`,
   cancelledNoRefund: "הכסף לא חזר לסל, כי הביטול היה מאוחר.",
 
   helpTitle: "עזרה",

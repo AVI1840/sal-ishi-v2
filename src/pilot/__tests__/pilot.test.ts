@@ -149,7 +149,8 @@ function strings(obj: unknown): string[] {
 describe("עברית פשוטה בצד האזרח", () => {
   const all = strings(he);
   it("בלי מונחי מערכת", () => {
-    const banned = ["נקודות", "מיצוי", "חדירה", "ציון", "אלגוריתם", "יחידות", "מסובסד", "פרופיל"];
+    // "נקודות" מותר: יחידת הארנק שהוחלטה (500 נקודות, נקודה = ₪1). ראו src/lib/wallet.ts.
+    const banned = ["מיצוי", "חדירה", "ציון", "אלגוריתם", "יחידות", "מסובסד", "פרופיל"];
     for (const word of banned) expect(all.filter((s) => s.includes(word)), word).toEqual([]);
   });
   it("משפטים קצרים: עד 18 מילים במשפט", () => {

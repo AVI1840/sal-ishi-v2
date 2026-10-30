@@ -81,7 +81,7 @@ export const EXTRA_PERSONAS: CaseloadPerson[] = [
 
 export function buildCaseload(size = appSettings.companion.caseload_size): CaseloadPerson[] {
   const r = rng(20261103);
-  const hoods: [string, number][] = [["פסגת זאב", 0.45], ["קטמון", 0.2], ["גילה", 0.15], ["בית חנינא", 0.12], ["רוממה", 0.08]];
+  const hoods: [string, number][] = [["פסגת זאב", 0.45], ["תלפיות מזרח", 0.2], ["בית וגן", 0.15], ["בית חנינא", 0.12], ["רוממה", 0.08]];
   const pickHood = () => {
     let x = r();
     for (const [h, w] of hoods) if ((x -= w) <= 0) return h;

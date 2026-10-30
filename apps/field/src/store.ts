@@ -19,7 +19,7 @@ import {
   type UnmetDemand,
   type WorkflowStatus,
 } from "@sal-ishi/core";
-import { buildDemoAuthority } from "@sal-ishi/core";
+import { buildDemoAuthority, DEMO_JERUSALEM } from "@sal-ishi/core";
 import { EDITION } from "@sal-ishi/ui";
 
 export type EnrollmentPatch = Partial<Omit<NeighborhoodMonth, "neighborhoodId" | "month">>;
@@ -107,7 +107,7 @@ export const useField = create<FieldState>()((set, get) => {
         set({ data: saved.data, isDemo: saved.isDemo, lastPackage: saved.lastPackage, seed, seedFromHq, seedNotice });
       } else if (EDITION === "preview") {
         // בגרסת התצוגה לשותפים, ביקור ראשון נפתח עם נתוני הדגמה ולא במסך ריק.
-        set({ data: buildDemoAuthority(), isDemo: true });
+        set({ data: buildDemoAuthority(DEMO_JERUSALEM), isDemo: true });
       }
       set({ hydrated: true });
     },
@@ -217,7 +217,7 @@ export const useField = create<FieldState>()((set, get) => {
     },
 
     loadDemo() {
-      set({ data: buildDemoAuthority(), isDemo: true, lastPackage: undefined });
+      set({ data: buildDemoAuthority(DEMO_JERUSALEM), isDemo: true, lastPackage: undefined });
     },
 
     reset() {

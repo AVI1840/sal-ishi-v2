@@ -14,6 +14,7 @@ import {
   FileSyncAdapter,
   buildCitizenCatalog,
   buildDemoAuthority,
+  DEMO_JERUSALEM,
   buildDemoNationalChannel,
   createBrowserFileIO,
   defaultSeed,
@@ -159,7 +160,7 @@ export function toRawServices(catalogs: CitizenCatalog[], seed: Seed): Record<st
 
 /** קטלוג ההדגמה: הוריאציה של האטלס שמתאימה לשכונות של אזרחי ההדגמה, ועוד הערוץ הארצי. */
 export function buildDemoCatalogs(seed: Seed): CitizenCatalog[] {
-  const data = buildDemoAuthority(2);
+  const data = buildDemoAuthority(DEMO_JERUSALEM);
   const national = buildDemoNationalChannel();
   const source = { ...data, suppliers: [...data.suppliers, ...national.suppliers], services: [...data.services, ...national.services] };
   return data.neighborhoods.map((n) => buildCitizenCatalog(source, n.id, seed).catalog);

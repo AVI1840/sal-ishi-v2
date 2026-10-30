@@ -27,6 +27,8 @@ export interface AppSettings {
     default_language: string;
     languages: string[];
   };
+  /** יחידת התצוגה של הארנק. ראו src/lib/wallet.ts. */
+  wallet?: { unit: "points" | "shekel"; simulated: boolean };
   companion: {
     name: string;
     caseload_size: number;
@@ -50,7 +52,7 @@ export async function loadAppSettings(): Promise<void> {
     if (!res.ok) return;
     const data = (await res.json()) as Partial<AppSettings>;
     if (!isMode(data.mode)) return;
-    Object.assign(appSettings, { ...data, citizen: { ...appSettings.citizen, ...data.citizen }, companion: { ...appSettings.companion, ...data.companion }, demo: { ...appSettings.demo, ...data.demo } });
+    Object.assign(appSettings, { ...data, citizen: { ...appSettings.citizen, ...data.citizen }, wallet: { ...appSettings.wallet, ...data.wallet } as AppSettings["wallet"], companion: { ...appSettings.companion, ...data.companion }, demo: { ...appSettings.demo, ...data.demo } });
   } catch {
     /* בלי רשת: ברירת המחדל מהבנייה */
   }

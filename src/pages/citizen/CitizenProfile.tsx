@@ -10,7 +10,7 @@ import { Phone, MapPin, Heart, Wallet, Calendar, ChevronLeft, CheckCircle, Clock
 import { Link } from "react-router-dom";
 import { MOTIVATION_LABELS } from "@/data/types";
 import { ProgressBar } from "@/components/shared/ProgressBar";
-import { catalogState } from "@/data/catalogSource";
+import { amount, walletFootnote } from "@/lib/wallet";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { usePilot } from "@/pilot/store";
@@ -20,7 +20,6 @@ export default function CitizenProfile() {
   const { derived } = usePilot();
   const { profile: citizen } = useCitizen();
   const wallet = useWallet();
-  const tiers = catalogState.seed.settings.copay_tiers;
   const bookings = derived.bookings
     .filter((b) => b.citizenId === citizen.id && b.status !== "cancelled")
     .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt))
@@ -62,16 +61,14 @@ export default function CitizenProfile() {
         <div className="bg-white rounded-xl p-5 border border-gray-100">
           <div className="flex items-center gap-2 mb-4">
             <Wallet className="w-4 h-4 text-[#1B3A5C]" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-gray-900">{he.walletTitle(he.monthNames[new Date().getMonth()])}</h2>
+            <h2 className="text-base font-semibold text-gray-900">הארנק שלך לחודש {he.monthNames[new Date().getMonth()]}</h2>
           </div>
           <p className="text-3xl font-bold text-[#1B3A5C] mb-1">
-            נשארו ₪{wallet.left} <span className="text-base font-normal text-gray-700">מתוך ₪{wallet.total}</span>
+            נשארו {amount(wallet.left)} <span className="text-base font-normal text-gray-700">מתוך {amount(wallet.total)}</span>
           </p>
           <ProgressBar value={wallet.used} max={wallet.total} tone="primary" size="sm" />
-          <p className="text-sm text-gray-700 mt-2">{he.walletRenews}</p>
-          <p className="text-sm text-gray-700">
-            השתתפות עצמית: {Math.round(tiers.core_and_prevention * 100)}% בשירותי ליבה ומניעה, {Math.round(tiers.classes * 100)}% בחוגים, {Math.round(tiers.qol * 100)}% באיכות חיים
-          </p>
+          <p className="text-sm text-gray-700 mt-2">{he.walletRenews} בכל שירות כתוב כמה הוא עולה.</p>
+          <p className="text-xs text-gray-600 mt-1">{walletFootnote()}</p>
         </div>
 
         {/* Motivations */}

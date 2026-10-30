@@ -12,10 +12,11 @@ async function noHorizontalScroll(page: Page) {
 /** שירות קבוצתי עם מועדים, בלי אישור מלווה ובלי מממן אחר. */
 const SERVICE = "demoj-balance";
 
-test("אזרחית: ארנק בשקלים, הזמנה, ביטול ושיחזרו אליי", async ({ page }) => {
+test("אזרחית: ארנק בנקודות, הזמנה, ביטול ושיחזרו אליי", async ({ page }) => {
   await page.goto("./#/citizen");
   await expect(page.getByRole("heading", { level: 1, name: /, שרה$/ })).toBeVisible();
-  await expect(page.getByText(/נשארו ₪\d+/).first()).toBeVisible();
+  await expect(page.getByText(/נשארו \d+ נקודות/).first()).toBeVisible();
+  await expect(page.getByText("נקודה = ₪1").first()).toBeVisible();
   await noHorizontalScroll(page);
 
   await page.goto(`./#/citizen/services/${SERVICE}`);
@@ -49,9 +50,9 @@ test("בכל מסך של האזרחית יש שיחזרו אליי, ובלי ג�
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "שיחזרו אליי" })).toBeVisible();
     await noHorizontalScroll(page);
-    // מול האזרחית: בלי תיוג, ציונים ונקודות. אלה כלים של המלווה.
+    // מול האזרחית: בלי תיוג וציונים. אלה כלים של המלווה. "נקודות" הן יחידת הארנק.
     const text = await page.locator("#main").innerText();
-    expect(text, route).not.toMatch(/סיכון|ציון|נקודות|נק'|ירידה תפקודית|חסמים/);
+    expect(text, route).not.toMatch(/סיכון|ציון|נק'|ירידה תפקודית|חסמים|התמדה|מעורבות/);
   }
 });
 

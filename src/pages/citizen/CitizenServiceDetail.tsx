@@ -23,6 +23,7 @@ import { isProduct, priceOf } from "@/pilot/services";
 import { complementLine, ruleText } from "@/pilot/citizen/Service";
 import { reasonKey, useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 import { personalReasonFor } from "@/lib/personalMatch";
+import { amount } from "@/lib/wallet";
 
 const LANG_MAP: Record<string, string> = {
   hebrew: "עברית", arabic: "ערבית", russian: "רוסית", english: "אנגלית",
@@ -155,7 +156,7 @@ export default function CitizenServiceDetail() {
             {complement ?? (price.unknown ? he.costUnknown(price.total) : he.costLine(price.covered, price.copay))}
             {service.unit ? <span className="text-gray-600"> ({he.perUnit(service.unit)})</span> : null}
           </p>
-          <p className="text-sm text-gray-700">נשארו בסל שלך החודש ₪{wallet.left} מתוך ₪{wallet.total}.</p>
+          <p className="text-sm text-gray-700">נשארו בארנק שלך החודש {amount(wallet.left)} מתוך {amount(wallet.total)}.</p>
         </section>
 
         {/* אם צריך לבטל */}

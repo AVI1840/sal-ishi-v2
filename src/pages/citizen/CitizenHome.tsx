@@ -19,6 +19,8 @@ import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { useCitizen, usePersonalProfile, useWallet } from "@/pilot/citizen/common";
 import { personalRecommendations } from "@/lib/personalMatch";
+import { amount, walletFootnote } from "@/lib/wallet";
+import { priceOf, serviceById } from "@/pilot/services";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -27,12 +29,14 @@ const getGreeting = () => {
   return "ערב טוב";
 };
 
-/** תווית ההשתתפות לפי המדרגות שבהגדרות (0, 20, 50), במקום "חינם 100%". */
+/** התווית על כרטיס ההמלצה: כמה זה עולה מהארנק, ומה ממך (אם יש). */
 export function copayBadge(result: MatchResult): { text: string; tone: "free" | "part" } {
-  const s = result.service as MatchResult["service"] & { copayRate?: number; complementState?: string };
-  if (s.complementState && s.complementState !== "none") return { text: "השלמה למממן אחר", tone: "part" };
-  const rate = s.copayRate ?? 0;
-  return rate === 0 ? { text: "בלי השתתפות", tone: "free" } : { text: `השתתפות ${Math.round(rate * 100)}%`, tone: "part" };
+  const s = serviceById(result.service.id);
+  if (!s) return { text: "", tone: "free" };
+  const price = priceOf(s);
+  if (price.state !== "none" && price.state !== "missing") return { text: "השלמה למממן אחר", tone: "part" };
+  if (price.unknown) return { text: "המחיר בבדיקה", tone: "part" };
+  return price.copay === 0 ? { text: amount(price.covered), tone: "free" } : { text: `${amount(price.covered)} + ₪${price.copay} ממך`, tone: "part" };
 }
 
 export default function CitizenHome() {
@@ -42,7 +46,6 @@ export default function CitizenHome() {
   const wallet = useWallet();
   const month = he.monthNames[new Date().getMonth()];
   const usedPct = wallet.total ? Math.round((wallet.used / wallet.total) * 100) : 0;
-  const tiers = catalogState.seed.settings.copay_tiers;
 
   // מה שחשוב לה קודם: ההמלצה הראשונה ממה שסיפרה (החלום, מה שהיא אוהבת), כל אחת מתחום אחר.
   const personal = usePersonalProfile();
@@ -70,17 +73,16 @@ export default function CitizenHome() {
         <p className="text-lg text-white/85 mt-1">{citizen.neighborhood} · בת {citizen.age}</p>
 
         <div className="mt-6 bg-white/10 rounded-xl p-4" aria-labelledby="wallet-title">
-          <p id="wallet-title" className="text-base text-white/90">הסל שלך לחודש {month}</p>
+          <p id="wallet-title" className="text-base text-white/90">הארנק שלך לחודש {month}</p>
           <p className="text-4xl font-bold mt-1">
-            נשארו ₪{wallet.left} <span className="text-lg font-normal text-white/85">מתוך ₪{wallet.total}</span>
+            נשארו {amount(wallet.left)} <span className="text-lg font-normal text-white/85">מתוך {amount(wallet.total)}</span>
           </p>
-          <div className="mt-3 h-3 bg-white/25 rounded-full overflow-hidden" role="img" aria-label={`השתמשת ב-₪${wallet.used} מתוך ₪${wallet.total}`}>
+          <div className="mt-3 h-3 bg-white/25 rounded-full overflow-hidden" role="img" aria-label={he.walletUsedBar(wallet.used, wallet.total)}>
             <div className="h-full bg-white rounded-full" style={{ width: `${usedPct}%` }} />
           </div>
           {wallet.left === 0 ? <p className="text-base font-semibold text-white mt-2" role="status">{he.walletEmpty}</p> : null}
-          <p className="text-sm text-white/85 mt-2">
-            השתתפות עצמית: {Math.round(tiers.core_and_prevention * 100)}% בשירותי ליבה ומניעה, {Math.round(tiers.classes * 100)}% בחוגים, {Math.round(tiers.qol * 100)}% באיכות חיים
-          </p>
+          <p className="text-sm text-white/85 mt-2">{he.walletRenews} בכל שירות כתוב כמה הוא עולה.</p>
+          <p className="text-xs text-white/80 mt-1">{walletFootnote()}</p>
         </div>
       </div>
 

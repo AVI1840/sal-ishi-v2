@@ -22,22 +22,22 @@ describe("רצפה, גיוון, נגישות ויעד עושר", () => {
     }
   });
 
-  it("יעד העושר הוא מדד ולא חוסם: קטמון ירוקה עם 3, מתחת ליעד", () => {
-    const c = cell(result, "קטמון", "belonging");
+  it("יעד העושר הוא מדד ולא חוסם: תלפיות מזרח ירוקה עם 3, מתחת ליעד", () => {
+    const c = cell(result, "תלפיות מזרח", "belonging");
     expect(c.level).toBe("green");
     expect(c.count).toBeLessThan(c.target!);
   });
 
-  it("גילה: בריאות ותפקוד בלי שירות נגיש להליכון מקבלת התראת נגישות", () => {
-    expect(result.alerts.some((a) => a.neighborhoodId === hood("גילה").id && a.coreCategoryId === "health_function" && a.kind === "accessible")).toBe(true);
-    expect(result.alerts.some((a) => a.neighborhoodId === hood("קטמון").id && a.kind === "accessible")).toBe(false);
+  it("בית וגן: בריאות ותפקוד בלי שירות נגיש להליכון מקבלת התראת נגישות", () => {
+    expect(result.alerts.some((a) => a.neighborhoodId === hood("בית וגן").id && a.coreCategoryId === "health_function" && a.kind === "accessible")).toBe(true);
+    expect(result.alerts.some((a) => a.neighborhoodId === hood("תלפיות מזרח").id && a.kind === "accessible")).toBe(false);
   });
 
   it("עיר גדולה: שירות אזורי לא נספר ברצפה של שכונה אחרת; ברשות קטנה עד אחד", () => {
-    expect(result.cells.filter((c) => c.neighborhoodId === hood("קטמון").id).every((c) => (c.nonlocal ?? 0) === 0)).toBe(true);
+    expect(result.cells.filter((c) => c.neighborhoodId === hood("תלפיות מזרח").id).every((c) => (c.nonlocal ?? 0) === 0)).toBe(true);
     const small = withSettings(seed, { large_city_authorities: [] });
     const r2 = coverage(data, small);
-    expect(r2.cells.some((c) => c.neighborhoodId === hood("קטמון").id && (c.nonlocal ?? 0) === 1)).toBe(true);
+    expect(r2.cells.some((c) => c.neighborhoodId === hood("תלפיות מזרח").id && (c.nonlocal ?? 0) === 1)).toBe(true);
     expect(r2.cells.every((c) => (c.nonlocal ?? 0) <= 1)).toBe(true);
   });
 
