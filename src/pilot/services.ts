@@ -182,9 +182,11 @@ const UNIT_PREP: Record<string, string> = {
 export function priceLabel(s: RealService, amount: (n: number) => string, short = false): string {
   const p = priceOf(s);
   if (p.state === "full") return "";
-  const base = p.unknown ? amount(p.total) : amount(p.covered);
+  if (p.unknown) return short ? "המחיר בבדיקה" : `המחיר ${amount(p.total)}${isSubscription(s) ? " בחודש" : ""}. כמה ממנו מהארנק עוד לא נקבע.`;
+  const base = amount(p.covered);
   const copay = !p.unknown && p.copay > 0 ? ` + ₪${p.copay} ממך` : "";
-  if (isSubscription(s)) return short ? `${base} בחודש${copay}` : `${base} בחודש${copay}, כ-${sessionsPerMonth()} מפגשים`;
+  // "כ-4 מפגשים" רק בשירות קבוצתי. ארוחה או משלוח הביתה: בחודש בלבד.
+  if (isSubscription(s)) return short || s.serviceMode !== "group" ? `${base} בחודש${copay}` : `${base} בחודש${copay}, כ-${sessionsPerMonth()} מפגשים`;
   const prep = UNIT_PREP[s.unit ?? ""] ?? (s.unit ? `ל${s.unit}` : "");
   return `${base}${prep ? ` ${prep}` : ""}${copay}`;
 }

@@ -59,7 +59,8 @@ export default function ExecutiveOverview() {
           המדינה מחזיקה בקטלוג, בכללים ובנתונים. ספק העל מפעיל את הנקודות והתשלומים, והתקן הפתוח מאפשר לכל ספק להתחבר.
         </p>
         <p className="text-sm text-white/80 mt-3">
-          פיילוט ירושלים · {appSettings.program.pilot_participants} משתתפים ({appSettings.program.pilot_participants_source})
+          פיילוט ירושלים · {appSettings.program.pilot_participants} משתתפים
+          {appSettings.background ? ` · ${appSettings.background.pilot_months} חודשי פיילוט · 2027: ${appSettings.background.authorities_2027} רשויות, ${appSettings.background.budget_label}` : ""}
         </p>
       </div>
 
@@ -105,7 +106,7 @@ export default function ExecutiveOverview() {
                         {green} מתוך {total}
                       </span>
                     </td>
-                    <td className="py-2.5 text-muted-foreground">{name === "פסגת זאב" ? "פעיל" : "מתוכנן [לאמת]"}</td>
+                    <td className="py-2.5 text-muted-foreground">{name === "פסגת זאב" ? "פעיל" : "מתוכנן"}</td>
                   </tr>
                 );
               })}
@@ -113,7 +114,7 @@ export default function ExecutiveOverview() {
           </table>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          לפי ההחלטות: פסגת זאב, תלפיות מזרח, רוממה, הר נוף, בית וגן, ובית חנינא בתגבור (מרץ 2027) [לאמת]. הר נוף עוד לא בקטלוג ההדגמה. קטלוג הדגמה, נתונים בדויים.
+          לפי ההחלטות: פסגת זאב, תלפיות מזרח, רוממה, הר נוף, בית וגן, ובית חנינא בתגבור (מרץ 2027). הר נוף עוד לא בקטלוג ההדגמה. קטלוג הדגמה, נתונים בדויים.
         </p>
       </section>
 

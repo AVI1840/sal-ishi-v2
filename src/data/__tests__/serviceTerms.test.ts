@@ -39,17 +39,18 @@ describe("מיפוי תנאי השירות לכלי המרכזי", () => {
     expect(termLines(product).some((t) => t.term === "ביטול")).toBe(false);
   });
 
-  it("איכות חיים בסכום קבוע: מה שמכוסה והשאר על האזרח", () => {
-    const coffee = byType(list, "T48");
-    // הערך בכלל איכות החיים הוא 50 נקודות, והמחיר בהדגמה של ירושלים מעט גבוה ממנו.
-    expect(coffee.coveredPoints).toBe(50);
-    expect(coffee.copayPoints).toBe((coffee.pricePoints as number) - 50);
-    expect(coffee.cost_note).toContain("עליך");
-    const percent = withSettings(defaultSeed, { qol_mode: { ...defaultSeed.settings.qol_mode, value: "percent" } });
-    const c2 = byType(raw(percent), "T48");
+  it("איכות חיים בשני המצבים: 50% עם תקרה (ברירת המחדל), או סכום קבוע", () => {
+    // ברירת המחדל לפי מפגש 2: השתתפות 50%.
+    const c2 = byType(list, "T48");
     expect(c2.copayBasis).toBe("qol_percent");
     expect(c2.copayPoints).toBeGreaterThan(0);
     expect(c2.cost).toBe("subsidized");
+    // סכום קבוע (הצעת החשכ"ל): הערך בכלל הוא 50 נקודות.
+    const fixed = withSettings(defaultSeed, { qol_mode: { ...defaultSeed.settings.qol_mode, value: "fixed_amount" } });
+    const coffee = byType(raw(fixed), "T48");
+    expect(coffee.coveredPoints).toBe(50);
+    expect(coffee.copayPoints).toBe((coffee.pricePoints as number) - 50);
+    expect(coffee.cost_note).toContain("עליך");
   });
 });
 

@@ -258,13 +258,7 @@ export default function CitizenServiceDetail() {
           </div>
         )}
 
-        {/* Notes */}
-        {service.notes && (
-          <div className="flex items-start gap-2.5 p-4 bg-white rounded-xl border border-gray-100">
-            <AlertCircle className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
-            <p className="text-xs text-gray-600">{service.notes}</p>
-          </div>
-        )}
+        {/* הערות הקטלוג הן פנימיות (רשות ומטה), ולא מוצגות לאזרח. */}
 
         {/* דירוג: רק אחרי השתתפות, ב"הפעילויות שלי" */}
 
@@ -289,7 +283,6 @@ export default function CitizenServiceDetail() {
             <>
               <Notice>
                 {he.gatedExplain}
-                {service.gateReason ? ` (${service.gateReason})` : ""}
                 {gateRequest ? <strong className="block mt-1">{he.status.open}</strong> : null}
               </Notice>
               {!gateRequest && (

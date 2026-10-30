@@ -20,6 +20,17 @@ export interface AppSettings {
   mode: AppMode;
   version: string;
   program: { pilot_participants: number; pilot_participants_source: string };
+  /** נתוני רקע לדף הבית ולמבט מטה (אושרו להצגה, לא לפרסום). */
+  background?: {
+    source: string;
+    pilot_months: number;
+    social_ties_from: number;
+    social_ties_to: number;
+    delay_months: number;
+    authorities_2027: number;
+    budget_label: string;
+    level3_population_label: string;
+  };
   citizen: {
     persona_id: string;
     /** מבוטל ב-0.6: היתרה נגזרת מהאירועים בלבד. */

@@ -94,12 +94,12 @@
   },
   "products_count_in_floor": false,
   "qol_mode": {
-   "value": "fixed_amount",
+   "value": "percent",
    "options": [
     "fixed_amount",
     "percent"
    ],
-   "status": "proposal - הכרעה במפגש 3"
+   "status": "proposal - ברירת המחדל לפי מפגש 2: השתתפות 50% עם תקרה של 100 בחודש. סכום קבוע (הצעת החשכ\"ל) נשאר אפשרות, הכרעה במפגש 3"
   },
   "active_participant_min_sessions_month": {
    "value": 2,

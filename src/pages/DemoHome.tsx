@@ -56,6 +56,7 @@ const STATE_GETS = [
 
 export default function DemoHome() {
   const s = basket();
+  const bg = appSettings.background;
   return (
     <div dir="rtl" className="min-h-screen bg-white">
       {/* גיבור */}
@@ -87,7 +88,7 @@ export default function DemoHome() {
             <div><dt className="text-sm text-white/80">סל לאזרח בחודש</dt><dd className="text-2xl font-bold">₪{s.total}</dd><dd className="text-xs text-white/80">{s.personal_wallet} נקודות בארנק האישי</dd></div>
             <div><dt className="text-sm text-white/80">שירותים מאושרים</dt><dd className="text-2xl font-bold">{realServices.length}</dd><dd className="text-xs text-white/80">בקטלוג ההדגמה</dd></div>
             <div><dt className="text-sm text-white/80">שכונות באטלס</dt><dd className="text-2xl font-bold">{catalogState.neighborhoods}</dd><dd className="text-xs text-white/80">ירושלים</dd></div>
-            <div><dt className="text-sm text-white/80">משתתפים בפיילוט</dt><dd className="text-2xl font-bold">{appSettings.program.pilot_participants}</dd><dd className="text-xs text-white/80">פסגת זאב [לאמת]</dd></div>
+            <div><dt className="text-sm text-white/80">משתתפים בפיילוט</dt><dd className="text-2xl font-bold">{appSettings.program.pilot_participants}</dd><dd className="text-xs text-white/80">פסגת זאב</dd></div>
           </dl>
         </div>
       </section>
@@ -166,15 +167,17 @@ export default function DemoHome() {
           <div>
             <h2 className="text-2xl font-bold">מה כבר ידוע מהפיילוט</h2>
             <ul className="mt-4 space-y-2 text-base text-white/90">
-              <li>פיילוט בפסגת זאב, {appSettings.program.pilot_participants} משתתפים [לאמת].</li>
-              <li>24 חודשי פיילוט [לאמת].</li>
-              <li>תוצאות המחקר המלווה: יוצגו אחרי אימות.</li>
+              <li>{bg ? `${bg.pilot_months} חודשי פיילוט בפסגת זאב, ${appSettings.program.pilot_participants} משתתפים.` : `${appSettings.program.pilot_participants} משתתפים בפסגת זאב.`}</li>
+              {bg ? <li>קשרים חברתיים: מ-{bg.social_ties_from}% ל-{bg.social_ties_to}% מהמשתתפים.</li> : null}
+              {bg ? <li>דחייה של כ-{bg.delay_months} חודשים בהידרדרות.</li> : null}
             </ul>
+            {bg ? <p className="text-xs text-white/75 mt-3">{bg.source}.</p> : null}
           </div>
           <div>
             <h2 id="next-h" className="text-2xl font-bold">הצעד הבא</h2>
             <ul className="mt-4 space-y-2 text-base text-white/90">
-              <li>פיילוט 2027 בשכונות ירושלים ובשש רשויות [לאמת], עם ספק העל על חבילת הפיילוט.</li>
+              <li>{bg ? `פיילוט 2027 ב-${bg.authorities_2027} רשויות, ${bg.budget_label}, עם ספק העל על חבילת הפיילוט.` : "פיילוט 2027 עם ספק העל על חבילת הפיילוט."}</li>
+              {bg ? <li>האוכלוסייה בהרחבה: {bg.level3_population_label}.</li> : null}
               <li>מכרז על בסיס הכלי: התקן, הכללים ורישום הדרישות.</li>
             </ul>
             <div className="flex flex-wrap gap-3 mt-6">

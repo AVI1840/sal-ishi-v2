@@ -8,7 +8,17 @@
   "mode_note": "demo: שלוש דמויות בדויות, נתוני דמה וכפתור איפוס. pilot: בלי פס הדגמה, בלי איפוס ובלי נתוני פתיחה בדויים. אין הבדל בקוד.",
   "program": {
     "pilot_participants": 286,
-    "pilot_participants_source": "פיילוט פסגת זאב, מתוך נתוני הכלי הקיים [לאמת]"
+    "pilot_participants_source": "פיילוט פסגת זאב, נתוני רקע"
+  },
+  "background": {
+    "source": "נתוני רקע מסיכומי הפיילוט והמפגשים. לא לפרסום",
+    "pilot_months": 24,
+    "social_ties_from": 37,
+    "social_ties_to": 94,
+    "delay_months": 5.5,
+    "authorities_2027": 6,
+    "budget_label": "כ-40 מיליון ש\"ח",
+    "level3_population_label": "כ-120 אלף ברמה 3"
   },
   "citizen": {
     "persona_id": "c1",
