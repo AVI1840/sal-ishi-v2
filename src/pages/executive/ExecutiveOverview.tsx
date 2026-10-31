@@ -168,7 +168,7 @@ export default function ExecutiveOverview() {
         </span>
         <span className="flex-1">
           <span className="block text-base font-semibold text-foreground">סוכני המערכת</span>
-          <span className="block text-sm text-muted-foreground">מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל. מקור ההגדרה של כל אחד, מה רץ בכלי ומה מתוכנן.</span>
+          <span className="block text-sm text-muted-foreground">מודיעין שירותים, התאמה, הנעה, טייס משנה למלווה, ומדידה, ומתזמר. מקור ההגדרה של כל אחד, מה רץ בכלי ומה מתוכנן.</span>
         </span>
         <ChevronLeft className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
       </Link>
