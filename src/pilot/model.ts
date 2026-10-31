@@ -90,8 +90,17 @@ export function derive(events: PilotEvent[]): Derived {
           attendedSessions: 0,
           attendance: [],
           status: hospitalized.has(e.citizenId) ? "paused" : "booked",
+          ...(e.awaitsSupplier ? { supplierApproval: "pending" as const } : {}),
         });
         break;
+      case "booking.supplier_decided": {
+        const b = bookings.get(e.bookingId);
+        if (b && b.supplierApproval === "pending") {
+          if (e.decision === "approved") b.supplierApproval = "approved";
+          else Object.assign(b, { supplierApproval: "declined", status: "cancelled", cancelledAt: e.at, charged: false });
+        }
+        break;
+      }
       case "attendance.reported": {
         const b = bookings.get(e.bookingId);
         if (b && b.status !== "cancelled") {

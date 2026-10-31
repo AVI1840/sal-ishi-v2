@@ -99,6 +99,8 @@ export function book(p: {
   /** subscription: מנוי חודשי (שירות רציף). ברירת מחדל: single. */
   mode?: BookingMode;
   sessionsPerMonth?: number;
+  /** ממתין לאישור הספק: לא מוצג כמאושר עד שהספק מאשר. */
+  awaitsSupplier?: boolean;
 }): string {
   const bookingId = newId("bk");
   record({ type: "booking.created", bookingId, ...p });
@@ -107,6 +109,11 @@ export function book(p: {
 
 export function cancelBooking(p: { citizenId: string; bookingId: string; charged: boolean; reason: string; actor: Actor; onBehalf?: OnBehalf }) {
   record({ type: "booking.cancelled", ...p });
+}
+
+/** החלטת הספק על בקשת הצטרפות (בפיילוט: מספק העל, ובהדגמה מאזור הספק או מתפריט ההדגמה). */
+export function decideBySupplier(p: { citizenId: string; bookingId: string; decision: "approved" | "declined"; reason?: string }) {
+  record({ type: "booking.supplier_decided", actor: "system", ...p });
 }
 
 /** נוכחות שהספק דיווח (בפיילוט: מספק העל). הופכת "שמור" ל"נוצל". */

@@ -9,6 +9,21 @@ async function noHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(1);
 }
 
+/** שרה מבקשת להצטרף למקהלה: ממתין לאישור הספק, עוד לא מאושר. */
+async function requestChoir(page: Page) {
+  await page.goto("./#/citizen/services/demoj-choir");
+  await page.getByRole("button", { name: "לבקש להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לשלוח בקשה לספק" }).click();
+  await expect(page.getByRole("heading", { name: "הבקשה נשלחה לספק" })).toBeVisible();
+}
+/** הספק (המתנ"ס) מאשר באזור הספק. רק אז זה הופך למאושר אצל שרה. */
+async function approveChoir(page: Page) {
+  await page.goto("./#/providers");
+  const approve = page.getByRole("button", { name: "לאשר הצטרפות: שרה כ., מקהלה קהילתית" });
+  await approve.click();
+  await expect(approve).toHaveCount(0);
+}
+
 /** שירות רציף (מנוי חודשי): מצטרפים לקבוצה. */
 const SERVICE = "demoj-balance";
 /** שירות חד-פעמי עם מועדים (סדנה): מזמינים מועד ומבטלים לפי הכלל. */
@@ -155,27 +170,38 @@ test("נגישות: axe בלי ליקויים חמורים במסכים המאו
   expect(problems).toEqual([]);
 });
 
-test("חוט הזהב: שרה מצטרפת למקהלה, שמור, רונית רואה, המטה סופר, נוכחות, נוצל ודירוג", async ({ page, context }) => {
+test("חוט הזהב 2: שרה מבקשת, ממתין לאישור, הספק מאשר, רונית רואה, המטה סופר, נוכחות, נוצל, התחשבנות (סימולציה)", async ({ page, context }) => {
   await page.goto("./#/citizen");
   const first = page.locator(`section[aria-labelledby=rec-title] a[href^="#/citizen/services/"]`).first();
   await expect(first).toContainText("מקהלה קהילתית");
   await expect(first).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
 
-  await page.goto("./#/citizen/services");
-  await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
-  await page.getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
-  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
-  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
-  await expect(page.getByRole("heading", { name: "הצטרפת לקבוצה" })).toBeVisible();
+  await first.click();
+  await page.getByRole("button", { name: "לבקש להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לשלוח בקשה לספק" }).click();
+  await expect(page.getByRole("heading", { name: "הבקשה נשלחה לספק" })).toBeVisible();
 
-  // הארנק: המקהלה (84 בחודש) שמורה, עוד לא נוצלה.
+  // "השירותים שלי": ממתין לאישור הספק, ועוד לא מאושר.
+  await page.goto("./#/citizen/activities");
+  await expect(page.locator("#pending li").filter({ hasText: "מקהלה קהילתית" })).toContainText("ממתין לאישור הספק");
+  await expect(page.locator("#mine")).not.toContainText("מקהלה קהילתית");
+  await expect(page.locator("#soon")).not.toContainText("מקהלה קהילתית");
+
+  // הארנק: המקהלה (84 בחודש) שמורה עד התשובה.
   await page.goto("./#/citizen");
   const wallet = page.locator("[aria-labelledby=wallet-title]");
   await expect(wallet).toContainText("נשארו 290 נקודות");
   await expect(wallet).toContainText("שמור 147 נקודות");
 
-  // רונית רואה כרטיס "חדש בתיק" ואת המקהלה בתיק.
+  // רונית: עוד אין "חדש בתיק", כי הספק לא אישר.
   const companion = await context.newPage();
+  await companion.goto("./#/coordinator");
+  await expect(companion.getByText(/נרשמה למקהלה קהילתית/)).toHaveCount(0);
+
+  // הספק מאשר באזור הספק. אצל שרה זה מאושר, ורונית מקבלת "חדש בתיק".
+  await approveChoir(companion);
+  await page.goto("./#/citizen/activities");
+  await expect(page.locator("#mine li").filter({ hasText: "מקהלה קהילתית" })).toContainText("פעיל");
   await companion.goto("./#/coordinator");
   await expect(companion.getByText(/נרשמה למקהלה קהילתית/)).toBeVisible();
   await companion.goto("./#/coordinator/patients/c1");
@@ -193,6 +219,21 @@ test("חוט הזהב: שרה מצטרפת למקהלה, שמור, רונית ר
   await expect(choir).toContainText("נוצל 21 נקודות");
   await expect(choir).toContainText("השתתפת במפגש אחד");
   await expect(choir.getByText(/דרג את מקהלה קהילתית/)).toBeVisible();
+
+  // אצל האינטגרטור: שורת התחשבנות "לתשלום (סימולציה)".
+  await companion.goto("./#/executive/suppliers");
+  await expect(companion.locator("section[aria-labelledby=settle-h]")).toContainText("לתשלום (סימולציה)");
+});
+
+test("דחיית ספק: הנקודות חוזרות, והבקשה לא מוצגת כמאושרת", async ({ page }) => {
+  await requestChoir(page);
+  await page.goto("./#/providers");
+  await page.getByRole("button", { name: "לא לאשר: שרה כ., מקהלה קהילתית" }).click();
+  await page.goto("./#/citizen");
+  await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("נשארו 374 נקודות");
+  await page.goto("./#/citizen/activities");
+  await expect(page.locator("#mine")).not.toContainText("מקהלה קהילתית");
+  await expect(page.locator("#history")).toContainText("הספק לא אישר");
 });
 
 test("מה חשוב לי: הפרופיל מהקליטה כבר מסומן, שרה מעדכנת, ההמלצות ורונית מתעדכנות", async ({ page }) => {
@@ -340,9 +381,9 @@ for (const day of ["2026-11-01T06:00:00Z", "2026-11-02T08:00:00Z", "2026-11-03T0
     await expect(wallet).toContainText("שמור 63 נקודות");
     await expect(wallet).toContainText("נוצל 63 נקודות");
 
-    await page.goto("./#/citizen/services/demoj-choir");
-    await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
-    await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+    await requestChoir(page);
+
+    await approveChoir(page);
     await page.goto("./#/citizen");
     await expect(wallet).toContainText("נשארו 290 נקודות");
     await expect(wallet).toContainText("שמור 147 נקודות");
@@ -363,7 +404,7 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   await context.clock.setFixedTime(new Date("2026-11-03T08:00:00Z"));
   // 0:00 בית
   await page.goto("./#/");
-  for (const t of ["מגמלה לצמיחה", "סל אישי להזדקנות מיטבית", "משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא"]) await expect(page.getByText(t).first()).toBeVisible();
+  for (const t of ["מגמלה לצמיחה", "סל אישי להזדקנות מיטבית", "משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא", "מי עומד מאחורי הסל האישי"]) await expect(page.getByText(t).first()).toBeVisible();
   // 1:00 שרה: הארנק
   await page.goto("./#/citizen");
   const wallet = page.locator("[aria-labelledby=wallet-title]");
@@ -384,12 +425,14 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   // 2:30 להצטרף לקבוצה: שמור עולה, היתרה יורדת
   await card.click();
   await expect(page.getByText(/כל יום \S+ בשעה/).first()).toBeHidden();
-  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לבקש להצטרף לקבוצה" }).click();
   await expect(page.getByText(/כל יום \S+ בשעה/).first()).toBeVisible();
-  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+  await page.getByRole("button", { name: "לשלוח בקשה לספק" }).click();
   await page.goto("./#/citizen");
   await expect(wallet).toContainText("נשארו 290 נקודות");
   await expect(wallet).toContainText("שמור 147 נקודות");
+  // 2:45 הספק מאשר באזור הספק: רק עכשיו זה מאושר אצל שרה
+  await approveChoir(page);
 
   // 3:00 רונית: חדש בתיק
   const ronit = await context.newPage();
@@ -512,11 +555,18 @@ test("השוק הוא מסך הכניסה: ברכה, ארנק, המלצות, נ�
 test("מסלול מלא: מהשוק לשירות, הרשמה, השירותים שלי ותזכורת. בקשה ממתינה לא מוצגת כמאושרת", async ({ page }) => {
   await page.goto("./#/citizen");
   await page.locator("section[aria-labelledby=rec-title]").getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
-  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
-  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
-  await expect(page.getByRole("heading", { name: "הצטרפת לקבוצה" })).toBeVisible();
+  await page.getByRole("button", { name: "לבקש להצטרף לקבוצה" }).click();
+  await page.getByRole("button", { name: "לשלוח בקשה לספק" }).click();
+  await expect(page.getByRole("heading", { name: "הבקשה נשלחה לספק" })).toBeVisible();
   await page.getByRole("link", { name: "לשירותים שלי" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "השירותים שלי" })).toBeVisible();
+  // עד שהספק מאשר: ממתין, בלי תזכורת, ובלי מפגש קרוב.
+  const waiting = page.locator("#pending li").filter({ hasText: "מקהלה קהילתית" });
+  await expect(waiting).toContainText("ממתין לאישור הספק");
+  await expect(waiting.getByRole("button", { name: /להזכיר לי/ })).toHaveCount(0);
+  await expect(page.locator("#mine")).not.toContainText("מקהלה קהילתית");
+  await approveChoir(page);
+  await page.goto("./#/citizen/activities");
   const choir = page.locator("#mine li").filter({ hasText: "מקהלה קהילתית" });
   await expect(choir).toContainText("פעיל");
   await expect(choir).toContainText("בחודש");
@@ -589,9 +639,8 @@ test("מטה וספקים: מדדים מהשטח, ספריית הסל, אלגו�
   expect(await page.locator(".libi-card").last().innerText()).toBe(first);
 
   // שרה מצטרפת, והספק (המתנ"ס) רואה ומדווח.
-  await page.goto("./#/citizen/services/demoj-choir");
-  await page.getByRole("button", { name: "להצטרף לקבוצה" }).click();
-  await page.getByRole("button", { name: "לאשר את ההצטרפות" }).click();
+  await requestChoir(page);
+  await approveChoir(page);
   await page.goto("./#/providers");
   await expect(page.getByText("גרסה 1.2").first()).toBeVisible();
   const market = page.locator("section[aria-labelledby=market-h]");

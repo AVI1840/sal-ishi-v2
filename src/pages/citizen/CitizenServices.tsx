@@ -211,7 +211,9 @@ function NextUp({ citizenId }: { citizenId: string }) {
     .map((b) => ({ b, at: nextSession(b, now) }))
     .filter((x): x is { b: (typeof x)["b"]; at: Date } => !!x.at)
     .sort((a, b) => a.at.getTime() - b.at.getTime())[0];
-  const pending = derived.requests.filter((r) => r.citizenId === citizenId && r.kind === "gated_service" && r.status === "open").length;
+  const pending =
+    derived.requests.filter((r) => r.citizenId === citizenId && r.kind === "gated_service" && r.status === "open").length +
+    derived.bookings.filter((b) => b.citizenId === citizenId && b.supplierApproval === "pending").length;
   if (!next && !pending) return null;
   return (
     <Link to="/citizen/activities" className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:border-[#1B3A5C]/40">
@@ -233,7 +235,7 @@ function NextUp({ citizenId }: { citizenId: string }) {
             </span>
           </>
         ) : null}
-        {pending ? <span className="block text-base text-amber-900 font-semibold mt-0.5">{pending === 1 ? "בקשה אחת ממתינה לאישור המלווה" : `${pending} בקשות ממתינות לאישור המלווה`}</span> : null}
+        {pending ? <span className="block text-base text-amber-900 font-semibold mt-0.5">{pending === 1 ? "בקשה אחת ממתינה לאישור" : `${pending} בקשות ממתינות לאישור`}</span> : null}
       </span>
       <span className="text-base font-semibold text-[#1B3A5C] inline-flex items-center shrink-0">
         <span className="hidden sm:inline">השירותים שלי</span> <ChevronLeft className="w-6 h-6" aria-hidden="true" />

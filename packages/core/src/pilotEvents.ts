@@ -8,9 +8,11 @@ import { z } from "zod";
 /**
  * 1.1 (0.6): הזמנה כמנוי חודשי או חד-פעמית, דיווח נוכחות מהספק (שמור מול נוצל),
  * ותמריצים. תוספות בלבד: קובץ 1.0 עדיין נקרא.
+ * 1.2 (0.7): אישור ספק להצטרפות (booking.supplier_decided, ושדה awaitsSupplier בהזמנה).
+ * תוספות בלבד: קבצים 1.0 ו-1.1 עדיין נקראים.
  */
-export const PILOT_EVENTS_SCHEMA_ID = "sal-ishi.pilot-events/1.1";
-export const PILOT_EVENTS_SCHEMA_IDS = ["sal-ishi.pilot-events/1.0", PILOT_EVENTS_SCHEMA_ID] as const;
+export const PILOT_EVENTS_SCHEMA_ID = "sal-ishi.pilot-events/1.2";
+export const PILOT_EVENTS_SCHEMA_IDS = ["sal-ishi.pilot-events/1.0", "sal-ishi.pilot-events/1.1", PILOT_EVENTS_SCHEMA_ID] as const;
 
 export const actorSchema = z.enum(["citizen", "companion", "system"]);
 
@@ -52,7 +54,10 @@ export const pilotEventSchema = z.discriminatedUnion("type", [
     copayShekel: z.number(),
     mode: bookingModeSchema.optional().describe("ברירת מחדל: single"),
     sessionsPerMonth: z.number().int().positive().optional().describe("במנוי: מפגשים בחודש, לחלוקת הסכום לפי נוכחות"),
+    awaitsSupplier: z.boolean().optional().describe("ההצטרפות ממתינה לאישור הספק. עד שהספק מאשר היא לא מוצגת כמאושרת"),
   }),
+  /** החלטת הספק (דרך ספק העל) על בקשת הצטרפות: מאשר או לא מאשר. לא משנה זכאות או תקציב. */
+  z.object({ ...base, type: z.literal("booking.supplier_decided"), bookingId: z.string(), decision: z.enum(["approved", "declined"]), reason: z.string().optional() }),
   /** נוכחות מדווחת על ידי הספק (דרך ספק העל): הופכת סכום "שמור" ל"נוצל". */
   z.object({ ...base, type: z.literal("attendance.reported"), bookingId: z.string(), sessions: z.number().int().positive() }),
   /** תמריץ בנקודות, באישור המלווה. מתווסף לארנק. */
@@ -111,6 +116,8 @@ export const bookingSchema = z.object({
   /** הדיווחים עצמם, עם תאריך: במנוי, "נוצל" נספר לפי חודש. */
   attendance: z.array(z.object({ at: z.string(), sessions: z.number().int().positive() })).optional(),
   status: z.enum(["booked", "cancelled", "paused"]),
+  /** אישור הספק להצטרפות: pending עד ההחלטה. חסר: לא נדרש אישור. */
+  supplierApproval: z.enum(["pending", "approved", "declined"]).optional(),
   cancelledAt: z.string().optional(),
   charged: z.boolean().optional(),
 });

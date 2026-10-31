@@ -27,7 +27,7 @@ const DOMAIN_LABEL: Record<string, string> = {
 export default function CitizenProfile() {
   const { derived } = usePilot();
   const { profile: citizen, interests } = useCitizen();
-  const active = derived.bookings.filter((b) => b.citizenId === citizen.id && b.status !== "cancelled");
+  const active = derived.bookings.filter((b) => b.citizenId === citizen.id && b.status !== "cancelled" && b.supplierApproval !== "pending");
   const upcoming = active.filter((b) => nextSession(b)).length;
 
   return (

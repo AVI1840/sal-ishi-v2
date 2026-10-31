@@ -8,7 +8,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Phone, Heart, Building2, Users, Wallet, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { appSettings, isDemo } from "@/pilot/settings";
-import { reportAttendance, setSimulation, usePilot } from "@/pilot/store";
+import { decideBySupplier, reportAttendance, setSimulation, usePilot } from "@/pilot/store";
 import { resetDemo } from "@/pilot/reset";
 import { prepareOffline } from "@/pilot/offline";
 import type { Simulation } from "@/pilot/model";
@@ -76,6 +76,17 @@ function DemoMenu() {
           >
             איפוס ההדגמה
           </button>
+          <button
+            type="button"
+            className="w-full min-h-[44px] rounded-lg border border-[#1B3A5C]/40 text-[#1B3A5C] text-sm font-semibold"
+            onClick={() => {
+              const waiting = derived.bookings.filter((b) => b.citizenId === appSettings.citizen.persona_id && b.supplierApproval === "pending");
+              for (const b of waiting) decideBySupplier({ citizenId: b.citizenId, bookingId: b.id, decision: "approved" });
+              setMsg(waiting.length ? "הדגמה: הספק אישר את בקשת ההצטרפות של שרה. בפיילוט האישור מגיע מהספק, דרך ספק העל." : "אין בקשת הצטרפות של שרה שממתינה לספק.");
+            }}
+          >
+            הספק מאשר את הבקשה של שרה (הדגמה)
+          </button>
           <button type="button" className="w-full min-h-[44px] rounded-lg border border-[#1B3A5C]/40 text-[#1B3A5C] text-sm font-semibold" onClick={async () => setMsg(await prepareOffline())}>
             הכנה לעבודה בלי אינטרנט
           </button>
@@ -83,7 +94,7 @@ function DemoMenu() {
             type="button"
             className="w-full min-h-[44px] rounded-lg border border-[#1B3A5C]/40 text-[#1B3A5C] text-sm font-semibold"
             onClick={() => {
-              const active = derived.bookings.filter((b) => b.citizenId === appSettings.citizen.persona_id && b.status === "booked");
+              const active = derived.bookings.filter((b) => b.citizenId === appSettings.citizen.persona_id && b.status === "booked" && b.supplierApproval !== "pending");
               for (const b of active) reportAttendance({ citizenId: b.citizenId, bookingId: b.id });
               setMsg(active.length ? `הספק דיווח: שרה השתתפה במפגש (${active.length === 1 ? "פעילות אחת" : `${active.length} פעילויות`}). "שמור" הפך ל"נוצל".` : "אין לשרה פעילות פעילה לדווח עליה.");
             }}

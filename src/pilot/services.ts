@@ -11,6 +11,12 @@ import { suggestByDomain } from "@/lib/suggestions";
 import type { Booking } from "./model";
 import { appSettings } from "./settings";
 
+/** הדגמה: ההצטרפות לשירות הזה ממתינה לאישור הספק (מההגדרות). */
+export const needsSupplierApproval = (serviceId: string): boolean => (appSettings.supplier_approval?.service_ids ?? []).includes(serviceId);
+
+/** ההזמנה עוד לא אושרה על ידי הספק: לא מוצגת כמאושרת. */
+export const awaitsSupplier = (b: Pick<Booking, "supplierApproval">): boolean => b.supplierApproval === "pending";
+
 const settings = () => catalogState.seed.settings;
 
 /** נקודות לשקלים לפי ההגדרות (points_per_shekel). */

@@ -266,6 +266,7 @@ export function PersonActions({ citizen }: { citizen: PersonalProfile }) {
                 <li key={b.id}>
                   {b.serviceName}: {b.slot ? formatSlot(he, b.slot) : "מועד בתיאום"}
                   {b.status === "paused" ? " (מוקפא)" : ""}
+                  {b.supplierApproval === "pending" ? " (ממתין לאישור הספק)" : ""}
                   {b.onBehalf ? " (הוזמן בשמו/ה)" : ""}
                 </li>
               ))}

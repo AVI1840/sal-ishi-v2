@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, ChevronDown, ExternalLink, Search, Store, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { amount } from "@/lib/wallet";
 import { usePilot } from "@/pilot/store";
 import { STAGE_LABEL, SUPPLIER_TYPE_LABEL, opportunities, summarize, supplierData, supplierName, suppliersOfType, type SupplierStage } from "@/lib/supplierView";
 
@@ -35,6 +36,9 @@ export default function ExecutiveSuppliers() {
   const blockers = new Map<string, number>();
   for (const x of all) for (const r of x.rows) for (const m of r.missing) blockers.set(m, (blockers.get(m) ?? 0) + 1);
   const topBlockers = [...blockers.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  // התחשבנות (סימולציה): לפי נוכחות מדווחת. אין סליקה ואין העברת כספים.
+  const settlement = all.filter((x) => x.used > 0);
+  const awaitingTotal = all.reduce((n, x) => n + x.awaiting, 0);
 
   return (
     <div className="space-y-6">
@@ -70,6 +74,27 @@ export default function ExecutiveSuppliers() {
           ))}
         </ol>
         <p className="text-xs text-muted-foreground mt-3">תשלומים, חוזים ודירוג אצל ספק העל. המטה רואה עמידה בתקן, ביקוש ופערים.</p>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="settle-h">
+        <h2 id="settle-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          התחשבנות לפי נוכחות מדווחת <span className="text-xs font-semibold px-2 py-0.5 rounded-md border bg-warning-soft text-warning-foreground border-warning/40">סימולציה</span>
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">
+          אין סליקה ואין העברת כספים: התשלום בפועל אצל ספק העל. {awaitingTotal ? `${awaitingTotal} בקשות הצטרפות עוד ממתינות לאישור הספקים.` : "אין בקשות הצטרפות שממתינות לאישור ספק."}
+        </p>
+        {settlement.length ? (
+          <ul className="space-y-1.5 text-sm">
+            {settlement.map((x) => (
+              <li key={x.supplier.code} className="flex items-center justify-between gap-3">
+                <span className="text-foreground font-medium">{supplierName(x.supplier)}</span>
+                <span className="text-foreground">{amount(x.used)} · <span className="font-semibold">לתשלום (סימולציה)</span></span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">עוד אין נוכחות שדווחה, ולכן אין שורות התחשבנות.</p>
+        )}
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -112,7 +137,7 @@ export default function ExecutiveSuppliers() {
                       </span>
                     </span>
                     <span className="text-sm text-foreground">{x.ready} מתוך {x.rows.length} בתקן</span>
-                    <span className="text-sm text-foreground">{x.activeBookings} הצטרפויות</span>
+                    <span className="text-sm text-foreground">{x.activeBookings} הצטרפויות{x.awaiting ? ` · ${x.awaiting} ממתינות לאישור הספק` : ""}</span>
                     <span className={cn("px-2 py-1 rounded-md text-xs font-semibold", STAGE_STYLE[x.stage])}>{STAGE_LABEL[x.stage]}</span>
                     <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} aria-hidden="true" />
                   </button>

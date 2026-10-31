@@ -109,7 +109,7 @@ function runNudge(): string[] {
 const AGENTS: Agent[] = [
   {
     id: "mapping", name: "מיפוי שירותים", icon: Compass,
-    does: "סורק את השירותים בכל שכונה, מזהה פערים ברצפה ושירותים שחסרים, ומה ביקשו ואין.",
+    does: "רץ באזור, מוצא שירותים חדשים ומתאימים ומציע אותם לקטלוג, ומסמן לבדיקה כשיש שינוי או פער בין ביקוש להיצע: מה ביקשו המלוות ואין, ושכונה מתחת לרצפה.",
     input: "האטלס של השטח, חבילות הפיילוט, בקשות המלוות", output: "פערים, חלופות, רשימת גיוס ספקים",
     today: { label: "אטלס המטה ופערים", to: "/executive/atlas" },
     source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Service Discovery Agent. פרומפט הסריקה השבועית: מסמך המיפוי, חלק ה'", engine: "חישוב כיסוי מול הרצפה, פערים ו\"ביקשו ואין\" על נתוני ההדגמה. אין סריקת רשת", status: "מנוע פעיל בכלי",
@@ -125,7 +125,7 @@ const AGENTS: Agent[] = [
   },
   {
     id: "update", name: "עדכון", icon: RefreshCw,
-    does: "מחזיק את הקטלוג והכללים מעודכנים: גרסאות, יומן שינויים, וייצוא לספק לפי התקן.",
+    does: "מחזיק את הקטלוג והכללים מעודכנים: גרסאות, יומן שינויים, וייצוא לספק לפי התקן. הצעה לדיון: לשלב אותו בתוך מיפוי השירותים, כי שניהם מחזיקים את אותו קטלוג.",
     input: "החלטות המטה, שינויי ספקים", output: "גרסת כללים, קטלוג לאזרח, תקן קליטה",
     today: { label: "ספריית הסל", to: "/executive/catalog" },
     source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Service Discovery Agent (עדכון קטלוג שבועי)", engine: "ניהול גרסאות, יומן שינויים וייצוא לפי התקן. אין עדכון אוטומטי מהרשת", status: "מנוע פעיל בכלי",
@@ -133,7 +133,7 @@ const AGENTS: Agent[] = [
   },
   {
     id: "measure", name: "מדידה", icon: Gauge,
-    does: "מודד מיצוי, חדירה, פריסה וזמן לשירות ראשון, בלי תאים קטנים.",
+    does: "בודק מה הביא תוצאות: שביעות רצון, מה אנשים אהבו, אחוז הגעה וחזרה, מיצוי ושאר מדדי התכנית, בלי תאים קטנים. מציף התראות כשיש פערים.",
     input: "דוח מצטבר מספק העל, הזמנות ונוכחות", output: "מדדים למטה ולמלווה, דגלים",
     today: { label: "מבט על", to: "/executive" },
     source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Deterioration Monitor (זיהוי ירידה והתראה מוקדמת)", engine: "חישוב מיצוי ופערים מהתיק ומנתוני ההדגמה. בלי חיזוי ובלי מודל", status: "מנוע פעיל בכלי",
@@ -141,7 +141,7 @@ const AGENTS: Agent[] = [
   },
   {
     id: "nudge", name: "תמרוץ ומיקוד", icon: Megaphone,
-    does: "ממקד את המלווה במי שצריך אותה, ומציע איך לעודד: שיחה, שיעור ניסיון, תמריץ.",
+    does: "פועל בעיקר מול האזרח: מעודד לצאת, לפי המוטיבציות והתכנית שלו. טיפים והמלצות לו ולמלווה, תזכורות, ו\"החבר שלך גם מגיע\" (רק בהסכמה של שניהם). כל פנייה לאזרח עוברת דרך המלווה.",
     input: "המדדים, הכללים, מה שחשוב לאזרח", output: "\"לפנות היום\", משימות, הצעות עידוד",
     today: { label: "היום של המלווה", to: "/coordinator" },
     source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Nudge Engine", engine: "כללי מיון בתיק (לפנות היום, השבוע). אין שליחת הודעות, והכל באישור המלווה", status: "מנוע פעיל בכלי",
@@ -160,6 +160,20 @@ const ORCHESTRATOR = {
 /** מוגדר במקורות, מחוץ לגיליון ההאקתון של שישה הסוכנים. */
 const ALSO_DEFINED = [
   { name: "לימור (סוכן שיחה לאזרח)", source: "מסמך ארכיטקטורת הסוכנים, ומאגר libi-ai (LimorAgent, orchestrator)", status: "מתוכנן" as const, note: "שיחה עם האזרח כבויה בגרסה הזו. כל פנייה לאזרח עוברת דרך המלווה." },
+];
+
+/** איך הסוכנים עובדים יחד: מי נותן למי מה. */
+const FLOW = [
+  { who: "מיפוי שירותים", gives: "קטלוג עדכני ופערים", to: "התאמה, והמטה" },
+  { who: "התאמה", gives: "2 עד 3 המלצות לכל אזרח, עם הסבר", to: "האזרח והמלווה" },
+  { who: "תמרוץ ומיקוד", gives: "טיפים, תזכורות והזמנה לצאת, לפי המוטיבציות", to: "האזרח, דרך המלווה" },
+  { who: "מדידה", gives: "מה קרה בפועל: הגעה, חזרה, שביעות רצון", to: "כולם, וגם התראה כשיש פער" },
+];
+const FEEDBACK = [
+  "להתאמה: מה עבד ומה להחליף, כדי שההמלצה הבאה תהיה טובה יותר (בלי לשנות את המשקלות, שנקבעים במטה).",
+  "למיפוי: איפה חסר שירות, כדי לגייס ספק או להרחיב קיים.",
+  "לתמרוץ: מי נשר או לא התחיל, כדי להציע שיחה, שיעור ניסיון או חבר.",
+  "למלווה: התראה עם סיבה, מקור הנתון ומה מוצע לעשות.",
 ];
 
 /** מנועי חוקים וחישוב: לא סוכנים. */
@@ -186,7 +200,7 @@ function AgentCard(props: { agent: Agent; result?: RunResult; running: boolean; 
           </span>
         </div>
       </div>
-      <p className="text-sm text-foreground">{a.does}</p>
+      <p className="text-sm text-foreground"><span className="font-semibold">הייעוד: </span>{a.does}</p>
       <dl className="text-sm space-y-1">
         <div><dt className="inline font-semibold">מקור ההגדרה: </dt><dd className="inline text-muted-foreground">{a.source}</dd></div>
         <div><dt className="inline font-semibold">מה רץ כאן: </dt><dd className="inline text-muted-foreground">{a.engine}</dd></div>
@@ -301,6 +315,29 @@ export default function ExecutiveAgents() {
           <AgentCard key={a.id} agent={a} result={results[a.id]} running={running === a.id} onRun={() => void runOne(a)} />
         ))}
       </div>
+
+      <section className="libi-card p-5" aria-labelledby="flow-h">
+        <h2 id="flow-h" className="text-lg font-bold text-foreground">איך הם עובדים יחד, לטובת האזרחית והמלווה</h2>
+        <p className="text-sm text-muted-foreground mt-1">לולאה אחת על מקור נתונים אחד, עם אדם שמחליט בכל נקודה. המתזמר קובע את הסדר, מעביר תוצאה מסוכן לסוכן, ועוצר כשצריך החלטה אנושית.</p>
+        <ol className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+          {FLOW.map((f, i) => (
+            <li key={f.who} className="rounded-lg border border-border p-3 text-sm">
+              <span className="block font-semibold text-foreground">{i + 1}. {f.who}</span>
+              <span className="block text-muted-foreground">נותן: {f.gives}</span>
+              <span className="block text-muted-foreground">למי: {f.to}</span>
+            </li>
+          ))}
+        </ol>
+        <h3 className="text-sm font-semibold text-foreground mt-4">והמדידה מחזירה את התוצאה אל הלולאה:</h3>
+        <ul className="mt-1 space-y-1 text-sm text-foreground list-disc pr-5">
+          {FEEDBACK.map((x) => <li key={x}>{x}</li>)}
+        </ul>
+        <div className="mt-4 rounded-lg border border-warning/40 bg-warning-soft/40 p-3 text-sm text-foreground">
+          <p className="font-semibold">הצעה, ממתין להכרעה: חמישה סוכנים במקום שישה</p>
+          <p className="text-muted-foreground mt-1">לאחד את "עדכון" לתוך "מיפוי שירותים" (מיפוי ועדכון קטלוג), כי שניהם מחזיקים את אותו קטלוג ואותו פער. נשארים: מיפוי ועדכון, התאמה, תמרוץ ומיקוד, מדידה, ומתזמר. גם במקורות (מסמך הארכיטקטורה) מיפוי ועדכון הם סוכן אחד: Service Discovery.</p>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">כללי ברזל: סוכן לא משנה זכאות, תקציב או גישה לשירות. הוא מציע, והמלווה או המטה מחליטים. כל תוצר של סוכן מסומן כהמלצה או כסימולציה, עם מקור הנתון.</p>
+      </section>
 
       <section className="libi-card p-5" aria-labelledby="also-h">
         <h2 id="also-h" className="text-lg font-bold text-foreground">הוגדר במקורות, מחוץ לשישה</h2>

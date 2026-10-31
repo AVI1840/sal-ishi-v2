@@ -6,11 +6,11 @@
  */
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CheckCircle2, AlertTriangle, FileJson, Info, ClipboardCheck, BarChart3, Building2, ListChecks, Target, MapPin, Languages, Accessibility, Phone } from "lucide-react";
+import { Receipt, CheckCircle2, AlertTriangle, FileJson, Info, ClipboardCheck, BarChart3, Building2, ListChecks, Target, MapPin, Languages, Accessibility, Phone } from "lucide-react";
 import { DELIVERY_LABEL, SUPPLIER_TYPE_LABEL, opportunities } from "@/lib/supplierView";
 import { buildCaseload } from "@/pilot/caseload";
 import { attendedIn, monthOf, usedOf } from "@/pilot/services";
-import { reportAttendance, usePilot } from "@/pilot/store";
+import { decideBySupplier, reportAttendance, usePilot } from "@/pilot/store";
 import { amount } from "@/lib/wallet";
 import { cn } from "@/lib/utils";
 import { buildDemoAuthority, complementOf, defaultSeed, DEMO_JERUSALEM, entryTest, missingMandatoryFields, onboardingGaps, supplierScore, withSettings, ENTRY_STATUS } from "@sal-ishi/core";
@@ -61,10 +61,15 @@ export default function ProviderDashboard() {
     .filter((x) => x.participants > 0 || x.sessions > 0);
 
   const gaps = opportunities(data, code);
-  const toReport = bookings.filter((b) => b.status === "booked" && (b.mode === "subscription" ? attendedIn(b, month) < (b.sessionsPerMonth ?? 4) : !b.attendedSessions)).length;
+  const waitingApproval = bookings.filter((b) => b.supplierApproval === "pending");
+  // התחשבנות (סימולציה): לפי נוכחות שדווחה בלבד. אין סליקה ואין העברת כספים.
+  const settlement = bookings.filter((b) => usedOf(b) > 0 && b.status !== "cancelled");
+  const settlementTotal = settlement.reduce((n, b) => n + usedOf(b), 0);
+  const toReport = bookings.filter((b) => b.status === "booked" && b.supplierApproval !== "pending" && (b.mode === "subscription" ? attendedIn(b, month) < (b.sessionsPerMonth ?? 4) : !b.attendedSessions)).length;
   const notReady = rows.filter((r) => !r.ready);
   const next: string[] = [
     ...notReady.slice(0, 3).map((r) => `להשלים ב"${r.s.name}": ${r.missing.length ? r.missing.join(", ") : r.entry.reason ?? r.entry.status}`),
+    ...(waitingApproval.length ? [`לאשר או לא לאשר ${waitingApproval.length === 1 ? "בקשת הצטרפות אחת" : `${waitingApproval.length} בקשות הצטרפות`}`] : []),
     ...(toReport ? [`לדווח נוכחות ל-${toReport} הצטרפויות פתוחות`] : []),
     ...gaps.filter((g) => g.canExpand).slice(0, 2).map((g) => `להרחיב "${g.what}" ל${g.neighborhood}: ${g.why}`),
   ];
@@ -112,6 +117,7 @@ export default function ProviderDashboard() {
         {[
           ["#prov-profile", "הפרופיל"],
           ["#prov-next", "מה לעשות עכשיו"],
+          ["#prov-requests", `בקשות הצטרפות${waitingApproval.length ? ` (${waitingApproval.length})` : ""}`],
           ["#prov-services", "השירותים והתקן"],
           ["#market-h", "הצטרפויות ונוכחות"],
           ["#prov-gaps", "הזדמנויות בשכונות"],
@@ -189,6 +195,38 @@ export default function ProviderDashboard() {
         </table>
       </div>
 
+      <section id="prov-requests" className="libi-card p-5" aria-labelledby="requests-h">
+        <h2 id="requests-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <ClipboardCheck className="w-5 h-5 text-primary" aria-hidden="true" /> בקשות הצטרפות לאישור
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">אזרחים שביקשו להצטרף לשירות שלך. עד שתאשר, ההצטרפות לא מוצגת להם כמאושרת, והנקודות שלהם שמורות. אי אפשר לשנות מכאן זכאות או תקציב.</p>
+        {waitingApproval.length ? (
+          <ul className="space-y-2">
+            {waitingApproval.map((b) => {
+              const name = people.get(b.citizenId) ?? b.citizenId;
+              return (
+                <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
+                  <span className="text-sm text-foreground">
+                    <span className="font-semibold">{name}</span> ביקש/ה להצטרף ל{b.serviceName} · {amount(b.coveredShekel)} בחודש
+                  </span>
+                  <span className="flex gap-2">
+                    <button type="button" className="min-h-[44px] px-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold" aria-label={`לאשר הצטרפות: ${name}, ${b.serviceName}`} onClick={() => decideBySupplier({ citizenId: b.citizenId, bookingId: b.id, decision: "approved" })}>
+                      לאשר הצטרפות
+                    </button>
+                    <button type="button" className="min-h-[44px] px-4 rounded-lg border border-border text-sm font-semibold" aria-label={`לא לאשר: ${name}, ${b.serviceName}`} onClick={() => decideBySupplier({ citizenId: b.citizenId, bookingId: b.id, decision: "declined", reason: "הספק לא אישר" })}>
+                      לא לאשר
+                    </button>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">אין בקשות הצטרפות שממתינות לך.</p>
+        )}
+        <p className="text-xs text-muted-foreground mt-2">בפיילוט: האישור עובר דרך ספק העל. כאן זו הדגמה, והזיהוי הוא במזהה בדוי.</p>
+      </section>
+
       <section className="libi-card p-5" aria-labelledby="market-h">
         <h2 id="market-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
           <ClipboardCheck className="w-5 h-5 text-primary" aria-hidden="true" /> מהשוק: הצטרפויות והזמנות
@@ -215,13 +253,13 @@ export default function ProviderDashboard() {
                     <tr key={b.id} className="border-b border-border/60 last:border-0">
                       <td className="py-2.5 font-semibold text-foreground">{name}</td>
                       <td className="py-2.5 text-foreground">{b.serviceName}</td>
-                      <td className="py-2.5 text-foreground">{sub ? `מנוי חודשי, ${amount(b.coveredShekel)}` : `חד-פעמי, ${amount(b.coveredShekel)}`}{b.status === "cancelled" ? " · עזב/ה" : b.status === "paused" ? " · מוקפא (אשפוז)" : ""}</td>
+                      <td className="py-2.5 text-foreground">{sub ? `מנוי חודשי, ${amount(b.coveredShekel)}` : `חד-פעמי, ${amount(b.coveredShekel)}`}{b.supplierApproval === "pending" ? " · ממתין לאישורך" : b.supplierApproval === "declined" ? " · לא אושר" : b.status === "cancelled" ? " · עזב/ה" : b.status === "paused" ? " · מוקפא (אשפוז)" : ""}</td>
                       <td className="py-2.5 text-foreground">
                         {sub ? `${att} מתוך ${b.sessionsPerMonth ?? 4}` : att ? "השתתף/ה" : "-"}
                         {usedOf(b) ? <span className="text-muted-foreground"> · נוצל {amount(usedOf(b))}</span> : null}
                       </td>
                       <td className="py-2.5">
-                        {b.status === "booked" && (sub ? att < (b.sessionsPerMonth ?? 4) : !att) ? (
+                        {b.status === "booked" && b.supplierApproval !== "pending" && (sub ? att < (b.sessionsPerMonth ?? 4) : !att) ? (
                           <button
                             type="button"
                             className="min-h-[40px] px-3 rounded-lg border border-primary text-primary text-sm font-semibold"
@@ -242,6 +280,28 @@ export default function ProviderDashboard() {
           <p className="text-sm text-muted-foreground">עוד אין הצטרפויות מהשוק לשירותים של הספק הזה.</p>
         )}
         <p className="text-xs text-muted-foreground mt-2">בפיילוט: המשתתף מזוהה במזהה בדוי של ספק העל, והדיווח עובר דרך הפלטפורמה שלו.</p>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="settle-h">
+        <h2 id="settle-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
+          <Receipt className="w-5 h-5 text-primary" aria-hidden="true" /> חשבוניות וסטטוס תשלום <span className="text-xs font-semibold px-2 py-0.5 rounded-md border bg-warning-soft text-warning-foreground border-warning/40">סימולציה</span>
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3">לפי נוכחות שדווחה בלבד. אין סליקה ואין העברת כספים: התשלום בפועל אצל ספק העל.</p>
+        {settlement.length ? (
+          <>
+            <ul className="space-y-1.5 text-sm">
+              {settlement.map((b) => (
+                <li key={b.id} className="flex items-center justify-between gap-3">
+                  <span className="text-foreground">{b.serviceName} · {people.get(b.citizenId) ?? b.citizenId}</span>
+                  <span className="text-foreground">{amount(usedOf(b))} · <span className="font-semibold">לתשלום (סימולציה)</span></span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm font-semibold text-foreground mt-2">סך הכל לתשלום (סימולציה): {amount(settlementTotal)}</p>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">עוד אין נוכחות שדווחה, ולכן אין שורות התחשבנות.</p>
+        )}
       </section>
 
       {activity.length ? (

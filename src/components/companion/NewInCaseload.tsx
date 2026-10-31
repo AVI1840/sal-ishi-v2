@@ -19,7 +19,7 @@ export function NewInCaseload() {
   const people = useMemo(() => new Map(buildCaseload().map((p) => [p.id, p])), []);
   const since = Date.now() - WINDOW_HOURS * 3600000;
   const items = derived.bookings
-    .filter((b) => b.createdBy === "citizen" && b.status === "booked" && new Date(b.createdAt).getTime() >= since && people.has(b.citizenId))
+    .filter((b) => b.createdBy === "citizen" && b.status === "booked" && b.supplierApproval !== "pending" && new Date(b.createdAt).getTime() >= since && people.has(b.citizenId))
     // המלווה כבר פעלה אחרי ההזמנה: לא חדש.
     .filter((b) => !seen.has(b.id) && !derived.visits.some((v) => v.citizenId === b.citizenId && v.at > b.createdAt))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))

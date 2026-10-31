@@ -9,6 +9,7 @@ import { BookOpen, Building2, ChevronLeft, Compass, FileJson, Heart, HeartHandsh
 import { catalogState } from "@/data/catalogSource";
 import { realServices } from "@/data/realServices";
 import { appSettings, shownBackground } from "@/pilot/settings";
+import { CREDIT } from "@/lib/credit";
 
 const basket = () => catalogState.seed.settings as unknown as Record<"total" | "personal_wallet", number>;
 
@@ -241,8 +242,22 @@ export default function DemoHome() {
         </div>
       </section>
 
+      {/* מי עומד מאחורי הסל האישי */}
+      <section className="max-w-5xl mx-auto px-6 py-10" aria-labelledby="credit-h">
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 flex flex-wrap items-center gap-5">
+          <span className="w-16 h-16 rounded-full bg-[#1B3A5C] text-white text-2xl font-bold flex items-center justify-center shrink-0" aria-hidden="true">{CREDIT.who.charAt(0)}</span>
+          <div className="flex-1 min-w-[240px]">
+            <h2 id="credit-h" className="text-xl font-bold text-gray-900">מי עומד מאחורי הסל האישי</h2>
+            <p className="text-base text-gray-800 mt-1">
+              <span className="font-bold">{CREDIT.who}</span>, {CREDIT.org}. יוזמה, תכנון ופיתוח של הסל האישי להזדקנות מיטבית: מנייר המדיניות ומחקר השטח, דרך מודל ההפעלה וסדנת עיצוב השירות, ועד המערכת שרואים כאן.
+            </p>
+            <p className="text-sm text-gray-600 mt-1">{CREDIT.reuse}</p>
+          </div>
+        </div>
+      </section>
+
       <footer className="max-w-5xl mx-auto px-6 py-6 text-sm text-gray-600 flex flex-wrap items-center justify-between gap-2">
-        <span>הסל האישי · {appSettings.demo.data_label} · גרסה {appSettings.version} · בנייה {__BUILD_COMMIT__}</span>
+        <span>הסל האישי · {CREDIT.line} · {appSettings.demo.data_label} · גרסה {appSettings.version} · בנייה {__BUILD_COMMIT__}</span>
         <Link to="/scope" className="underline underline-offset-4 min-h-[44px] leading-[44px]">מה הכלי כן ולא עושה</Link>
       </footer>
     </div>

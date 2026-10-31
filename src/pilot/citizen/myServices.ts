@@ -12,7 +12,7 @@ const KEY = "sal-ishi-reminders";
 
 /** המפגש הבא: חד-פעמי, המועד עצמו אם עוד לא עבר. מנוי, אותו יום ושעה בשבוע הקרוב. */
 export function nextSession(b: Booking, now = new Date()): Date | null {
-  if (!b.slot || b.status !== "booked") return null;
+  if (!b.slot || b.status !== "booked" || b.supplierApproval === "pending") return null;
   const first = new Date(b.slot);
   if (b.mode !== "subscription") return first.getTime() >= now.getTime() ? first : null;
   if (first.getTime() >= now.getTime()) return first;

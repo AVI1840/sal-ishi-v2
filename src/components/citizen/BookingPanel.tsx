@@ -6,13 +6,13 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { CalendarCheck, CheckCircle2 } from "lucide-react";
+import { CalendarCheck, CheckCircle2, Hourglass } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RealService } from "@/data/realServices";
 import { formatSlot } from "@/pilot/i18n";
 import { he } from "@/pilot/i18n/he";
 import { book } from "@/pilot/store";
-import { isCoordinated, isProduct, isSubscription, priceLabel, priceOf, sessionsPerMonth, slotsFor } from "@/pilot/services";
+import { isCoordinated, isProduct, isSubscription, needsSupplierApproval, priceLabel, priceOf, sessionsPerMonth, slotsFor } from "@/pilot/services";
 import { amount } from "@/lib/wallet";
 import { useOnline } from "@/pilot/components/Frame";
 import { ruleText, whereText } from "@/pilot/citizen/Service";
@@ -47,12 +47,28 @@ function JoinPanel({ service }: { service: RealService }) {
   const first = slotsFor(service)[0] ?? null;
   const when = first ? weeklyText(first) : he.coordinated;
   const [step, setStep] = useState<"idle" | "confirm" | "done">("idle");
+  // הדגמה: שירות שההצטרפות אליו ממתינה לאישור הספק.
+  const needsApproval = needsSupplierApproval(service.id);
 
   if (step === "idle") {
     return (
       <button type="button" className={primary} onClick={() => setStep("confirm")}>
-        <CalendarCheck className="w-5 h-5" aria-hidden="true" /> להצטרף לקבוצה
+        <CalendarCheck className="w-5 h-5" aria-hidden="true" /> {needsApproval ? "לבקש להצטרף לקבוצה" : "להצטרף לקבוצה"}
       </button>
+    );
+  }
+  if (step === "done" && needsApproval) {
+    return (
+      <section className="bg-amber-50 border border-amber-300 rounded-xl p-5 space-y-3" aria-labelledby="requested-title">
+        <StepTitle id="requested-title" className="text-xl font-bold text-amber-950 flex items-center gap-2">
+          <Hourglass className="w-6 h-6" aria-hidden="true" /> הבקשה נשלחה לספק
+        </StepTitle>
+        <p className="text-base text-gray-900" role="status">ביקשת להצטרף ל{service.name}. ההצטרפות תאושר רק אחרי שהספק יאשר. {when}.</p>
+        <p className="text-base text-gray-800">{amount(price.covered)} שמורות בארנק עד התשובה. אם הספק לא יאשר, הן חוזרות אלייך.</p>
+        {!online ? <p className="text-base text-amber-900">{he.bookedOffline}</p> : null}
+        <Link to="/citizen/activities" className={primary}>{he.toActivities}</Link>
+        <Link to="/citizen" className={secondary}>{he.toHome}</Link>
+      </section>
     );
   }
   if (step === "done") {
@@ -71,7 +87,7 @@ function JoinPanel({ service }: { service: RealService }) {
   }
   return (
     <section className="bg-white rounded-xl p-5 border-2 border-[#1B3A5C] space-y-3" aria-labelledby="join-title">
-      <StepTitle id="join-title" className="text-xl font-bold text-gray-900">לבדוק ולהצטרף</StepTitle>
+      <StepTitle id="join-title" className="text-xl font-bold text-gray-900">{needsApproval ? "לבדוק ולשלוח בקשה" : "לבדוק ולהצטרף"}</StepTitle>
       <dl className="space-y-2 text-base">
         {[
           [he.when, when],
@@ -99,11 +115,12 @@ function JoinPanel({ service }: { service: RealService }) {
             actor: "citizen",
             mode: "subscription",
             sessionsPerMonth: sessionsPerMonth(),
+            ...(needsApproval ? { awaitsSupplier: true } : {}),
           });
           setStep("done");
         }}
       >
-        לאשר את ההצטרפות
+        {needsApproval ? "לשלוח בקשה לספק" : "לאשר את ההצטרפות"}
       </button>
       <button type="button" className={secondary} onClick={() => setStep("idle")}>{he.back}</button>
     </section>

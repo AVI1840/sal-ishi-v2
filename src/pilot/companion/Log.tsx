@@ -21,6 +21,8 @@ export function describe(e: PilotEvent): string {
       return e.mode === "subscription"
         ? `הצטרפות: ${e.serviceName}. ${amount(e.coveredShekel)} בחודש מהארנק${e.copayShekel ? `, השתתפות ₪${e.copayShekel}` : ""}.`
         : `הזמנה: ${e.serviceName}${e.slot ? `, ${formatSlot(STRINGS.he, e.slot)}` : ""}. ${amount(e.coveredShekel)} מהארנק${e.copayShekel ? `, השתתפות ₪${e.copayShekel}` : ""}.`;
+    case "booking.supplier_decided":
+      return e.decision === "approved" ? "הספק אישר את בקשת ההצטרפות." : "הספק לא אישר את בקשת ההצטרפות. הנקודות חזרו לארנק.";
     case "attendance.reported":
       return e.sessions === 1 ? "הספק דיווח על השתתפות במפגש." : `הספק דיווח על השתתפות ב-${e.sessions} מפגשים.`;
     case "incentive.granted":

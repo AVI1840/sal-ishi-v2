@@ -85,6 +85,7 @@ function ReminderControls({ b }: { b: Booking }) {
 }
 
 function BookingCard({ b, onCancelled }: { b: Booking; onCancelled: (id: string) => void }) {
+  const waiting = b.supplierApproval === "pending";
   const [asking, setAsking] = useState(false);
   const [result, setResult] = useState<{ charged: boolean; refund: number } | null>(null);
   const sub = b.mode === "subscription";
@@ -129,23 +130,24 @@ function BookingCard({ b, onCancelled }: { b: Booking; onCancelled: (id: string)
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <StatusBadge status={b.status} text={sub && b.status === "booked" ? "פעיל" : b.status === "booked" ? "הרשמה פעילה" : undefined} />
+        {waiting ? <StatusBadge status="open" text="ממתין לאישור הספק" /> : <StatusBadge status={b.status} text={sub && b.status === "booked" ? "פעיל" : b.status === "booked" ? "הרשמה פעילה" : undefined} />}
         {next ? <span className="text-sm text-gray-700">המפגש הבא {whenWords(next)}</span> : null}
       </div>
       {b.status === "paused" ? <p className="text-base text-gray-800">{he.hospitalized}</p> : null}
 
-      {b.status === "booked" && !result ? <ReminderControls b={b} /> : null}
+      {waiting ? <p className="text-base text-gray-800">הבקשה אצל הספק. עד שיאשר אין מפגש קבוע, והנקודות שמורות בארנק.</p> : null}
+      {b.status === "booked" && !result && !waiting ? <ReminderControls b={b} /> : null}
 
       {/* דירוג: רק אחרי השתתפות */}
       {everAttended && b.status !== "cancelled" ? <ServiceRating serviceId={b.serviceId} serviceName={b.serviceName} /> : null}
 
       {result ? (
         <p role="status" className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-base text-emerald-950">
-          {sub ? "עזבת את הקבוצה." : `${he.cancelledTitle}.`} {result.charged ? he.cancelledNoRefund : result.refund > 0 ? he.cancelledRefund(result.refund) : ""}
+          {waiting ? "הבקשה בוטלה." : sub ? "עזבת את הקבוצה." : `${he.cancelledTitle}.`} {result.charged ? he.cancelledNoRefund : result.refund > 0 ? he.cancelledRefund(result.refund) : ""}
         </p>
       ) : b.status === "booked" && !asking ? (
-        <button type="button" className={secondary} onClick={() => setAsking(true)} aria-label={`${sub ? "לעזוב את הקבוצה" : he.cancel}: ${b.serviceName}`}>
-          {sub ? "לעזוב את הקבוצה" : he.cancel}
+        <button type="button" className={secondary} onClick={() => setAsking(true)} aria-label={`${waiting ? "לבטל את הבקשה" : sub ? "לעזוב את הקבוצה" : he.cancel}: ${b.serviceName}`}>
+          {waiting ? "לבטל את הבקשה" : sub ? "לעזוב את הקבוצה" : he.cancel}
         </button>
       ) : b.status === "booked" && asking ? (
         <div className="space-y-2" role="group" aria-label={sub ? `לעזוב את ${b.serviceName}?` : he.cancelAsk(b.serviceName)}>
@@ -186,7 +188,9 @@ export default function CitizenActivities() {
   const [justCancelled, setJustCancelled] = useState<string[]>([]);
   const now = new Date();
   const mine = derived.bookings.filter((b) => b.citizenId === profile.id);
+  const awaiting = mine.filter((b) => b.supplierApproval === "pending" && !justCancelled.includes(b.id));
   const active = mine
+    .filter((b) => b.supplierApproval !== "pending")
     .filter((b) => b.status !== "cancelled" || justCancelled.includes(b.id))
     .sort((a, b) => (a.slot ?? a.createdAt).localeCompare(b.slot ?? b.createdAt));
   const soon = mine
@@ -197,10 +201,11 @@ export default function CitizenActivities() {
   const pending = requests.filter((r) => r.status === "open" || (r.status === "approved" && r.kind === "gated_service"));
   const decided = requests.filter((r) => !pending.includes(r));
   const cancelled = mine.filter((b) => b.status === "cancelled" && !justCancelled.includes(b.id));
+  const declined = (b: Booking) => b.supplierApproval === "declined";
   const usedTotal = mine.reduce((n, b) => n + usedOf(b), 0);
   // תזכורת שמופיעה כאן: מפגש עם תזכורת שמתקיים היום או מחר.
   const due = soon.filter((x) => reminders.has(x.b.id) && x.at.getTime() - now.getTime() < 2 * 24 * 60 * 60 * 1000);
-  const count = { soon: soon.length, mine: active.length, pending: pending.length, history: cancelled.length + decided.length };
+  const count = { soon: soon.length, mine: active.length, pending: pending.length + awaiting.length, history: cancelled.length + decided.length };
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
@@ -283,11 +288,12 @@ export default function CitizenActivities() {
         </section>
 
         <section id="pending" aria-labelledby="pending-h" className="scroll-mt-4 space-y-3">
-          <h2 id="pending-h" className="text-2xl font-bold text-gray-900">בקשות למלווה וממתין לאישור</h2>
-          {pending.length === 0 ? (
+          <h2 id="pending-h" className="text-2xl font-bold text-gray-900">ממתין לאישור</h2>
+          {pending.length + awaiting.length === 0 ? (
             <p className="text-base text-gray-700">אין בקשות פתוחות.</p>
           ) : (
             <ul className="space-y-3">
+              {awaiting.map((b) => <BookingCard key={b.id} b={b} onCancelled={(id) => setJustCancelled((x) => [...x, id])} />)}
               {pending.map((r) => (
                 <li key={r.id} className="bg-white border border-gray-200 rounded-2xl p-4 space-y-2">
                   <h3 className="text-lg font-bold text-gray-900">
@@ -327,7 +333,7 @@ export default function CitizenActivities() {
                     <span className="block text-base font-bold text-gray-900">{b.serviceName}</span>
                     <span className="block text-sm text-gray-700">{whenOf(b)}{usedOf(b) ? ` · נוצל ${amount(usedOf(b))}` : ""}</span>
                   </span>
-                  <StatusBadge status="cancelled" text={b.mode === "subscription" ? "עזבת" : undefined} />
+                  <StatusBadge status="cancelled" text={declined(b) ? "הספק לא אישר" : b.mode === "subscription" ? "עזבת" : undefined} />
                 </li>
               ))}
               {decided.map((r) => (

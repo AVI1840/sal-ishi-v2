@@ -15,17 +15,21 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 // ציר הזמן של התכנית, ומגמות. המגמות הן נתוני הדגמה עד שספק העל מעביר דוח מצטבר.
 const TIMELINE_STEPS = [
   { label: "נייר מדיניות", status: "done" },
-  { label: "מחקר", status: "done" },
-  { label: "סדנה", status: "done" },
-  { label: "אפיון", status: "active" },
-  { label: "פיילוט", status: "active" },
-  { label: "הכרעות מפגש 3", status: "pending" },
-  { label: "מכרז אינטגרטור", status: "pending" },
-  { label: "הרחבה", status: "pending" },
-  { label: "הטמעה", status: "pending" },
+  { label: "מחקר שטח", status: "done" },
+  { label: "מודל הפעלה רב מערכתי", status: "done" },
+  { label: "סדנת עיצוב שירות", status: "done" },
+  { label: "תכנית האצה", status: "done" },
+  { label: "פיתוח מערכת הסל האישי, בתמיכת אמזון", status: "active" },
+  { label: "פיילוט שנתיים ותוצאות מחקר חיצוני", status: "done" },
+  { label: "ועדה בין משרדית: אישור המודל", status: "pending" },
+  { label: "אישור הרחבה ל-10 פיילוטים", status: "pending" },
+  { label: "יישום המערכת בשטח: הרחבה והטמעה", status: "pending" },
+  { label: "אישור הרחבה מדורגת במסגרת הגמלה", status: "pending" },
+  { label: "מכרז אינטגרטור, הרחבה והטמעה ארצית", status: "pending" },
 ] as const;
 const ENGAGEMENT = [{ m: "מאי", v: 42 }, { m: "יוני", v: 48 }, { m: "יולי", v: 52 }, { m: "אוג", v: 55 }, { m: "ספט", v: 56 }, { m: "אוק", v: 58 }];
-const ENROLLMENT = [{ m: "מאי", v: 120 }, { m: "יוני", v: 160 }, { m: "יולי", v: 200 }, { m: "אוג", v: 240 }, { m: "ספט", v: 265 }, { m: "אוק", v: 286 }];
+/** מגמת ההצטרפות כשיעור מהמספר של תרחיש ההדגמה, כדי שהגרף יסתיים באותו מספר שבכותרת. */
+const ENROLLMENT_SHARE = [{ m: "מאי", f: 0.42 }, { m: "יוני", f: 0.56 }, { m: "יולי", f: 0.7 }, { m: "אוג", f: 0.84 }, { m: "ספט", f: 0.93 }, { m: "אוק", f: 1 }];
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
 import { AGREED_DIRECTION_NOTE, DECIDED_PRINCIPLES_MEETING_2, DEMO_JERUSALEM, isAgreedDirection, buildDemoAuthority, isDecided, penetration, ruleKeys, settingLabel, statusNote, timeToFirstService, utilization } from "@sal-ishi/core";
 import { communityFor } from "@/lib/community";
@@ -36,6 +40,7 @@ import { incentivesOn } from "@/lib/incentives";
 import { appSettings, shownBackground } from "@/pilot/settings";
 import { usePilot } from "@/pilot/store";
 import { servicesFor } from "@/pilot/services";
+import { CREDIT } from "@/lib/credit";
 
 /** שכונות הפיילוט לפי ההחלטות. הר נוף עוד לא בקטלוג ההדגמה. */
 const PILOT_NEIGHBORHOODS = ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"];
@@ -96,7 +101,7 @@ export default function ExecutiveOverview() {
   const agreedRules = rules.filter((k) => isAgreedDirection(catalogState.seed.settings, k));
   const proposals = rules.length - decided - agreedRules.length;
   const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
-  const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
+  const bookings = derived.bookings.filter((b) => b.status !== "cancelled" && b.supplierApproval !== "pending").length;
   const requests = derived.requests.length;
   const incentivePoints = derived.incentives.reduce((n, i) => n + i.points, 0);
   // מספר אחד לתרחיש ההדגמה: סכום מחזיקי הסל בחמש השכונות, מאותם נתונים של טבלת המדדים.
@@ -133,6 +138,7 @@ export default function ExecutiveOverview() {
         </p>
         <p className="text-sm text-white/80 mt-3">
           פיילוט ירושלים, 5 שכונות · {participants} מחזיקי סל בתרחיש ההדגמה
+          <span className="block mt-1">{CREDIT.line}</span>
           {bg ? ` · ${bg.pilot_months} חודשי פיילוט · 2027: ${bg.authorities_2027} רשויות, ${bg.budget_label}` : ""}
         </p>
       </div>
@@ -140,15 +146,16 @@ export default function ExecutiveOverview() {
       {/* ציר זמן התכנית */}
       <section className="libi-card p-5" aria-labelledby="timeline-h">
         <h2 id="timeline-h" className="text-base font-semibold text-foreground mb-6">ציר הזמן של התכנית</h2>
-        <ol className="grid grid-cols-3 sm:grid-cols-9 gap-y-4 gap-x-2 relative">
-          <span className="hidden sm:block absolute top-4 right-4 left-4 h-0.5 bg-gradient-to-l from-success via-primary to-muted" aria-hidden="true" />
+        <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {TIMELINE_STEPS.map((step, i) => (
-            <li key={step.label} className="flex flex-col items-center relative z-10">
-              <span className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2", step.status === "done" ? "bg-success text-success-foreground border-success" : step.status === "active" ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border")}>
-                {step.status === "done" ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : i + 1}
+            <li key={step.label} className={cn("flex items-start gap-3 rounded-xl border p-3", step.status === "active" ? "border-primary bg-primary/5" : "border-border bg-white")}>
+              <span className={cn("w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 shrink-0", step.status === "done" ? "bg-success text-success-foreground border-success" : step.status === "active" ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border")}>
+                {step.status === "done" ? <CheckCircle2 className="w-5 h-5" aria-hidden="true" /> : i + 1}
               </span>
-              <span className="text-xs text-foreground mt-2 text-center max-w-[76px]">{step.label}</span>
-              <span className="sr-only">{step.status === "done" ? "הושלם" : step.status === "active" ? "עכשיו" : "בהמשך"}</span>
+              <span>
+                <span className="block text-sm font-semibold text-foreground">{i + 1}. {step.label}</span>
+                <span className="block text-xs text-muted-foreground">{step.status === "done" ? "בוצע" : step.status === "active" ? "בביצוע עכשיו" : "בהמשך"}</span>
+              </span>
             </li>
           ))}
         </ol>
@@ -193,7 +200,7 @@ export default function ExecutiveOverview() {
           <div>
             <p className="text-sm text-foreground mb-2">משתתפים בפיילוט (מצטבר)</p>
             <ResponsiveContainer width="100%" height={150}>
-              <BarChart data={ENROLLMENT}>
+              <BarChart data={ENROLLMENT_SHARE.map((x) => ({ m: x.m, v: Math.round(x.f * participants) }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="m" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />

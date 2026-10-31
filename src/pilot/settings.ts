@@ -57,6 +57,8 @@ export interface AppSettings {
   };
   /** תמחור שירות רציף: מנוי חודשי. הצעה. */
   pricing?: { subscription_units: string[]; sessions_per_month_default: number; status?: string };
+  /** הדגמה: שירותים שההצטרפות אליהם ממתינה לאישור הספק. בפיילוט: לפי הסכם עם הספק. */
+  supplier_approval?: { service_ids: string[]; note?: string };
   /** הצגת דירוג הספק (רכיבים: src/lib/supplierRating.ts). לא משנה את משקלות ההתאמה. */
   supplier_rating?: { show: boolean; components?: string[]; status?: string };
   companion: {

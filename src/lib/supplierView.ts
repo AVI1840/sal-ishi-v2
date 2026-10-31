@@ -19,6 +19,7 @@ import {
   type Supplier,
 } from "@sal-ishi/core";
 import type { Booking } from "@/pilot/model";
+import { usedOf } from "@/pilot/services";
 
 export const SUPPLIER_TYPE_LABEL: Record<string, string> = {
   exempt: "עוסק פטור",
@@ -57,6 +58,10 @@ export interface SupplierSummary {
   hoods: string[];
   bookings: number;
   activeBookings: number;
+  /** בקשות הצטרפות שממתינות לאישור הספק. */
+  awaiting: number;
+  /** נוצל לפי נוכחות שדווחה: הבסיס להתחשבנות (סימולציה). */
+  used: number;
   participants: number;
   flags: string[];
 }
@@ -100,7 +105,9 @@ export function summarize(data: AuthorityData, supplier: Supplier, bookings: rea
     stage,
     hoods: [...new Set(rows.flatMap((r) => r.hoods))],
     bookings: mine.length,
-    activeBookings: mine.filter((b) => b.status === "booked").length,
+    activeBookings: mine.filter((b) => b.status === "booked" && b.supplierApproval !== "pending").length,
+    awaiting: mine.filter((b) => b.supplierApproval === "pending").length,
+    used: mine.filter((b) => b.status !== "cancelled").reduce((n, b) => n + usedOf(b), 0),
     participants,
     flags,
   };
