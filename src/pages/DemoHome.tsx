@@ -248,10 +248,11 @@ export default function DemoHome() {
           <span className="w-16 h-16 rounded-full bg-[#1B3A5C] text-white text-2xl font-bold flex items-center justify-center shrink-0" aria-hidden="true">{CREDIT.who.charAt(0)}</span>
           <div className="flex-1 min-w-[240px]">
             <h2 id="credit-h" className="text-xl font-bold text-gray-900">מי עומד מאחורי הסל האישי</h2>
-            <p className="text-base text-gray-800 mt-1">
-              <span className="font-bold">{CREDIT.who}</span>, {CREDIT.org}. יוזמה, תכנון ופיתוח של הסל האישי להזדקנות מיטבית: מנייר המדיניות ומחקר השטח, דרך מודל ההפעלה וסדנת עיצוב השירות, ועד המערכת שרואים כאן.
-            </p>
-            <p className="text-sm text-gray-600 mt-1">{CREDIT.reuse}</p>
+            <p className="text-2xl font-bold text-[#1B3A5C] mt-1">{CREDIT.who}</p>
+            <p className="text-sm text-gray-600">{CREDIT.role} | {CREDIT.org}</p>
+            <p className="text-base text-gray-800 mt-2">{CREDIT.intro}</p>
+            <p className="text-base text-gray-800 mt-2">{CREDIT.process}</p>
+            <p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">{CREDIT.note}</p>
           </div>
         </div>
       </section>

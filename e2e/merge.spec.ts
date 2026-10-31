@@ -522,7 +522,8 @@ test("השוק הוא מסך הכניסה: ברכה, ארנק, המלצות, נ�
   await expect(rec.locator('a[href^="#/citizen/services/"]').first()).toContainText("מקהלה קהילתית");
   await expect(rec.locator('a[href^="#/citizen/services/"]').first()).toContainText("סיפרת");
   expect(await rec.locator("ul > li").count()).toBe(12);
-  await expect(rec.getByRole("link", { name: "לעדכן מה חשוב לי" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "לעדכן מה חשוב לי" })).toBeVisible();
+  await expect(rec.getByRole("link", { name: "לעדכן מה חשוב לי" })).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 2, name: "לפי נושא" })).toBeVisible();
   // ניווט תחתון בארבע לשוניות
   const nav = page.getByRole("navigation", { name: "ניווט ראשי" });

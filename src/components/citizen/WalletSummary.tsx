@@ -14,6 +14,30 @@ export function WalletSummary({ tone, compact = false }: { tone: "dark" | "light
   const pct = (n: number) => (of ? Math.round((n / of) * 100) : 0);
   const dark = tone === "dark";
   const muted = dark ? "text-white/85" : "text-gray-700";
+  if (compact) {
+    return (
+      <div>
+        <p className={cn("text-lg font-bold leading-tight", dark ? "text-white" : "text-[#1B3A5C]")}>
+          נשארו {amount(w.left)} <span className={cn("text-sm font-normal", muted)}>מתוך {of}</span>
+        </p>
+        <div
+          className={cn("mt-1.5 h-1.5 rounded-full overflow-hidden flex", dark ? "bg-white/25" : "bg-gray-200")}
+          role="img"
+          aria-label={`נוצל ${amount(w.used)}, שמור ${amount(w.reserved)}, נשארו ${amount(w.left)}`}
+        >
+          <div className={dark ? "bg-white" : "bg-[#1B3A5C]"} style={{ width: `${pct(w.used)}%` }} />
+          <div className={dark ? "bg-white/55" : "bg-[#1B3A5C]/45"} style={{ width: `${pct(w.reserved)}%` }} />
+        </div>
+        <p className={cn("text-xs mt-1.5 flex flex-wrap gap-x-3", muted)} title="שמור: הוזמן, עוד לא השתתפת. נוצל: השתתפת.">
+          <span>שמור {amount(w.reserved)}</span>
+          <span>נוצל {amount(w.used)}</span>
+          <Link to="/citizen/activities" className="underline underline-offset-2">מה הוזמן ומה נוצל</Link>
+          <span>{walletFootnote()}</span>
+        </p>
+        {w.left === 0 ? <p className={cn("text-sm font-semibold mt-1", dark ? "text-white" : "text-gray-900")} role="status">{he.walletEmpty}</p> : null}
+      </div>
+    );
+  }
   return (
     <div>
       <p className={cn(compact ? "text-2xl font-bold" : "text-4xl font-bold", dark ? "text-white" : "text-[#1B3A5C]")}>

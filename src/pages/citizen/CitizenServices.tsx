@@ -273,9 +273,9 @@ export default function CitizenServices() {
       <p className="sr-only">
         {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
       </p>
-      <div className="bg-[#1B3A5C] text-white px-5 py-4" aria-labelledby="wallet-title">
-        <p id="wallet-title" className="text-base text-white/90 flex items-center gap-1.5 mb-1">
-          <Wallet className="w-5 h-5" aria-hidden="true" /> הארנק שלך לחודש {month}
+      <div className="bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] text-white px-5 py-3" aria-labelledby="wallet-title">
+        <p id="wallet-title" className="text-xs text-white/85 flex items-center gap-1.5 mb-0.5">
+          <Wallet className="w-4 h-4" aria-hidden="true" /> הארנק שלך לחודש {month}
         </p>
         <WalletSummary tone="dark" compact />
       </div>
@@ -330,9 +330,6 @@ export default function CitizenServices() {
               className="w-full min-h-[52px] pr-11 pl-4 rounded-xl border border-gray-300 bg-white text-gray-900 text-lg placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-[#1B3A5C]/30"
             />
           </div>
-          <Link to="/citizen/needs" className="min-h-[44px] inline-flex items-center gap-1 text-base font-semibold text-[#1B3A5C] underline underline-offset-4">
-            <Heart className="w-4 h-4" aria-hidden="true" /> לעדכן מה חשוב לי
-          </Link>
           <p className="text-base font-semibold text-gray-900" id="how-h">איך לחפש?</p>
           <div role="radiogroup" aria-labelledby="how-h" className="flex flex-wrap gap-2">
             {MODES.map((m) => (
@@ -387,6 +384,16 @@ export default function CitizenServices() {
               לא מצאנו. אפשר לנסות מילה אחרת, להוריד סינון, או לבקש מהמלווה.
             </p>
           ) : null}
+        </section>
+
+        <section aria-labelledby="prefs-h" className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="prefs-h" className="text-lg font-bold text-gray-900">לא מצאת מה שמתאים?</h2>
+            <p className="text-base text-gray-700">ההמלצות נבנות ממה שחשוב לך. אפשר לעדכן בכל רגע.</p>
+          </div>
+          <Link to="/citizen/needs" className="min-h-[48px] px-4 inline-flex items-center gap-1.5 rounded-xl border border-[#1B3A5C] text-[#1B3A5C] text-base font-semibold">
+            <Heart className="w-4 h-4" aria-hidden="true" /> לעדכן מה חשוב לי
+          </Link>
         </section>
 
         <p className="text-sm text-gray-600">{SUPPLIER_RATING_NOTE_CITIZEN}</p>
