@@ -8,7 +8,7 @@ import { amount, walletFootnote } from "@/lib/wallet";
 import { he } from "@/pilot/i18n/he";
 import { useWallet } from "@/pilot/citizen/common";
 
-export function WalletSummary({ tone }: { tone: "dark" | "light" }) {
+export function WalletSummary({ tone, compact = false }: { tone: "dark" | "light"; compact?: boolean }) {
   const w = useWallet();
   const of = w.total + w.bonus;
   const pct = (n: number) => (of ? Math.round((n / of) * 100) : 0);
@@ -16,11 +16,11 @@ export function WalletSummary({ tone }: { tone: "dark" | "light" }) {
   const muted = dark ? "text-white/85" : "text-gray-700";
   return (
     <div>
-      <p className={cn("text-4xl font-bold", dark ? "text-white" : "text-[#1B3A5C]")}>
+      <p className={cn(compact ? "text-2xl font-bold" : "text-4xl font-bold", dark ? "text-white" : "text-[#1B3A5C]")}>
         נשארו {amount(w.left)} <span className={cn("text-lg font-normal", muted)}>מתוך {of}</span>
       </p>
       <div
-        className={cn("mt-3 h-3 rounded-full overflow-hidden flex", dark ? "bg-white/25" : "bg-gray-200")}
+        className={cn(compact ? "mt-2 h-2.5 rounded-full overflow-hidden flex" : "mt-3 h-3 rounded-full overflow-hidden flex", dark ? "bg-white/25" : "bg-gray-200")}
         role="img"
         aria-label={`נוצל ${amount(w.used)}, שמור ${amount(w.reserved)}, נשארו ${amount(w.left)}`}
       >

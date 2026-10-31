@@ -31,7 +31,7 @@ const SINGLE = "demoj-cooking";
 
 test("אזרחית: ארנק מהאירועים, הצטרפות ועזיבה, הזמנה וביטול, שיחזרו אליי", async ({ page }) => {
   await page.goto("./#/citizen");
-  await expect(page.getByText(/(בוקר טוב|צהריים טובים|ערב טוב), שרה/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
   // נתוני הפתיחה: מועדון (126 בחודש) עם 2 מפגשים מדווחים מתוך 4.
   const wallet = page.locator("[aria-labelledby=wallet-title]");
   await expect(wallet).toContainText("נשארו 374 נקודות");
@@ -172,7 +172,7 @@ test("נגישות: axe בלי ליקויים חמורים במסכים המאו
 
 test("חוט הזהב 2: שרה מבקשת, ממתין לאישור, הספק מאשר, רונית רואה, המטה סופר, נוכחות, נוצל, התחשבנות (סימולציה)", async ({ page, context }) => {
   await page.goto("./#/citizen");
-  const first = page.locator(`section[aria-labelledby=rec-title] a[href^="#/citizen/services/"]`).first();
+  const first = page.locator(`section[aria-labelledby=results-h] a[href^="#/citizen/services/"]`).first();
   await expect(first).toContainText("מקהלה קהילתית");
   await expect(first).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
 
@@ -412,7 +412,7 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   await expect(wallet).toContainText("שמור 63 נקודות");
   await expect(wallet).toContainText("נוצל 63 נקודות");
   // 1:30 ההמלצה מתחילה ממה שסיפרה, ואפשר להקריא
-  const rec = page.locator(`section[aria-labelledby=rec-title] a[href^="#/citizen/services/"]`).first();
+  const rec = page.locator(`section[aria-labelledby=results-h] a[href^="#/citizen/services/"]`).first();
   await expect(rec).toContainText("מקהלה קהילתית");
   await expect(rec).toContainText("סיפרת שהחלום שלך הוא לחזור לשיר במקהלה");
   await expect(page.getByRole("button", { name: /להקריא/ }).first()).toBeVisible();
@@ -517,11 +517,13 @@ test("השוק הוא מסך הכניסה: ברכה, ארנק, המלצות, נ�
   await expect(page).toHaveURL(/#\/citizen$/);
   await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
   await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("מתוך 500");
-  // אין כפתור גדול "מה חשוב לי": קישור משני ליד ההמלצות.
-  const rec = page.locator("section[aria-labelledby=rec-title]");
+  // מסך הכניסה: סרגל ארנק בלבד, ואז נושאים ושירותים מותאמים קודם. אין כפתור גדול "מה חשוב לי": קישור משני.
+  const rec = page.locator("section[aria-labelledby=results-h]");
   await expect(rec.locator('a[href^="#/citizen/services/"]').first()).toContainText("מקהלה קהילתית");
-  expect(await rec.locator("ul > li").count()).toBe(3);
+  await expect(rec.locator('a[href^="#/citizen/services/"]').first()).toContainText("סיפרת");
+  expect(await rec.locator("ul > li").count()).toBe(12);
   await expect(rec.getByRole("link", { name: "לעדכן מה חשוב לי" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "לפי נושא" })).toBeVisible();
   // ניווט תחתון בארבע לשוניות
   const nav = page.getByRole("navigation", { name: "ניווט ראשי" });
   for (const n of ["שירותים", "השירותים שלי", "הפרופיל שלי", "המלווה שלי"]) await expect(nav.getByRole("link", { name: n, exact: true })).toBeVisible();
@@ -554,7 +556,7 @@ test("השוק הוא מסך הכניסה: ברכה, ארנק, המלצות, נ�
 
 test("מסלול מלא: מהשוק לשירות, הרשמה, השירותים שלי ותזכורת. בקשה ממתינה לא מוצגת כמאושרת", async ({ page }) => {
   await page.goto("./#/citizen");
-  await page.locator("section[aria-labelledby=rec-title]").getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
+  await page.locator("section[aria-labelledby=results-h]").getByRole("link", { name: /מקהלה קהילתית/ }).first().click();
   await page.getByRole("button", { name: "לבקש להצטרף לקבוצה" }).click();
   await page.getByRole("button", { name: "לשלוח בקשה לספק" }).click();
   await expect(page.getByRole("heading", { name: "הבקשה נשלחה לספק" })).toBeVisible();

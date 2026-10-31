@@ -194,59 +194,8 @@ function ServiceCard({ service, view, reason, reasons = [], badge, Title = "h3",
   );
 }
 
-const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return "בוקר טוב";
-  if (h < 17) return "צהריים טובים";
-  return "ערב טוב";
-};
-
-/** הפעילות הבאה וכמה בקשות ממתינות: שורה אחת שמובילה ל"השירותים שלי". */
-function NextUp({ citizenId }: { citizenId: string }) {
-  const { derived } = usePilot();
-  const [reminders] = useReminders();
-  const now = new Date();
-  const next = derived.bookings
-    .filter((b) => b.citizenId === citizenId)
-    .map((b) => ({ b, at: nextSession(b, now) }))
-    .filter((x): x is { b: (typeof x)["b"]; at: Date } => !!x.at)
-    .sort((a, b) => a.at.getTime() - b.at.getTime())[0];
-  const pending =
-    derived.requests.filter((r) => r.citizenId === citizenId && r.kind === "gated_service" && r.status === "open").length +
-    derived.bookings.filter((b) => b.citizenId === citizenId && b.supplierApproval === "pending").length;
-  if (!next && !pending) return null;
-  return (
-    <Link to="/citizen/activities" className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:border-[#1B3A5C]/40">
-      <span className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
-        <CalendarCheck className="w-6 h-6" aria-hidden="true" />
-      </span>
-      <span className="flex-1 min-w-0">
-        {next ? (
-          <>
-            <span className="block text-sm text-gray-700">הפעילות הבאה שלך, {whenWords(next.at, now)}</span>
-            <span className="block text-lg font-bold text-gray-900 leading-tight">{next.b.serviceName}</span>
-            <span className="block text-base text-gray-700">
-              {formatSlot(he, next.at.toISOString())}
-              {reminders.has(next.b.id) ? (
-                <span className="inline-flex items-center gap-1 text-emerald-800 font-semibold mr-2">
-                  <Bell className="w-4 h-4" aria-hidden="true" /> תזכורת פעילה
-                </span>
-              ) : null}
-            </span>
-          </>
-        ) : null}
-        {pending ? <span className="block text-base text-amber-900 font-semibold mt-0.5">{pending === 1 ? "בקשה אחת ממתינה לאישור" : `${pending} בקשות ממתינות לאישור`}</span> : null}
-      </span>
-      <span className="text-base font-semibold text-[#1B3A5C] inline-flex items-center shrink-0">
-        <span className="hidden sm:inline">השירותים שלי</span> <ChevronLeft className="w-6 h-6" aria-hidden="true" />
-      </span>
-    </Link>
-  );
-}
-
 export default function CitizenServices() {
   const { simulation } = usePilot().state;
-  const { firstName, profile: citizen } = useCitizen();
   const chosen = usePilot().derived.interests.get(usePersonalProfile().id) ?? [];
   const profile = usePersonalProfile();
   const wallet = useWallet();
@@ -270,7 +219,6 @@ export default function CitizenServices() {
   const reasonOf = new Map(picks.map((p) => [p.result.service.id, p.reason]));
   const whyOf = useMemo(() => new Map(ranked.map((r) => [r.service.id, citizenReasons(r.explanations)])), [ranked]);
   const fitOf = useMemo(() => new Map(ranked.map((r) => [r.service.id, r.totalScore >= 70 ? "מתאים לך מאוד" : r.totalScore >= 55 ? "מתאים לך" : undefined])), [ranked]);
-  const recommended = picks.map((p) => all.find((s) => s.id === p.result.service.id)).filter((s): s is RealService => !!s);
 
   const topics = useMemo(() => {
     const present = new Set(all.map(domainOf));
@@ -299,7 +247,7 @@ export default function CitizenServices() {
             ? (DEMAND_RANK[a.demand ?? ""] ?? 3) - (DEMAND_RANK[b.demand ?? ""] ?? 3) || byRank(a, b)
             : mode === "near"
               ? nearRank(a, profile.neighborhood) - nearRank(b, profile.neighborhood) || byRank(a, b)
-              : byRank(a, b),
+              : Number(reasonOf.has(b.id)) - Number(reasonOf.has(a.id)) || byRank(a, b),
         );
   const badgeOf = (s: RealService) =>
     mode === "popular" ? (s.demand === "high" ? "פופולרי מאוד" : s.demand === "medium" ? "פופולרי" : undefined) : mode === "near" ? NEAR_LABEL[nearRank(s, profile.neighborhood)] : fitOf.get(s.id);
@@ -320,68 +268,19 @@ export default function CitizenServices() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* ברכה, מיקום, ארנק וחיפוש */}
-      <div className="relative bg-[#1B3A5C] text-white px-6 pt-6 pb-6 overflow-hidden">
-        <img src="./images/community-club.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-15" />
-        <div className="relative">
-          <p className="text-xl font-semibold text-white">
-            {getGreeting()}, {firstName}
-          </p>
-          <h1 className="text-3xl font-bold mt-1">השירותים בשכונה שלך</h1>
-          <p className="text-lg text-white/90 mt-1 flex items-center gap-1.5">
-            <MapPin className="w-5 h-5 shrink-0" aria-hidden="true" />
-            <span>
-              {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
-            </span>
-          </p>
-          <div className="mt-4 bg-white/10 rounded-xl p-4 backdrop-blur-[2px]" aria-labelledby="wallet-title">
-            <p id="wallet-title" className="text-base text-white/90 flex items-center gap-1.5">
-              <Wallet className="w-5 h-5" aria-hidden="true" /> הארנק שלך לחודש {month}
-            </p>
-            <div className="mt-1">
-              <WalletSummary tone="dark" />
-            </div>
-          </div>
-          <div className="relative mt-4">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" aria-hidden="true" />
-            <input
-              type="search"
-              aria-label="חיפוש שירות"
-              value={query}
-              onChange={(e) => (setQuery(e.target.value), setPage(PAGE))}
-              onKeyDown={(e) => e.key === "Enter" && toResults()}
-              placeholder="מה מחפשים? למשל: שירה, הליכה, טלפון"
-              className="w-full min-h-[56px] pr-11 pl-4 rounded-xl border-0 bg-white text-gray-900 text-lg placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-white/40"
-            />
-          </div>
-        </div>
+      {/* סרגל הארנק בלבד: כמה נשאר מתוך 500, וכמה כבר נשמר ונוצל */}
+      <h1 className="sr-only">השירותים בשכונה שלך</h1>
+      <p className="sr-only">
+        {profile.neighborhood} · {all.length} שירותים מאושרים, {all.filter((s) => s.reach !== "national").length} מהם בשכונה ובאזור
+      </p>
+      <div className="bg-[#1B3A5C] text-white px-5 py-4" aria-labelledby="wallet-title">
+        <p id="wallet-title" className="text-base text-white/90 flex items-center gap-1.5 mb-1">
+          <Wallet className="w-5 h-5" aria-hidden="true" /> הארנק שלך לחודש {month}
+        </p>
+        <WalletSummary tone="dark" compact />
       </div>
 
       <main id="main" tabIndex={-1} className="px-4 sm:px-6 pt-5 pb-6 space-y-8" data-read>
-        <NextUp citizenId={citizen.id} />
-
-        {/* מומלץ לך: ממה שסיפרה, עד שלוש */}
-        {!q && !topic && recommended.length ? (
-          <section aria-labelledby="rec-title" className="space-y-3">
-            <div className="flex flex-wrap items-end justify-between gap-2">
-              <div>
-                <h2 id="rec-title" className="text-2xl font-bold text-gray-900">
-                  מומלץ לך, {firstName}
-                </h2>
-                <p className="text-base text-gray-700">לפי מה שסיפרת לנו ולמלווה.</p>
-              </div>
-              <Link to="/citizen/needs" className="min-h-[44px] inline-flex items-center gap-1 text-base font-semibold text-[#1B3A5C] underline underline-offset-4">
-                <Heart className="w-4 h-4" aria-hidden="true" /> לעדכן מה חשוב לי
-              </Link>
-            </div>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recommended.map((sv, i) => (
-                <ServiceCard key={sv.id} service={sv} view="cards" reason={reasonOf.get(sv.id)} reasons={whyOf.get(sv.id)} badge={fitOf.get(sv.id)} wide={i === 0} />
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
         {/* לפי נושא: אריחים צבעוניים, בחירה מסננת את כל השירותים */}
         <section aria-labelledby="topics-h">
           <h2 id="topics-h" className="text-2xl font-bold text-gray-900 mb-3">לפי נושא</h2>
@@ -420,6 +319,20 @@ export default function CitizenServices() {
               לכל הנושאים
             </button>
           ) : null}
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="חיפוש שירות"
+              value={query}
+              onChange={(e) => (setQuery(e.target.value), setPage(PAGE))}
+              placeholder="מה מחפשים? למשל: שירה, הליכה, טלפון"
+              className="w-full min-h-[52px] pr-11 pl-4 rounded-xl border border-gray-300 bg-white text-gray-900 text-lg placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-[#1B3A5C]/30"
+            />
+          </div>
+          <Link to="/citizen/needs" className="min-h-[44px] inline-flex items-center gap-1 text-base font-semibold text-[#1B3A5C] underline underline-offset-4">
+            <Heart className="w-4 h-4" aria-hidden="true" /> לעדכן מה חשוב לי
+          </Link>
           <p className="text-base font-semibold text-gray-900" id="how-h">איך לחפש?</p>
           <div role="radiogroup" aria-labelledby="how-h" className="flex flex-wrap gap-2">
             {MODES.map((m) => (

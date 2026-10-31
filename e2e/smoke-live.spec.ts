@@ -7,7 +7,7 @@ test("שלוש הדלתות על /merge/", async ({ page }) => {
   await page.goto("./#/citizen");
   await expect(page.getByRole("heading", { level: 1, name: "השירותים בשכונה שלך" })).toBeVisible();
   await expect(page.locator("[aria-labelledby=wallet-title]")).toContainText("מתוך 500");
-  await page.locator("section[aria-labelledby=rec-title] a[href^='#/citizen/services/']").first().click();
+  await page.locator("section[aria-labelledby=results-h] a[href^='#/citizen/services/']").first().click();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.goto("./#/citizen/activities");
   await expect(page.getByRole("heading", { level: 1, name: "השירותים שלי" })).toBeVisible();
