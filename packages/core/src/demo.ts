@@ -382,6 +382,22 @@ export function buildDemoAuthority(variant = 0): AuthorityData {
     }
   });
 
+  // תקרת הארנק: בשכונה ובחודש, ההוצאה מהארנקים לא יכולה לעבור את מחזיקי הסל כפול
+  // הארנק האישי. כשההדגמה מייצרת יותר (הרבה שירותים ומעט מחזיקי סל), ההוצאה של כל
+  // שירות שם מוקטנת באותו יחס, ל-85% מהתקרה. בלי הגרלה, כדי ששאר נתוני ההדגמה לא יזוזו.
+  const wallet = defaultSeed.settings.personal_wallet;
+  const hoodOf = new Map(services.map((s) => [s.id, s.neighborhoodId]));
+  N.forEach((n, i) => {
+    const cap = v.enrolled[i]! * wallet;
+    for (const month of MONTHS) {
+      const rows = activity.filter((a) => a.month === month && hoodOf.get(a.serviceId) === n.id);
+      const spent = rows.reduce((sum, a) => sum + (a.walletSpent ?? 0), 0);
+      if (spent <= cap) continue;
+      const factor = (cap * 0.85) / spent;
+      for (const a of rows) a.walletSpent = Math.round((a.walletSpent ?? 0) * factor);
+    }
+  });
+
   return {
     authority: v.authority,
     neighborhoods: N,

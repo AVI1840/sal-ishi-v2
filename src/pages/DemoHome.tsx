@@ -211,8 +211,8 @@ export default function DemoHome() {
           <div>
             <h2 className="text-2xl font-bold">מה כבר ידוע מהפיילוט</h2>
             <ul className="mt-4 space-y-2 text-base text-white/90">
-              <li>{bg ? `${bg.pilot_months} חודשי פיילוט בפסגת זאב, ${appSettings.program.pilot_participants} משתתפים.` : `${appSettings.program.pilot_participants} משתתפים בפסגת זאב.`}</li>
-              {bg ? <li>קשרים חברתיים: מ-{bg.social_ties_from}% ל-{bg.social_ties_to}% מהמשתתפים.</li> : null}
+              <li>{bg ? `${bg.pilot_months} חודשי פיילוט בפסגת זאב, ${appSettings.program.pilot_participants} משתתפים (${appSettings.program.pilot_participants_source}).` : "נתוני הפיילוט בפסגת זאב יוצגו כאן אחרי אישור, עם מקור ותאריך."}</li>
+              {bg ? <li>קשרים חברתיים: מ-{bg.social_ties_from}% ל-{bg.social_ties_to}% מהמשתתפים [לאמת מול מצגת ההערכה 30.7.2026].</li> : null}
               {bg ? <li>דחייה של כ-{bg.delay_months} חודשים בהידרדרות.</li> : null}
             </ul>
             {bg ? <p className="text-xs text-white/75 mt-3">{bg.source}.</p> : null}

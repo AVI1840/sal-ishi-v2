@@ -224,6 +224,49 @@ test("מספרים: בלי טענות לא מבוססות בדף הבית, אצ�
   }
 });
 
+test("אמינות נתונים: מיצוי עד 100%, מספר משתתפים אחד, הוכרע רק במפגש 2, בלי 20.11", async ({ page }) => {
+  await page.goto("./#/executive");
+  const kpi = page.locator("section[aria-labelledby=kpi-h]");
+  await expect(kpi).toBeVisible();
+  // מחזיקי סל בטבלה, וסכומם הוא המספר בכותרת ובתקציב.
+  const rows = kpi.locator("tbody tr");
+  let sum = 0;
+  for (let i = 0; i < (await rows.count()); i++) {
+    const cells = rows.nth(i).locator("td");
+    sum += Number((await cells.nth(1).innerText()).trim());
+    const util = (await cells.nth(3).innerText()).match(/(\d+)%/);
+    if (util) expect(Number(util[1]), "מיצוי").toBeLessThanOrEqual(100);
+  }
+  const body = await page.locator("main").innerText();
+  expect(body).toContain(`${sum} מחזיקי סל בתרחיש ההדגמה`);
+  expect(body).toContain(`חישוב: ${sum} מחזיקי סל`);
+  expect(body).toContain("סימולציה");
+  expect(body).toContain("מה הוכרע במפגש 2");
+  expect(body).not.toContain("ו-28.10");
+  expect(body).toContain("כיוון מוסכם");
+  for (const url of ["./#/executive", "./#/executive/agents", "./#/providers", "./field/#/", "./hq/#/rules"]) {
+    await page.goto(url);
+    await page.waitForTimeout(600);
+    expect(await page.locator("body").innerText(), url).not.toMatch(/20\.11|לא לפרסום|27\d%/);
+  }
+});
+
+test("הסוכנים: מקור ההגדרה, סטטוס אמיתי, והפרדה בין סוכן למנוע חוקים", async ({ page }) => {
+  await page.goto("./#/executive/agents");
+  await expect(page.getByRole("heading", { level: 1, name: "סוכני המערכת" })).toBeVisible();
+  const cards = page.locator("article");
+  expect(await cards.count()).toBe(5);
+  for (let i = 0; i < 5; i++) {
+    await expect(cards.nth(i)).toContainText("מקור ההגדרה");
+    await expect(cards.nth(i)).toContainText("סוכן AI: מתוכנן");
+    await expect(cards.nth(i)).toContainText("מה רץ כאן");
+  }
+  await expect(page.getByRole("heading", { name: "מנועים וכללים: לא סוכנים" })).toBeVisible();
+  await expect(page.getByText("לימור (סוכן שיחה לאזרח)")).toBeVisible();
+  await cards.first().getByRole("button", { name: "להריץ את החישוב" }).click();
+  await expect(cards.first().getByRole("status")).toContainText("חישוב על נתוני הדגמה");
+});
+
 test("הקהילה שלי ושוק האזרחית: אותו מספר שירותים", async ({ page }) => {
   await page.goto("./#/citizen/services");
   const citizen = (await page.locator("h1 + p").first().innerText()).match(/(\d+) שירותים מאושרים, (\d+) מהם/)!;
@@ -256,7 +299,7 @@ test("0.6.2: בלי מספרים שלא אושרו, מקור אחד למספר �
     expect(await page.locator("body").innerText(), route).not.toMatch(/לא לפרסום|מיליון|120 אלף|קשרים חברתיים|מ-37% ל-94%|5\.5 חודשים|בהידרדרות/);
   }
   // מה הוכרע: המונה שווה למספר השורות.
-  const decided = Number((await page.getByText(/\d+ הוכרעו \(מפגש 2/).innerText()).match(/(\d+) הוכרעו/)![1]);
+  const decided = Number((await page.getByText(/\d+ הוכרעו במפגש 2/).first().innerText()).match(/(\d+) הוכרעו/)![1]);
   expect(await page.locator("section[aria-labelledby=decided-h] ul").first().locator("li").count()).toBe(decided);
   // מספר השירותים: המטה, השטח והשוק של שרה.
   const row = page.locator("section[aria-labelledby=hoods-h] tr", { hasText: "פסגת זאב" });

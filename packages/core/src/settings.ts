@@ -46,6 +46,10 @@ export const DECIDED_PRINCIPLES_MEETING_2 = [
 
 const isDecidedText = (value: unknown): value is string => typeof value === "string" && /^\s*(הוכרע|סופי)/.test(value);
 
+/** פריטים מהפגישה עם החשכ"ל (28.10): כיוון מוסכם, להכרעה במפגש 3. לא "הוכרע". */
+const isAgreedText = (value: unknown): boolean => typeof value === "string" && /^\s*הוכרע\s*28\.10/.test(value);
+export const AGREED_DIRECTION_NOTE = 'כיוון מוסכם בפגישה עם החשכ"ל (28.10), להכרעה במפגש 3';
+
 /** הסטטוס שכתוב בהגדרה עצמה, או במפתח X_status שחל עליה (הארוך ביותר). */
 function ownStatus(record: Record<string, unknown>, key: string): string | undefined {
   const nested = nestedStatus(record[key]);
@@ -59,7 +63,14 @@ function ownStatus(record: Record<string, unknown>, key: string): string | undef
 /** הכרעה: ברשימת מפגש 2, או סומן "הוכרע"/"סופי". */
 export function isDecided(settings: Settings, key: string): boolean {
   if (key in DECIDED_MEETING_2) return true;
-  return isDecidedText(ownStatus(settings as Record<string, unknown>, key));
+  const status = ownStatus(settings as Record<string, unknown>, key);
+  return isDecidedText(status) && !isAgreedText(status);
+}
+
+/** כיוון מוסכם (28.10), עוד לא הכרעה. */
+export function isAgreedDirection(settings: Settings, key: string): boolean {
+  if (key in DECIDED_MEETING_2) return false;
+  return isAgreedText(ownStatus(settings as Record<string, unknown>, key));
 }
 
 /** הגדרות שהוסרו (נשארות ב-seed לקריאת קבצים ישנים, לא מוצגות ולא נספרות). */
@@ -71,12 +82,12 @@ export function ruleKeys(settings: Settings): string[] {
 }
 
 export function isProposal(settings: Settings, key: string): boolean {
-  return !isDecided(settings, key);
+  return !isDecided(settings, key) && !isAgreedDirection(settings, key);
 }
 
-/** מפתחות הגדרה בסטטוס הצעה: כל כלל שלא הוכרע. */
+/** מפתחות הגדרה בסטטוס הצעה: כל כלל שלא הוכרע ושאינו כיוון מוסכם. */
 export function proposalKeys(settings: Settings): string[] {
-  return ruleKeys(settings).filter((k) => !isDecided(settings, k));
+  return ruleKeys(settings).filter((k) => isProposal(settings, k));
 }
 
 /**
@@ -85,6 +96,7 @@ export function proposalKeys(settings: Settings): string[] {
  */
 export function statusNote(settings: Settings, key: string): string {
   if (key in DECIDED_MEETING_2) return DECIDED_MEETING_2[key]!;
+  if (isAgreedDirection(settings, key)) return AGREED_DIRECTION_NOTE;
   return plainStatus(ownStatus(settings as Record<string, unknown>, key) ?? "");
 }
 
@@ -98,6 +110,9 @@ export function plainStatus(text: string): string {
     .replace(/\s*\(תוספת 3\)/g, "")
     .replace(/תוספת 3/g, "ההצעה לפיילוט")
     .replace(/מודל החשכ"ל/g, "הצעת החשכ\"ל")
+    // מועד בדיקת אבטחת המידע לא מאומת: לא מציגים אותו.
+    .replace(/[,.]?\s*(ו)?לבדיקת אבטחת מידע(?: ב-)?\s*20\.11/g, "")
+    .replace(/[,.]?\s*ולהציג לאבטחת מידע ב-20\.11/g, "")
     .trim();
 }
 

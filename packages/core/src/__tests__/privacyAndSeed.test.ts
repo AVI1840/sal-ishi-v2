@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { detectIdentifyingColumns, findForbiddenKeys, formatCount, RESIDENT_FIELD_KEYS } from "../privacy";
 import { defaultSeed as seed, parseSeed } from "../seed";
-import { copayRate, defaultCopayTier, proposalKeys } from "../settings";
+import { copayRate, defaultCopayTier, isAgreedDirection, isDecided, proposalKeys } from "../settings";
 import { createMemoryStore, openStore } from "../storage";
 
 describe("חסימת עמודות מזהות בייבוא", () => {
@@ -51,9 +51,12 @@ describe("seed", () => {
     expect(keys).toEqual(
       expect.arrayContaining(["points_rollover_months", "cancellation_notice_hours", "no_show_charge_rule", "qol_mode", "reference_price_mode", "active_participant_min_sessions_month", "hot_meal_entry_criteria"]),
     );
-    // מקור אחד: מה שהוכרע במפגש 2 (ומה שסומן "הוכרע" אחר כך) אינו הצעה. כל השאר הצעה.
+    // מקור אחד: מה שהוכרע במפגש 2 אינו הצעה. פריטי 28.10 הם כיוון מוסכם: לא הוכרע ולא הצעה.
     for (const k of ["personal_wallet", "total", "core_floor", "copay_tiers", "qol_cap_month", "utilization_target", "red_flag_avg", "supplier_contact_to_hq"]) expect(keys).not.toContain(k);
     expect(keys).toContain("min_participants");
+    expect(isDecided(seed.settings, "supplier_contact_to_hq")).toBe(false);
+    expect(isAgreedDirection(seed.settings, "supplier_contact_to_hq")).toBe(true);
+    expect(isDecided(seed.settings, "personal_wallet")).toBe(true);
   });
 
   it("השתתפות עצמית מההגדרות", () => {

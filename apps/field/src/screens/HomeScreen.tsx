@@ -89,7 +89,7 @@ function formatSetting(key: string, value: unknown, settings: Settings): string 
     const inner = (value as { value: unknown }).value;
     return typeof inner === "string" ? (MODE_TEXT[inner] ?? inner) : formatSetting(key, inner, settings);
   }
-  // הוכרע 28.10: פרטי ספק יחיד מגיעים למטה בלבד, ואף פעם לא לייצוא לספק העל.
+  // כיוון מוסכם 28.10 (להכרעה במפגש 3): פרטי ספק יחיד מגיעים למטה בלבד, ואף פעם לא לייצוא לספק העל.
   if (key === "supplier_contact_to_hq") return value ? "כן, למטה בלבד. לא לספק העל ולא לשום ייצוא" : "לא, רק קוד וסוג";
   if (typeof value === "boolean") return value ? "כן" : "לא";
   if (typeof value === "number" && value > 0 && value < 1) return `${Math.round(value * 100)}%`;
@@ -299,7 +299,7 @@ export default function HomeScreen() {
                     {proposals.has(key) ? (
                       <ProposalBadge note={statusNote(seed.settings, key)} />
                     ) : key === "supplier_contact_to_hq" ? (
-                      <Badge tone="warning">הוכרע 28.10, לבדיקת אבטחת מידע 20.11</Badge>
+                      <Badge tone="warning">כיוון מוסכם 28.10, להכרעה במפגש 3</Badge>
                     ) : (
                       <Badge tone="success">סופי</Badge>
                     )}

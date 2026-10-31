@@ -27,7 +27,7 @@ const TIMELINE_STEPS = [
 const ENGAGEMENT = [{ m: "מאי", v: 42 }, { m: "יוני", v: 48 }, { m: "יולי", v: 52 }, { m: "אוג", v: 55 }, { m: "ספט", v: 56 }, { m: "אוק", v: 58 }];
 const ENROLLMENT = [{ m: "מאי", v: 120 }, { m: "יוני", v: 160 }, { m: "יולי", v: 200 }, { m: "אוג", v: 240 }, { m: "ספט", v: 265 }, { m: "אוק", v: 286 }];
 import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
-import { DECIDED_PRINCIPLES_MEETING_2, DEMO_JERUSALEM, buildDemoAuthority, isDecided, penetration, ruleKeys, settingLabel, statusNote, timeToFirstService, utilization } from "@sal-ishi/core";
+import { AGREED_DIRECTION_NOTE, DECIDED_PRINCIPLES_MEETING_2, DEMO_JERUSALEM, isAgreedDirection, buildDemoAuthority, isDecided, penetration, ruleKeys, settingLabel, statusNote, timeToFirstService, utilization } from "@sal-ishi/core";
 import { communityFor } from "@/lib/community";
 import { SUPPLIER_RATING_COMPONENTS } from "@/lib/supplierRating";
 import { statusText } from "@/lib/statusText";
@@ -35,6 +35,7 @@ import { amount } from "@/lib/wallet";
 import { incentivesOn } from "@/lib/incentives";
 import { appSettings, shownBackground } from "@/pilot/settings";
 import { usePilot } from "@/pilot/store";
+import { servicesFor } from "@/pilot/services";
 
 /** שכונות הפיילוט לפי ההחלטות. הר נוף עוד לא בקטלוג ההדגמה. */
 const PILOT_NEIGHBORHOODS = ["פסגת זאב", "תלפיות מזרח", "בית וגן", "רוממה", "בית חנינא"];
@@ -61,7 +62,7 @@ function decidedValue(key: string, settings: Record<string, unknown>): string {
     case "core_floor":
       return `${v} שירותים`;
     case "supplier_contact_to_hq":
-      return v ? "למטה בלבד, לא לשום ייצוא (לבדיקת אבטחת מידע 20.11)" : "לא, רק קוד וסוג";
+      return v ? "למטה בלבד, לא לשום ייצוא" : "לא, רק קוד וסוג";
     default:
       return typeof v === "number" && v > 0 && v < 1 ? pct(v) : String(v);
   }
@@ -92,12 +93,19 @@ export default function ExecutiveOverview() {
   const rules = ruleKeys(catalogState.seed.settings);
   const decidedRules = rules.filter((k) => isDecided(catalogState.seed.settings, k));
   const decided = decidedRules.length;
-  const proposals = rules.length - decided;
+  const agreedRules = rules.filter((k) => isAgreedDirection(catalogState.seed.settings, k));
+  const proposals = rules.length - decided - agreedRules.length;
   const hoods = useMemo(() => PILOT_NEIGHBORHOODS.map((n) => ({ name: n, c: communityFor(n) })), []);
   const bookings = derived.bookings.filter((b) => b.status !== "cancelled").length;
   const requests = derived.requests.length;
   const incentivePoints = derived.incentives.reduce((n, i) => n + i.points, 0);
-  const participants = appSettings.program.pilot_participants;
+  // מספר אחד לתרחיש ההדגמה: סכום מחזיקי הסל בחמש השכונות, מאותם נתונים של טבלת המדדים.
+  // נתוני הפיילוט האמיתיים (משתתפים, תוצאות) מוצגים רק כשאביעד מאשר (background.show).
+  const participants = useMemo(() => {
+    const data = buildDemoAuthority(DEMO_JERUSALEM);
+    const month = [...data.enrollment.map((e) => e.month)].sort().at(-1) ?? "";
+    return data.enrollment.filter((e) => e.month === month).reduce((n, e) => n + e.enrolled, 0);
+  }, []);
   const pctOf = (n: number) => `${Math.round(n * 100)}%`;
   // מדדי השטח: אותן פונקציות של הליבה שהאטלס משתמש בהן, על נתוני ההדגמה של ירושלים.
   const { kpis, kpiMonth } = useMemo(() => {
@@ -124,7 +132,7 @@ export default function ExecutiveOverview() {
           המדינה מחזיקה בקטלוג, בכללים ובנתונים. ספק העל מפעיל את הנקודות והתשלומים, והתקן הפתוח מאפשר לכל ספק להתחבר.
         </p>
         <p className="text-sm text-white/80 mt-3">
-          פיילוט ירושלים · {appSettings.program.pilot_participants} משתתפים
+          פיילוט ירושלים, 5 שכונות · {participants} מחזיקי סל בתרחיש ההדגמה
           {bg ? ` · ${bg.pilot_months} חודשי פיילוט · 2027: ${bg.authorities_2027} רשויות, ${bg.budget_label}` : ""}
         </p>
       </div>
@@ -153,15 +161,15 @@ export default function ExecutiveOverview() {
         </span>
         <span className="flex-1">
           <span className="block text-base font-semibold text-foreground">סוכני המערכת</span>
-          <span className="block text-sm text-muted-foreground">מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל שמתזמר. להריץ ולראות תוצאה.</span>
+          <span className="block text-sm text-muted-foreground">מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל. מקור ההגדרה של כל אחד, מה רץ בכלי ומה מתוכנן.</span>
         </span>
         <ChevronLeft className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
       </Link>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card icon={Store} label="שירותים מאושרים בקטלוג" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות באטלס`} href="./hq/" />
+        <Card icon={Store} label="שירותים מאושרים בקטלוג ירושלים" value={catalogState.services} sub={`${catalogState.neighborhoods} שכונות והערוץ הארצי · ${servicesFor("פסגת זאב").length} מהם זמינים לתושבי פסגת זאב`} href="./hq/" />
         <Card icon={Wallet} label="סל לאזרח בחודש" value={`₪${basket.total}`} sub={`${amount(basket.personal_wallet)} בארנק האישי`} />
-        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו (מפגש 2 ו-28.10) · ${proposals} הצעה`} />
+        <Card icon={Scale} label="כללים בהגדרות" value={rules.length} sub={`${decided} הוכרעו במפגש 2${agreedRules.length ? ` · ${agreedRules.length} כיוון מוסכם (28.10)` : ""} · ${proposals} הצעה`} />
         <Card icon={ClipboardCheck} label="אירועים מהשטח (הדגמה)" value={bookings + requests} sub={`${count(bookings, "הזמנה אחת", "הזמנות")} · ${count(requests, "בקשה אחת למלווה", "בקשות למלווה")}${incentivePoints ? ` · ${incentivePoints} נקודות תמריץ` : ""}`} />
       </div>
 
@@ -285,7 +293,9 @@ export default function ExecutiveOverview() {
         <h2 id="budget-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
           <Wallet className="w-5 h-5 text-primary" aria-hidden="true" /> התקציב החודשי של הפיילוט
         </h2>
-        <p className="text-sm text-muted-foreground mb-3">חישוב: {participants} משתתפים כפול חלוקת הסל שהוכרעה.</p>
+        <p className="text-sm text-muted-foreground mb-3">
+          <span className="font-semibold text-foreground">סימולציה.</span> חישוב: {participants} מחזיקי סל בתרחיש ההדגמה (אותו מספר כמו בטבלת המדדים) כפול חלוקת הסל שהוכרעה במפגש 2. לא תקציב מאושר.
+        </p>
         <dl className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             ["סך הכל", participants * basket.total],
@@ -304,7 +314,7 @@ export default function ExecutiveOverview() {
 
       <section className="libi-card p-5" aria-labelledby="decided-h">
         <h2 id="decided-h" className="text-base font-semibold text-foreground flex items-center gap-2 mb-2">
-          <Scale className="w-5 h-5 text-primary" aria-hidden="true" /> מה הוכרע במפגש 2 (ו-28.10)
+          <Scale className="w-5 h-5 text-primary" aria-hidden="true" /> מה הוכרע במפגש 2
         </h2>
         {/* הרשימה נגזרת מאותו מקור כמו המונה למעלה: כל כלל שהוכרע, שורה אחת. */}
         <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
@@ -321,7 +331,20 @@ export default function ExecutiveOverview() {
             <li key={x} className="flex items-start gap-1.5"><CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" /> {x}</li>
           ))}
         </ul>
-        <p className="text-xs text-muted-foreground mt-2">{count(decidedRules.length, "כלל אחד הוכרע", "כללים הוכרעו")}. כל שאר הכללים בהגדרות מסומנים כהצעה, גם כאן וגם באטלס המטה.</p>
+        {agreedRules.length ? (
+          <>
+            <h3 className="text-sm font-semibold text-foreground mt-3">{AGREED_DIRECTION_NOTE}</h3>
+            <ul className="text-sm text-foreground grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 mt-1">
+              {agreedRules.map((k) => (
+                <li key={k} className="flex items-start gap-1.5">
+                  <Activity className="w-4 h-4 text-warning shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>{settingLabel(k)}: {decidedValue(k, catalogState.seed.settings as unknown as Record<string, unknown>)}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+        <p className="text-xs text-muted-foreground mt-2">{count(decidedRules.length, "כלל אחד הוכרע", "כללים הוכרעו")} במפגש 2. כל שאר הכללים בהגדרות מסומנים כהצעה, גם כאן וגם באטלס המטה.</p>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

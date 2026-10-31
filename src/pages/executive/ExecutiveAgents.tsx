@@ -30,7 +30,12 @@ interface Agent {
   input: string;
   output: string;
   today: { label: string; to: string };
-  status: "פועל בכלי" | "חלקי בכלי" | "אצל הספק";
+  /** איפה הוגדר הסוכן (מסמך או קוד מהמאגר). */
+  source: string;
+  /** מה רץ כאן בפועל: חישוב או מנוע חוקים על נתוני ההדגמה. */
+  engine: string;
+  /** סטטוס הסוכן עצמו. בכלי הזה אין סוכן AI פעיל. */
+  status: "מנוע פעיל בכלי" | "סימולציה" | "מתוכנן";
   production: string;
   run: () => string[];
 }
@@ -106,35 +111,40 @@ const AGENTS: Agent[] = [
     id: "mapping", name: "מיפוי שירותים", icon: Compass,
     does: "סורק את השירותים בכל שכונה, מזהה פערים ברצפה ושירותים שחסרים, ומה ביקשו ואין.",
     input: "האטלס של השטח, חבילות הפיילוט, בקשות המלוות", output: "פערים, חלופות, רשימת גיוס ספקים",
-    today: { label: "אטלס המטה ופערים", to: "/executive/atlas" }, status: "פועל בכלי",
+    today: { label: "אטלס המטה ופערים", to: "/executive/atlas" },
+    source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Service Discovery Agent. פרומפט הסריקה השבועית: מסמך המיפוי, חלק ה'", engine: "חישוב כיסוי מול הרצפה, פערים ו\"ביקשו ואין\" על נתוני ההדגמה. אין סריקת רשת", status: "מנוע פעיל בכלי",
     production: "סריקה חודשית, ועדכון אוטומטי של רשימת הגיוס לרשות.", run: runMapping,
   },
   {
     id: "matching", name: "התאמה", icon: Shuffle,
     does: "מחשב לכל אזרח את השירותים שמתאימים לו בחמש שכבות, עם משפט למה.",
     input: "פרופיל האזרח והשאלון, הקטלוג, הארנק", output: "2 עד 3 המלצות בכל תחום, עם הסבר",
-    today: { label: "אלגוריתם ההתאמה", to: "/executive/algorithm" }, status: "פועל בכלי",
+    today: { label: "אלגוריתם ההתאמה", to: "/executive/algorithm" },
+    source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Matching Engine. הקוד בכלי: אלגוריתם ההתאמה", engine: "מנוע חוקים דטרמיניסטי, חמש שכבות ומשקלות מההגדרות. לא מודל שפה", status: "מנוע פעיל בכלי",
     production: "רץ על כל שינוי בפרופיל או בקטלוג, אצל הספק.", run: runMatching,
   },
   {
     id: "update", name: "עדכון", icon: RefreshCw,
     does: "מחזיק את הקטלוג והכללים מעודכנים: גרסאות, יומן שינויים, וייצוא לספק לפי התקן.",
     input: "החלטות המטה, שינויי ספקים", output: "גרסת כללים, קטלוג לאזרח, תקן קליטה",
-    today: { label: "ספריית הסל", to: "/executive/catalog" }, status: "פועל בכלי",
+    today: { label: "ספריית הסל", to: "/executive/catalog" },
+    source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Service Discovery Agent (עדכון קטלוג שבועי)", engine: "ניהול גרסאות, יומן שינויים וייצוא לפי התקן. אין עדכון אוטומטי מהרשת", status: "מנוע פעיל בכלי",
     production: "פרסום גרסה לספק העל, עם בדיקת סכמה.", run: runUpdate,
   },
   {
     id: "measure", name: "מדידה", icon: Gauge,
     does: "מודד מיצוי, חדירה, פריסה וזמן לשירות ראשון, בלי תאים קטנים.",
     input: "דוח מצטבר מספק העל, הזמנות ונוכחות", output: "מדדים למטה ולמלווה, דגלים",
-    today: { label: "מבט על", to: "/executive" }, status: "חלקי בכלי",
+    today: { label: "מבט על", to: "/executive" },
+    source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Deterioration Monitor (זיהוי ירידה והתראה מוקדמת)", engine: "חישוב מיצוי ופערים מהתיק ומנתוני ההדגמה. בלי חיזוי ובלי מודל", status: "מנוע פעיל בכלי",
     production: "הנתונים המצטברים מגיעים מספק העל כל חודש.", run: runMeasure,
   },
   {
     id: "nudge", name: "תמרוץ ומיקוד", icon: Megaphone,
     does: "ממקד את המלווה במי שצריך אותה, ומציע איך לעודד: שיחה, שיעור ניסיון, תמריץ.",
     input: "המדדים, הכללים, מה שחשוב לאזרח", output: "\"לפנות היום\", משימות, הצעות עידוד",
-    today: { label: "היום של המלווה", to: "/coordinator" }, status: "פועל בכלי",
+    today: { label: "היום של המלווה", to: "/coordinator" },
+    source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Nudge Engine", engine: "כללי מיון בתיק (לפנות היום, השבוע). אין שליחת הודעות, והכל באישור המלווה", status: "מנוע פעיל בכלי",
     production: "תזכורות ומסרים נשלחים דרך הספק, באישור המלווה.", run: runNudge,
   },
 ];
@@ -142,7 +152,23 @@ const AGENTS: Agent[] = [
 const ORCHESTRATOR = {
   name: "מנהל (מתזמר)", icon: Network,
   does: "מפעיל את הסוכנים בסדר הנכון, מעביר תוצאה מאחד לשני, ומעביר לאדם כשצריך החלטה.",
+  source: "מסמך ארכיטקטורת הסוכנים (docs/AWS_AGENTS_ARCHITECTURE.md), גיליון ההאקתון: Super Agent. בקוד של גרסה 0.4 (שורש האתר): מסלול המלווה, מסך הסוכנים",
+  engine: "בכלי הזה: הלחצן מריץ את חמש הפונקציות בסדר קבוע. זו סימולציה של מתזמר, בלי הסקה ובלי מודל",
+  status: "סימולציה" as const,
 };
+
+/** מוגדר במקורות, מחוץ לגיליון ההאקתון של שישה הסוכנים. */
+const ALSO_DEFINED = [
+  { name: "לימור (סוכן שיחה לאזרח)", source: "מסמך ארכיטקטורת הסוכנים, ומאגר libi-ai (LimorAgent, orchestrator)", status: "מתוכנן" as const, note: "שיחה עם האזרח כבויה בגרסה הזו. כל פנייה לאזרח עוברת דרך המלווה." },
+];
+
+/** מנועי חוקים וחישוב: לא סוכנים. */
+const ENGINES = [
+  { name: "מנוע ההתאמה", text: "חמש שכבות, משקלות 30/30/25/15/0 מההגדרות. דטרמיניסטי, עם הסבר.", to: "/executive/algorithm", label: "לאלגוריתם" },
+  { name: "כללי הכיסוי והרצפה", text: "רצפה של 3 שירותים רציפים בכל תחום ליבה בכל שכונה.", to: "/executive/atlas", label: "לאטלס המטה" },
+  { name: "נוסחת המיצוי", text: "נקודות שנוצלו חלקי 500 כפול חודשי החלון, למחזיקי סל. לא עולה על 100%.", to: "/executive", label: "למדדי השטח" },
+  { name: "כללי המיון בתיק", text: "מי לפנות היום ולמה: אשפוז, בקשה, אין שירות ראשון, מיצוי נמוך.", to: "/coordinator", label: "ליום של המלווה" },
+];
 
 function AgentCard(props: { agent: Agent; result?: RunResult; running: boolean; onRun: () => void }) {
   const { agent: a } = props;
@@ -154,18 +180,23 @@ function AgentCard(props: { agent: Agent; result?: RunResult; running: boolean; 
         </span>
         <div className="flex-1">
           <h2 id={`ag-${a.id}`} className="text-lg font-bold text-foreground">{a.name}</h2>
-          <span className={cn("inline-block text-xs font-semibold px-2 py-0.5 rounded-md border mt-1", a.status === "פועל בכלי" ? "bg-success-soft text-success border-success/30" : "bg-warning-soft text-warning-foreground border-warning/40")}>{a.status}</span>
+          <span className="inline-flex flex-wrap gap-1.5 mt-1">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-md border bg-success-soft text-success border-success/30">{a.status}</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-md border bg-warning-soft text-warning-foreground border-warning/40">סוכן AI: מתוכנן</span>
+          </span>
         </div>
       </div>
       <p className="text-sm text-foreground">{a.does}</p>
       <dl className="text-sm space-y-1">
+        <div><dt className="inline font-semibold">מקור ההגדרה: </dt><dd className="inline text-muted-foreground">{a.source}</dd></div>
+        <div><dt className="inline font-semibold">מה רץ כאן: </dt><dd className="inline text-muted-foreground">{a.engine}</dd></div>
         <div><dt className="inline font-semibold">מקבל: </dt><dd className="inline text-muted-foreground">{a.input}</dd></div>
         <div><dt className="inline font-semibold">מוציא: </dt><dd className="inline text-muted-foreground">{a.output}</dd></div>
-        <div><dt className="inline font-semibold">בייצור: </dt><dd className="inline text-muted-foreground">{a.production}</dd></div>
+        <div><dt className="inline font-semibold">בייצור (מתוכנן): </dt><dd className="inline text-muted-foreground">{a.production}</dd></div>
       </dl>
       <div className="flex flex-wrap gap-2 mt-auto">
         <button type="button" onClick={props.onRun} disabled={props.running} className="min-h-[44px] px-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-1.5 disabled:opacity-60">
-          {props.running ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Play className="w-4 h-4" aria-hidden="true" />} להריץ עכשיו
+          {props.running ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Play className="w-4 h-4" aria-hidden="true" />} להריץ את החישוב
         </button>
         <Link to={a.today.to} className="min-h-[44px] px-4 rounded-lg border border-border text-sm font-semibold inline-flex items-center gap-1">
           {a.today.label} <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -173,7 +204,7 @@ function AgentCard(props: { agent: Agent; result?: RunResult; running: boolean; 
       </div>
       {props.result ? (
         <div className="rounded-lg bg-success-soft/50 border border-success/30 p-3" role="status">
-          <p className="text-xs text-muted-foreground mb-1">רץ ב-{props.result.at}</p>
+          <p className="text-xs text-muted-foreground mb-1">חישוב על נתוני הדגמה, רץ ב-{props.result.at}</p>
           <ul className="space-y-1">
             {props.result.lines.map((l) => (
               <li key={l} className="text-sm text-foreground flex items-start gap-1.5">
@@ -209,8 +240,8 @@ export default function ExecutiveAgents() {
       orchestrator: {
         at: now(),
         lines: [
-          "מיפוי ← התאמה ← עדכון ← מדידה ← תמרוץ: כל השרשרת רצה.",
-          "מה שדורש החלטה אנושית הועבר: למלווה (\"לפנות היום\"), ולמטה (כללים שבהצעה).",
+          "מיפוי ← התאמה ← עדכון ← מדידה ← תמרוץ: חמשת החישובים רצו בסדר, על נתוני ההדגמה.",
+          "מה שדורש החלטה אנושית מוצג לאדם: למלווה (\"לפנות היום\"), ולמטה (כללים שבהצעה). שום דבר לא משתנה אוטומטית.",
         ],
       },
     }));
@@ -223,11 +254,11 @@ export default function ExecutiveAgents() {
           <Bot className="w-7 h-7" aria-hidden="true" /> סוכני המערכת
         </h1>
         <p className="text-base text-white/90 mt-2 max-w-3xl">
-          שישה סוכנים שהוגדרו בהאקתון: מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל שמתזמר ביניהם. כאן כל סוכן רץ באמת על הקטלוג, התיק והכללים של
-          ההדגמה, בלחיצה. בייצור הם יתוזמנו אצל ספק העל.
+          שישה סוכנים שהוגדרו בהאקתון: מיפוי שירותים, התאמה, עדכון, מדידה, תמרוץ ומיקוד, ומנהל שמתזמר ביניהם. סוכן AI עדיין לא קיים בכלי הזה. מה שרץ כאן הוא מנוע חוקים
+          וחישוב על נתוני ההדגמה, בלחיצה, ובדיוק אותן פונקציות שהכלי משתמש בהן. הסוכנים עצמם מתוכננים, אצל ספק העל.
         </p>
         <button type="button" onClick={runAll} disabled={running !== null} className="mt-4 min-h-[48px] px-5 rounded-xl bg-white text-[#1B3A5C] font-bold inline-flex items-center gap-2 disabled:opacity-60">
-          <Network className="w-5 h-5" aria-hidden="true" /> להריץ את כל השרשרת דרך המנהל
+          <Network className="w-5 h-5" aria-hidden="true" /> להריץ את כל החישובים בסדר (סימולציה של מתזמר)
         </button>
       </div>
 
@@ -236,7 +267,10 @@ export default function ExecutiveAgents() {
         <h2 id="orch-h" className="text-lg font-bold text-foreground flex items-center gap-2">
           <ORCHESTRATOR.icon className="w-6 h-6 text-primary" aria-hidden="true" /> {ORCHESTRATOR.name}
         </h2>
+        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-md border bg-warning-soft text-warning-foreground border-warning/40 mt-1">{ORCHESTRATOR.status}</span>
         <p className="text-sm text-foreground mt-1">{ORCHESTRATOR.does}</p>
+        <p className="text-sm text-muted-foreground mt-1"><span className="font-semibold text-foreground">מקור ההגדרה: </span>{ORCHESTRATOR.source}</p>
+        <p className="text-sm text-muted-foreground mt-1"><span className="font-semibold text-foreground">מה רץ כאן: </span>{ORCHESTRATOR.engine}</p>
         <ol className="mt-4 flex flex-wrap items-center gap-2" aria-label="סדר הריצה">
           {AGENTS.map((a, i) => (
             <li key={a.id} className="flex items-center gap-2">
@@ -268,8 +302,34 @@ export default function ExecutiveAgents() {
         ))}
       </div>
 
+      <section className="libi-card p-5" aria-labelledby="also-h">
+        <h2 id="also-h" className="text-lg font-bold text-foreground">הוגדר במקורות, מחוץ לשישה</h2>
+        <ul className="mt-2 space-y-2">
+          {ALSO_DEFINED.map((x) => (
+            <li key={x.name} className="text-sm text-foreground">
+              <span className="font-semibold">{x.name}</span> · <span className="text-xs font-semibold px-2 py-0.5 rounded-md border bg-warning-soft text-warning-foreground border-warning/40">{x.status}</span>
+              <span className="block text-muted-foreground">מקור: {x.source}. {x.note}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="libi-card p-5" aria-labelledby="eng-h">
+        <h2 id="eng-h" className="text-lg font-bold text-foreground">מנועים וכללים: לא סוכנים</h2>
+        <p className="text-sm text-muted-foreground mb-3">חישוב וכללים שהמטה קובע ושפועלים בכלי, בלי מודל שפה. הם הבסיס שהסוכנים יישענו עליו.</p>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {ENGINES.map((e) => (
+            <li key={e.name} className="rounded-lg border border-border p-3 text-sm">
+              <span className="block font-semibold text-foreground">{e.name}</span>
+              <span className="block text-muted-foreground">{e.text}</span>
+              <Link to={e.to} className="inline-flex items-center gap-1 min-h-[44px] text-primary font-semibold">{e.label} <ChevronLeft className="w-4 h-4" aria-hidden="true" /></Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <p className="text-sm text-muted-foreground">
-        הסוכנים לא פועלים לבד מול אזרחים: כל פנייה לאזרח עוברת דרך המלווה, וכל שינוי כלל דרך המטה. אין כאן שרת, ואין הודעות שנשלחות באמת.
+        הסוכנים לא פועלים לבד מול אזרחים: כל פנייה לאזרח עוברת דרך המלווה, וכל שינוי כלל דרך המטה. אין כאן שרת, ואין הודעות שנשלחות באמת, ואין פעולה אוטומטית שמשנה זכאות, תקציב או גישה לשירות.
       </p>
     </div>
   );
