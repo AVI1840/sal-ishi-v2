@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// סל אישי — מנוע חיזוק חיים אישי
+// סל אישי - מנוע חיזוק חיים אישי
 // Data Model: מוטיבציות, חסמים, חוזקות, שינוי התנהגות
 // ═══════════════════════════════════════════════════════════════
 
@@ -93,6 +93,10 @@ export const READINESS_LABELS: Record<ReadinessStage, string> = {
 
 // ─── פרופיל אישי דינמי ────────────────────────────────────────
 export interface PersonalProfile {
+  // תוספת 3: יכולות ומגבלות מהשאלון המשותף. בלי אלה אין סינון בטיחות.
+  mobilityLevel?: "independent_walking" | "walker_wheelchair" | "home_remote";
+  functionalLevel?: "independent" | "partial_help" | "homebound";
+  digitalLevel?: "none" | "basic_phone" | "smartphone";
   // בסיס
   id: string;
   name: string;
@@ -263,7 +267,7 @@ export interface Coordinator {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Types from libi-dashboard (B) — needed for national prototype pages
+// Types from libi-dashboard (B) - needed for national prototype pages
 // ═══════════════════════════════════════════════════════════════
 
 export type NursingLevel = 1 | 2 | 3;

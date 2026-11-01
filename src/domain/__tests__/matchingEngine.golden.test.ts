@@ -1,10 +1,10 @@
-// Golden/regression tests for the matching engine — pinned BEFORE any
+// Golden/regression tests for the matching engine - pinned BEFORE any
 // Sprint 1 refactor toward the pseudonymized schema (see schema.ts and
 // PROMPT_SONNET5_PRODUCTION.md Sprint 0 DoD: "matching engine unit tests
 // green" as a safety net for the upcoming refactor).
 //
 // These assert against the CURRENT algorithm's real output for real mock
-// citizens, not against a re-derived expectation — if a future refactor
+// citizens, not against a re-derived expectation - if a future refactor
 // changes a score, this test tells you exactly what changed and by how
 // much, so an accidental behavior change is caught before it reaches a
 // real client's recommendations.
@@ -19,7 +19,7 @@ function findCitizen(id: string) {
   return citizen;
 }
 
-describe("matchServicesForCitizen — golden baseline", () => {
+describe("matchServicesForCitizen - golden baseline", () => {
   const sampleIds = ["c1", "c7", "c15", "c30", "c45", "c60", "c75"];
 
   it.each(sampleIds)("returns a stable, sorted, explainable result set for %s", (id) => {
@@ -50,7 +50,7 @@ describe("matchServicesForCitizen — golden baseline", () => {
     expect(topMatchCount).toBeLessThanOrEqual(3);
   });
 
-  it("ranks the hero persona (c1, Sarah Cohen — high loneliness) top service above minimum score", () => {
+  it("ranks the hero persona (c1, Sarah Cohen - high loneliness) top service above minimum score", () => {
     const citizen = findCitizen("c1");
     const [top] = matchServicesForCitizen(citizen, { topN: 1 });
     expect(top.totalScore).toBeGreaterThanOrEqual(20);

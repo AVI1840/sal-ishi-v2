@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { Download, FileJson, ShieldCheck } from "lucide-react";
 // ה-JSON Schema נגזר מהסכמה בקוד (packages/core/scripts), ובדיקה בליבה מוודאת שהוא מעודכן.
-import onboardingSchemaText from "../../../../schema/operator_onboarding_standard_1.1.schema.json?raw";
+import onboardingSchemaText from "../../../../schema/operator_onboarding_standard_1.2.schema.json?raw";
 import {
   EXPORT_FORBIDDEN_KEYS,
   FileSyncAdapter,
@@ -29,6 +29,53 @@ const REF_LABEL: Record<string, string> = { monitor: "מעקב", binding: "מח�
 const BASIS_LABEL: Record<string, string> = { tier: "דרגת השתתפות", qol_fixed: "איכות חיים, סכום קבוע", qol_percent: "איכות חיים, אחוז", reference_binding: "מחיר ייחוס מחייב" };
 const pts = (n: number | null) => (n === null ? "טרם נקבע" : n.toLocaleString("he-IL", { maximumFractionDigits: 2 }));
 import { useHqAnalysis } from "../analysis";
+
+/** חוזה הייצוא ב-seed כתוב באנגלית. בממשק: עברית, ושם השדה בגופן קוד. */
+const CONTRACT_HE: Record<string, [string, string?]> = {
+  "approved services": ["שירותים מאושרים"],
+  "supplier code and type": ["קוד הספק וסוג הספק", "supplierCode"],
+  "category and service type": ["קטגוריה וסוג שירות", "serviceTypeId"],
+  price_points: ["מחיר בנקודות", "price_points"],
+  "copay tier": ["מדרגת השתתפות עצמית", "copay_tier"],
+  "delivery mode": ["אופן מתן השירות", "delivery"],
+  "community fit": ["התאמה לקהילה", "community"],
+  "attendance method": ["אופן דיווח הנוכחות", "attendance_method"],
+  "cancellation policy": ["מדיניות ביטול", "cancellation"],
+  "reach (neighborhood, authority, regional, national)": ["טווח: שכונה, רשות, אזורי או ארצי", "reach"],
+  "cancellation notice hours, no-show and hospitalization rules": ["שעות הודעה לביטול, אי-הגעה ואשפוז", "cancel_notice_hours"],
+  hours_per_unit: ["משך יחידת שירות", "hours_per_unit"],
+  "service_mode (group/individual/home/remote)": ["סוג השירות: קבוצתי, פרטני, בבית או מרחוק", "service_mode"],
+  capacity_limited: ["מספר מקומות מוגבל", "capacity_limited"],
+  gated_by_companion: ["נפתח יחד עם המלווה", "gated_by_companion"],
+  "product quarterly cap flag": ["סימון תקרת מוצרים ברבעון", "product_cap"],
+  "any resident data": ["שום מידע על תושבים"],
+  "contact details of individual suppliers": ["פרטי קשר של ספק יחיד"],
+  "internal notes": ["הערות פנימיות"],
+  "raw activity below small-cell threshold": ["נתוני פעילות מתחת לסף תא קטן"],
+};
+
+function ContractItem({ raw }: { raw: string }) {
+  const [he, field] = CONTRACT_HE[raw] ?? [null, raw];
+  return (
+    <li>
+      {he}
+      {field ? <>{he ? " " : ""}<code dir="ltr">{field}</code></> : null}
+    </li>
+  );
+}
+
+/** שירותים באותו שם ובאותה סיבה (למשל משתי שכונות): שורה אחת עם מספר. */
+function groupSkipped(skipped: { serviceId: string; reason: string }[], nameOf: (id: string) => string) {
+  const groups = new Map<string, { key: string; name: string; reason: string; count: number }>();
+  for (const s of skipped) {
+    const name = nameOf(s.serviceId);
+    const key = `${name}|${s.reason}`;
+    const g = groups.get(key);
+    if (g) g.count += 1;
+    else groups.set(key, { key, name, reason: s.reason, count: 1 });
+  }
+  return [...groups.values()];
+}
 
 export default function ExportScreen() {
   const { state, seed, labels } = useHqAnalysis();
@@ -76,7 +123,7 @@ export default function ExportScreen() {
     <>
       <PageHeader
         title="ייצוא"
-        description={`${contract.name} בגרסה ${contract.version}: תקן קליטת המפעילים שביטוח לאומי מחזיק. ספק העל מקבל אותו ולא מגדיר אותו, ומפעיל לפיו נקודות, ביטולים ונוכחות. נכנסים רק שירותים בסטטוס ${seed.settings.publish_to_citizen_statuses.join(", ")} שיש להם את כל שדות מודל התשלום.`}
+        description={`תקן קליטת המפעילים, גרסה ${contract.version}: התקן שביטוח לאומי מחזיק. ספק העל מקבל אותו ולא מגדיר אותו, ומפעיל לפיו נקודות, ביטולים ונוכחות. נכנסים רק שירותים בסטטוס ${seed.settings.publish_to_citizen_statuses.join(", ")} שיש להם את כל שדות מודל התשלום.`}
       />
 
       {error ? <Alert tone="error" title="הייצוא נכשל" live>{error}</Alert> : null}
@@ -90,7 +137,7 @@ export default function ExportScreen() {
               variant="secondary"
               icon={<FileJson size={18} />}
               onClick={() => {
-                downloadBytes("operator_onboarding_standard_1.1.schema.json", new TextEncoder().encode(onboardingSchemaText), "application/schema+json");
+                downloadBytes("operator_onboarding_standard_1.2.schema.json", new TextEncoder().encode(onboardingSchemaText), "application/schema+json");
                 toast("success", "ה-JSON Schema ירד");
               }}
             >
@@ -155,16 +202,16 @@ export default function ExportScreen() {
         <div className="grid grid--cards">
           <div>
             <h3>נכלל</h3>
-            <ul>{contract.includes.map((i) => <li key={i}>{i}</li>)}</ul>
+            <ul>{contract.includes.map((i) => <ContractItem key={i} raw={i} />)}</ul>
           </div>
           <div>
             <h3>לא נכלל</h3>
-            <ul>{contract.excludes.map((i) => <li key={i}>{i}</li>)}</ul>
+            <ul>{contract.excludes.map((i) => <ContractItem key={i} raw={i} />)}</ul>
           </div>
         </div>
         {skipped.length ? (
           <Alert tone="warning" title={`${skipped.length} שירותים מאושרים לא נכנסו. שירות שדורש השלמה נשלם בשטח ומגיע בחבילה הבאה`}>
-            <ul>{skipped.map((s) => <li key={s.serviceId}>{state.services.find((x) => x.id === s.serviceId)?.name ?? s.serviceId}: {s.reason}</li>)}</ul>
+            <ul>{groupSkipped(skipped, (id) => state.services.find((x) => x.id === id)?.name ?? id).map((g) => <li key={g.key}>{g.name}{g.count > 1 ? `, ${g.count} שירותים` : ""}: {g.reason}</li>)}</ul>
           </Alert>
         ) : null}
       </section>

@@ -1,0 +1,946 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "enum": [
+        "sal-ishi.pilot-events/1.0",
+        "sal-ishi.pilot-events/1.1"
+      ]
+    },
+    "exportedAt": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "const": "sal-ishi-pilot"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "booking.created"
+              },
+              "bookingId": {
+                "type": "string"
+              },
+              "serviceId": {
+                "type": "string",
+                "description": "מזהה השירות בתקן קליטת המפעילים"
+              },
+              "serviceName": {
+                "type": "string"
+              },
+              "slot": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "מועד, או null כשהמפעיל מתאם מועד"
+              },
+              "coveredShekel": {
+                "type": "number",
+                "description": "מהסל, להמחשה. במנוי: הסכום לחודש. הסכום המחייב אצל הספק"
+              },
+              "copayShekel": {
+                "type": "number"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "subscription",
+                  "single"
+                ],
+                "description": "ברירת מחדל: single"
+              },
+              "sessionsPerMonth": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "במנוי: מפגשים בחודש, לחלוקת הסכום לפי נוכחות"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "bookingId",
+              "serviceId",
+              "serviceName",
+              "slot",
+              "coveredShekel",
+              "copayShekel"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "attendance.reported"
+              },
+              "bookingId": {
+                "type": "string"
+              },
+              "sessions": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "bookingId",
+              "sessions"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "incentive.granted"
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "volunteer",
+                  "teach",
+                  "persistence",
+                  "goal"
+                ]
+              },
+              "points": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "reason",
+              "points"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "incentive.eligibility"
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "volunteer",
+                    "teach"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "roles"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "booking.cancelled"
+              },
+              "bookingId": {
+                "type": "string"
+              },
+              "charged": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "bookingId",
+              "charged",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "request.created"
+              },
+              "requestId": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "callback",
+                  "gated_service",
+                  "claim_help"
+                ]
+              },
+              "serviceId": {
+                "type": "string"
+              },
+              "serviceName": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "requestId",
+              "kind"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "request.decided"
+              },
+              "requestId": {
+                "type": "string"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "done"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "requestId",
+              "decision",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "visit.logged"
+              },
+              "visitId": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "home",
+                  "phone",
+                  "no_answer"
+                ]
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "visitId",
+              "kind"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "hospitalization.started"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "hospitalization.ended"
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "needs.updated"
+              },
+              "interests": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "answers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "interests"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO 8601"
+              },
+              "actor": {
+                "type": "string",
+                "enum": [
+                  "citizen",
+                  "companion",
+                  "system"
+                ]
+              },
+              "citizenId": {
+                "type": "string",
+                "description": "מזהה בדוי של הספק. לא מספר זהות."
+              },
+              "onBehalf": {
+                "type": "object",
+                "properties": {
+                  "consent": {
+                    "type": "string",
+                    "const": "verbal"
+                  },
+                  "readBack": {
+                    "type": "string"
+                  },
+                  "confirmedAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "consent",
+                  "readBack",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              "synced": {
+                "type": "boolean",
+                "description": "פנימי לכלי. לא נשלח."
+              },
+              "type": {
+                "type": "string",
+                "const": "review.logged"
+              },
+              "serviceId": {
+                "type": "string"
+              },
+              "verdict": {
+                "type": "string",
+                "enum": [
+                  "worked",
+                  "partly",
+                  "replace"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "at",
+              "actor",
+              "citizenId",
+              "type",
+              "serviceId",
+              "verdict"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "exportedAt",
+    "source",
+    "events"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sal-ishi:pilot-events:1.1",
+  "title": "pilot events 1.1",
+  "description": "אירועים מחוויית האזרח והמלווה: הזמנה (מנוי חודשי או חד-פעמית), ביטול, נוכחות מדווחת, בקשה, החלטת מלווה, ביקור, אשפוז ותמריצים. בלי נתוני תושבים: מזהה האזרח הוא מזהה בדוי של הספק. אין שם, טלפון, כתובת או מספר זהות."
+}

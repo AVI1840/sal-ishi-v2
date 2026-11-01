@@ -2,7 +2,7 @@
 // (הכרעה 28.10.2026) ולא יוצאים מהמטה: לא לאינטגרטור ולא לכלי לאזרח.
 
 import { useState } from "react";
-import { SUPPLIER_TYPES, competitionFlags, supplierScore } from "@sal-ishi/core";
+import { SUPPLIER_TYPES, competitionFlags, supplierScore, quarterText } from "@sal-ishi/core";
 import { Alert, Badge, PageHeader, SelectField, TableWrap } from "@sal-ishi/ui";
 import { useHqAnalysis } from "../analysis";
 
@@ -73,7 +73,7 @@ export default function SuppliersScreen() {
                 <td>
                   {(() => {
                     const sc = supplierScore(s, seed.settings);
-                    return sc ? <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} ({sc.quarter})</Badge> : <span className="muted">{seed.settings.supplier_rating_enabled === false ? "הדירוג כבוי" : "אין"}</span>;
+                    return sc ? (sc.newSupplier ? <span className="muted">ספק חדש</span> : <Badge tone={sc.score >= 4 ? "success" : sc.score >= 3 ? "info" : "warning"}>{sc.score.toFixed(1)} ({quarterText(sc.quarter)})</Badge>) : <span className="muted">{seed.settings.supplier_rating_enabled === false ? "הדירוג כבוי" : "אין"}</span>;
                   })()}
                 </td>
               </tr>

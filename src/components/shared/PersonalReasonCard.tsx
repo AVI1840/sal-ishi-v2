@@ -14,11 +14,14 @@ import { ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MatchResult } from "@/lib/matchingEngine";
 import { MatchExplainability } from "./MatchExplainability";
+import { citizenReasons } from "@/lib/citizenReasons";
 
 interface Props {
   result: MatchResult;
-  /** citizen first name — used to personalise the hook */
+  /** citizen first name - used to personalise the hook */
   firstName?: string;
+  /** נימוק אישי לאזרח ("סיפרת ש..."), במקום הסיבה הראשונה של המנוע */
+  reason?: string;
   /** show the full 5-layer breakdown when expanded (default true) */
   showLayers?: boolean;
   className?: string;
@@ -41,27 +44,29 @@ function personalise(reason: string, firstName?: string): string {
 export function PersonalReasonCard({
   result,
   firstName,
+  reason,
   showLayers = true,
   className,
 }: Props) {
   const [open, setOpen] = useState(false);
 
-  const explanations = result.explanations.filter(Boolean);
-  // First reason is the hook — shown collapsed
-  const hookReason = explanations[0] ?? "מתאים לפרופיל שלך";
-  // Rest shown on expand (may overlap with hook — dedupe)
+  // מול האזרח (בלי פירוט השכבות): הסיבות בשפה שלו, בלי תיוג ובלי כפתור בתוך הכרטיס.
+  const explanations = showLayers ? result.explanations.filter(Boolean) : citizenReasons(result.explanations);
+  // First reason is the hook - shown collapsed
+  const hookReason = reason ?? explanations[0] ?? "מתאים לפרופיל שלך";
+  // Rest shown on expand (may overlap with hook - dedupe)
   const extraReasons = explanations.slice(1);
 
   return (
     <div className={cn("rounded-xl border border-[#1B3A5C]/10 bg-[#1B3A5C]/[0.025]", className)}>
-      {/* Hook — always visible */}
+      {/* Hook - always visible */}
       <div className="px-4 py-3 flex items-start gap-2.5">
         <CheckCircle className="w-4 h-4 text-[#1B3A5C] mt-0.5 shrink-0" />
         <p className="text-sm text-[#1B3A5C] font-medium leading-snug flex-1">
-          {personalise(hookReason, firstName)}
+          {reason ? reason : personalise(hookReason, firstName)}
         </p>
-        {/* Toggle button — only if there's more to show */}
-        {(extraReasons.length > 0 || showLayers) && (
+        {/* Toggle button - only if there's more to show */}
+        {showLayers && (
           <button
             onClick={() => setOpen((v) => !v)}
             className="shrink-0 flex items-center gap-1 text-xs text-[#1B3A5C]/70 hover:text-[#1B3A5C] transition-colors font-medium min-h-[28px] min-w-[80px] justify-end"
@@ -93,10 +98,10 @@ export function PersonalReasonCard({
               ))}
             </ul>
           )}
-          {/* 5-layer breakdown — compact */}
+          {/* 5-layer breakdown - compact */}
           {showLayers && (
             <div className="pt-1 border-t border-[#1B3A5C]/10">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#1B3A5C]/50 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#1B3A5C]/80 mb-2">
                 פירוט ציון ההתאמה
               </p>
               <MatchExplainability result={result} compact />

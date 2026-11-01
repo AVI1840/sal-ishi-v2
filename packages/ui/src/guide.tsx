@@ -2,7 +2,7 @@
 // ועל מה אנחנו מבקשים משוב. הסעיפים הפתוחים נקראים מה-seed ולא נכתבים כאן.
 
 import { Link } from "react-router-dom";
-import { proposalKeys, type Seed } from "@sal-ishi/core";
+import { proposalKeys, type Seed, settingLabel, plainStatus } from "@sal-ishi/core";
 import { Alert, ProposalBadge } from "./controls";
 import { PageHeader } from "./shell";
 
@@ -19,16 +19,14 @@ const PROPOSAL_LABELS: Record<string, string> = {
   active_participant_min_sessions_month: "משתתף פעיל: לפחות 2 מפגשים בחודש",
   reference_price_mode: "מחיר ייחוס: מעקב, מחייב או מחייב בתחרות נמוכה",
   reference_price_binding_scope: "היכן מחיר הייחוס מחייב",
-  supplier_rating_enabled: "דירוג ספקים פנימי",
+  supplier_rating_enabled: "דירוג ספקים: חמישה רכיבים, המשקלות ייקבעו",
+  supplier_rating_min_evaluations: "דירוג ספקים: מינימום הערכות לפני שמוצג ציון",
   hot_meal_entry_criteria: "קריטריון כניסה לארוחה חמה",
   matching_weights: "משקלות שכבות ההתאמה לאזרח",
-  supplier_rating_weights: "משקלות דירוג הספקים",
   selection_min_per_domain: "בחירת האזרח: שירות מכל תחום",
   selection_max_active: "בחירת האזרח: עד 8 שירותים פעילים",
   selection_change_months: "בחירת האזרח: החלפה חודשית",
   suggestions_per_domain: "מספר ההצעות בכל תחום",
-  competition_max_suppliers_local: "תחרות: עד 3 ספקים לסוג שירות בשכונה",
-  competition_max_suppliers_national: "תחרות: עד 5 ספקים לסוג מוצר ארצי",
   subcategory_breadth_min: "רוחב: לפחות 2 תתי-קטגוריות בכל קטגוריית ליבה",
   subarea_alert_min: "התראה קוגניטיבית כשאין שירות בתת-התחום",
 };
@@ -36,9 +34,9 @@ const PROPOSAL_LABELS: Record<string, string> = {
 const FLOW = [
   { who: "מלווה ואזרח", title: "כלי מרכזי: שיחה ובחירה", text: "חיפוש חכם והצעות לפי תחום מתוך הקטלוג המאושר. בקשה בלי מענה נרשמת כ\"ביקשו ואין\".", out: "ביקשו ואין, מצטבר" },
   { who: "רכזת ומנהלת שכונה", title: "שטח: אטלס וקטלוג", text: "ספקים ודירוגם, שירותים, מבחן כניסה, מבחן כיסוי עם פערי הביקוש, ואישור בוועדה.", out: "חבילת פיילוט" },
-  { who: "צוות ביטוח לאומי", title: "מטה: תקן ארצי", text: "איחוד פיילוטים, מחירי ייחוס, כללים ומשקלות, וערוץ מוצרים ארצי.", out: "קטלוג מאושר וגרסת בסיס" },
+  { who: "צוות ביטוח לאומי", title: "מטה: תקן ארצי", text: "איחוד פיילוטים, מחירי ייחוס, כללים ומשקלות, וערוץ מוצרים ארצי.", out: "קטלוג מאושר וגרסת כללים" },
   { who: "אזרח ומלווה", title: "כלי מרכזי: התאמה", text: "חמש שכבות התאמה עם משקלות מהמטה, ביקוש בפועל ודירוג ספק.", out: "בחירה של 6 עד 8 שירותים" },
-  { who: "ספק העל", title: "מימוש", text: "תקן קליטת מפעילים (operator_onboarding_standard): חוזה שביטוח לאומי מחזיק. נקודות, תשלומים, ביטולים ונוכחות אצל ספק העל.", out: "שירות בפועל" },
+  { who: "ספק העל", title: "מימוש", text: "תקן קליטת המפעילים: חוזה שביטוח לאומי מחזיק. נקודות, תשלומים, ביטולים ונוכחות אצל ספק העל.", out: "שירות בפועל" },
 ];
 
 const LAYERS = [
@@ -145,7 +143,7 @@ export function PartnerGuide(props: {
           <li>סיכום מפגש 2 של צוות היישום (26.10.2026): שישה שדות חובה, השתתפות עצמית (0% ליבה ומניעה, 20% חוגים, עד 50% איכות חיים), פרופיל קהילתי לכל שכונה ובדיקת כיסוי לפי התאמה.</li>
           <li>פגישת החשכ"ל (28.10.2026): בלי מחיר גג, מחיר ליחידה ומחיר שוק לייחוס, ספק כישות עם סוג עוסק, אופן מסירה (בבית ומרחוק), שיטת אימות נוכחות ומדיניות ביטול, ומיצוי בחלון מתגלגל.</li>
           <li>אטלס השירותים של פיילוט ירושלים (ינואר 2025 עד אוגוסט 2026), נתונים מצטברים בלבד: {props.seed.service_types.length} סוגי שירות ב-{props.seed.categories.length} קטגוריות.</li>
-          <li>כל סף וכלל נקרא מקובץ הבסיס (גרסה {props.seed.meta.version}) ולא מקודד, כך ששינוי הכרעה משנה הגדרה ולא קוד.</li>
+          <li>כל סף וכלל נקרא מקובץ הכללים (גרסת הכללים {props.seed.meta.version}) ולא מקודד, כך ששינוי הכרעה משנה הגדרה ולא קוד.</li>
         </ul>
       </section>
 
@@ -153,12 +151,12 @@ export function PartnerGuide(props: {
         <h2 id="g-open">מה עוד פתוח</h2>
         <p>ערכים שמסומנים <ProposalBadge /> בכלי ממתינים להכרעה במפגש 3 (26.11.2026):</p>
         <ul>
-          {proposals.map((k) => <li key={k}>{PROPOSAL_LABELS[k] ?? k}</li>)}
+          {proposals.map((k) => <li key={k}>{PROPOSAL_LABELS[k] ?? settingLabel(k)}</li>)}
         </ul>
         {openItems.length ? (
           <>
-            <h3>סעיפים פתוחים בקובץ הבסיס</h3>
-            <ul>{openItems.map((item) => <li key={item}>{item}</li>)}</ul>
+            <h3>סעיפים פתוחים בקובץ הכללים</h3>
+            <ul>{openItems.map((item) => <li key={item}>{plainStatus(item)}</li>)}</ul>
           </>
         ) : null}
       </section>

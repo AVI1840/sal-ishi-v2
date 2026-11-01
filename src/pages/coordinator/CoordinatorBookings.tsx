@@ -1,5 +1,5 @@
 /**
- * Bookings — ניהול הזמנות
+ * Bookings - ניהול הזמנות
  * Tabs: מתוכנן / בתהליך / הושלם / בוטל
  */
 import { useState } from "react";

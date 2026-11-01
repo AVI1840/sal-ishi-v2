@@ -9,8 +9,7 @@ import {
   productsQuarterlyCapPoints,
   supplierScore,
   type Service,
-  type Supplier,
-} from "@sal-ishi/core";
+  type Supplier, quarterText } from "@sal-ishi/core";
 import { Alert, Badge, Button, Dialog, EmptyState, PageHeader, SelectField, TableWrap, TextField, useToast } from "@sal-ishi/ui";
 import { useHqAnalysis } from "../analysis";
 import { useHq } from "../store";
@@ -56,7 +55,7 @@ export default function NationalChannelScreen() {
     <>
       <PageHeader
         title="ערוץ ארצי"
-        description={`מוצרים ושירותים ארציים מספקים ארציים, בעיקר מוצרי מניעה ובטיחות (קטגוריה 6). מופיעים בקטלוג של כל שכונה בכל הפיילוטים${seed.settings.products_count_in_floor ? ", ונספרים ברצפה" : ", ולא נספרים ברצפה של שכונה"}. תקרה לאדם: ${productsQuarterlyCapPoints(seed.settings)} נקודות ברבעון (${Math.round(seed.settings.products_quarterly_cap_share.value * 100)}% מהארנק הרבעוני). עד ${maxNational} ספקים לכל סוג מוצר.`}
+        description={`מוצרים ושירותים ארציים מספקים ארציים, בעיקר מוצרי מניעה ובטיחות (קטגוריה 6). מופיעים בקטלוג של כל שכונה בכל הפיילוטים${seed.settings.products_count_in_floor ? ", ונספרים ברצפה" : ", ולא נספרים ברצפה של שכונה"}. תקרה לאדם: ${productsQuarterlyCapPoints(seed.settings)} נקודות ברבעון (${Math.round(seed.settings.products_quarterly_cap_share.value * 100)}% מהארנק הרבעוני).`}
         actions={
           <>
             <Button icon={<Plus size={18} />} disabled={!suppliers.length} onClick={() => setEditing(blank())}>פריט ארצי חדש</Button>
@@ -141,7 +140,7 @@ export default function NationalChannelScreen() {
                   <tr key={s.code}>
                     <th scope="row">{s.code}</th>
                     <td>{s.displayName}</td>
-                    <td>{sc ? `${sc.score.toFixed(1)} מתוך 5 (${sc.quarter})` : "אין הערכה"}</td>
+                    <td>{sc ? (sc.newSupplier ? "ספק חדש" : `${sc.score.toFixed(1)} מתוך 5 (${quarterText(sc.quarter)})`) : "אין הערכה"}</td>
                     <td className="num">{services.filter((x) => x.supplierCode === s.code).length}</td>
                   </tr>
                 );

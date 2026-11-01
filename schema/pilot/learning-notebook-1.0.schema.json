@@ -1,0 +1,112 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "sal-ishi.learning-notebook/1.0"
+    },
+    "exportedAt": {
+      "type": "string"
+    },
+    "surface": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "שטח",
+              "מטה",
+              "אזרח ומלווה"
+            ]
+          },
+          "observed": {
+            "type": "string",
+            "minLength": 1
+          },
+          "area": {
+            "type": "string",
+            "enum": [
+              "כלל",
+              "שדה בתקן",
+              "שירות או קטלוג",
+              "תהליך עבודה",
+              "חוויית אזרח",
+              "חוויית מלווה",
+              "ממשק לספק",
+              "נגישות",
+              "פרטיות ואבטחה"
+            ]
+          },
+          "ref": {
+            "type": "string",
+            "default": ""
+          },
+          "proposal": {
+            "type": "string",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "פתוח",
+              "הוכרע",
+              "נדחה"
+            ],
+            "default": "פתוח"
+          },
+          "decision": {
+            "type": "string",
+            "default": ""
+          },
+          "decidedBy": {
+            "type": "string",
+            "default": ""
+          },
+          "tender": {
+            "type": "boolean",
+            "default": true
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "חובה",
+              "רצוי",
+              "לבדיקה"
+            ],
+            "default": "רצוי"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "surface",
+          "observed",
+          "area"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "exportedAt",
+    "surface",
+    "entries"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sal-ishi:learning-notebook:1.0",
+  "title": "learning notebook 1.0",
+  "description": "פנקס הלמידה: תובנות מהשטח, הצעות והכרעות. המקור לרישום הדרישות למכרז."
+}

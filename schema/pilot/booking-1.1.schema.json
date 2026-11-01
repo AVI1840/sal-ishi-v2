@@ -1,0 +1,127 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "citizenId": {
+      "type": "string"
+    },
+    "serviceId": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "slot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string",
+      "enum": [
+        "citizen",
+        "companion",
+        "system"
+      ]
+    },
+    "onBehalf": {
+      "type": "object",
+      "properties": {
+        "consent": {
+          "type": "string",
+          "const": "verbal"
+        },
+        "readBack": {
+          "type": "string"
+        },
+        "confirmedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "consent",
+        "readBack",
+        "confirmedAt"
+      ],
+      "additionalProperties": false
+    },
+    "coveredShekel": {
+      "type": "number"
+    },
+    "copayShekel": {
+      "type": "number"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "subscription",
+        "single"
+      ]
+    },
+    "sessionsPerMonth": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "attendedSessions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "attendance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "at",
+          "sessions"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "booked",
+        "cancelled",
+        "paused"
+      ]
+    },
+    "cancelledAt": {
+      "type": "string"
+    },
+    "charged": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "citizenId",
+    "serviceId",
+    "serviceName",
+    "slot",
+    "createdAt",
+    "createdBy",
+    "coveredShekel",
+    "copayShekel",
+    "status"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sal-ishi:booking:1.1",
+  "title": "booking 1.1",
+  "description": "הזמנה, כפי שהיא נגזרת מהאירועים: מנוי או חד-פעמית, שמור ונוצל לפי נוכחות. בלי נתוני תושבים: מזהה האזרח הוא מזהה בדוי של הספק. אין שם, טלפון, כתובת או מספר זהות."
+}

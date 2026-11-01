@@ -200,6 +200,11 @@ a {
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-sm);
 }
+.demo-banner a {
+  color: var(--color-warning-text);
+  font-weight: var(--font-weight-semibold);
+}
+
 
 /* ── Page header ───────────────────────────────────────── */
 
@@ -773,4 +778,63 @@ a {
   overflow-wrap: anywhere;
   word-break: break-all;
   font-size: 0.875rem;
+}
+
+/* ── סקירת המטה (0.5) ─────────────────────────────── */
+.overview-flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--spacing-3);
+}
+.overview-flow li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+.overview-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  text-decoration: none;
+  color: inherit;
+  min-height: 100%;
+}
+.overview-step:hover {
+  box-shadow: 0 10px 24px rgba(6, 77, 173, 0.15);
+}
+.overview-step__title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+.overview-arrow {
+  flex: none;
+  color: var(--color-primary);
+}
+.overview-proposals,
+.overview-scope {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--spacing-2);
+}
+.overview-scope li {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: flex-start;
+}
+.overview-proposals code {
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-tertiary);
+  padding: 0 var(--spacing-1);
+  border-radius: var(--radius-sm);
+}
+@media (max-width: 40rem) {
+  .overview-arrow {
+    display: none;
+  }
 }
