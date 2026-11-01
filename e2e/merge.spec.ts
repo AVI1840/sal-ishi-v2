@@ -404,7 +404,7 @@ test("התסריט: שבע דקות, שלוש דלתות, ביום ההדגמה"
   await context.clock.setFixedTime(new Date("2026-11-03T08:00:00Z"));
   // 0:00 בית
   await page.goto("./#/");
-  for (const t of ["מגמלה לצמיחה", "סל אישי להזדקנות מיטבית", "משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא", "מי עומד מאחורי הסל האישי"]) await expect(page.getByText(t).first()).toBeVisible();
+  for (const t of ["מגמלה לצמיחה", "סל אישי להזדקנות מיטבית", "משעות לתוצאות", "שלוש דלתות", "מה המדינה מקבלת", "הצעד הבא", "על היוזמה והובלת מהלך הסל האישי"]) await expect(page.getByText(t).first()).toBeVisible();
   // 1:00 שרה: הארנק
   await page.goto("./#/citizen");
   const wallet = page.locator("[aria-labelledby=wallet-title]");

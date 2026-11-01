@@ -247,7 +247,7 @@ export default function DemoHome() {
         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 flex flex-wrap items-center gap-5">
           <span className="w-16 h-16 rounded-full bg-[#1B3A5C] text-white text-2xl font-bold flex items-center justify-center shrink-0" aria-hidden="true">{CREDIT.who.charAt(0)}</span>
           <div className="flex-1 min-w-[240px]">
-            <h2 id="credit-h" className="text-xl font-bold text-gray-900">מי עומד מאחורי הסל האישי</h2>
+            <h2 id="credit-h" className="text-xl font-bold text-gray-900">{CREDIT.heading}</h2>
             <p className="text-2xl font-bold text-[#1B3A5C] mt-1">{CREDIT.who}</p>
             <p className="text-sm text-gray-600">{CREDIT.role} | {CREDIT.org}</p>
             <p className="text-base text-gray-800 mt-2">{CREDIT.intro}</p>
