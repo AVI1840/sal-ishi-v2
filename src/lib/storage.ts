@@ -6,7 +6,7 @@
  * narrative on screen stays consistent during steering-committee
  * walkthroughs.
  *
- * NOT suitable for multi-user pilots — see roadmap.
+ * NOT suitable for multi-user pilots - see roadmap.
  */
 
 const NAMESPACE = "libi:v1";

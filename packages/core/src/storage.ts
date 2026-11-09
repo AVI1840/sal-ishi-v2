@@ -126,3 +126,35 @@ export async function openStore(namespace: string): Promise<KeyValueStore> {
   }
   return fallback;
 }
+
+/** הסיומת של אחסון גרסה 0.5. השורש (0.4) ו-/next/ (0.5) חולקים מקור באתר, ולכן אחסון נפרד. */
+export const STORE_VERSION_SUFFIX = "-v05";
+const IMPORT_MARK = "__imported_from__";
+
+/**
+ * פותח את האחסון של הגרסה הנוכחית. בפתיחה הראשונה מעתיק אליו את המפתחות
+ * מהאחסון של הגרסה הקודמת, בלי לכתוב עליו ובלי למחוק אותו, כדי שנתונים
+ * של 0.4 ייטענו ב-0.5 ו-0.4 ימשיך לעבוד כמו שהוא.
+ */
+export async function openVersionedStore(
+  namespace: string,
+  keys: string[],
+  open: (ns: string) => Promise<KeyValueStore> = openStore,
+): Promise<{ store: KeyValueStore; imported: string[] }> {
+  const store = await open(namespace + STORE_VERSION_SUFFIX);
+  const imported: string[] = [];
+  if (await store.get(IMPORT_MARK)) return { store, imported };
+  const legacy = await open(namespace);
+  for (const key of keys) {
+    if ((await store.get(key)) !== undefined) continue;
+    const value = await legacy.get(key);
+    if (value === undefined) continue;
+    await store.set(key, value);
+    imported.push(key);
+  }
+  await store.set(IMPORT_MARK, { from: namespace, at: new Date().toISOString(), keys: imported });
+  return { store, imported };
+}
+
+/** שמות המאגרים של 0.5, למחיקה באיפוס ההדגמה. */
+export const VERSIONED_NAMESPACES = ["sal-ishi-field", "sal-ishi-hq", "sal-ishi-feedback", "sal-ishi-learning"].map((n) => n + STORE_VERSION_SUFFIX);

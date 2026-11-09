@@ -17,7 +17,7 @@ const DREAMS = [
   "להתחיל לכתוב יומן",
 ];
 const TIPS = [
-  "התקשרי בבוקר — ערנית יותר ומגיבה בחיוב.",
+  "התקשרי בבוקר - ערנית יותר ומגיבה בחיוב.",
   "מעדיפ/ה שיחה אישית על פני קבוצתית בהתחלה.",
   "מתחבר/ת לזיכרונות ילדות כפתיח לשיחה.",
   "שירים מבית-אבא פותחים את הלב.",
@@ -121,15 +121,15 @@ function generateClient(i: number): Client {
 // Generate 75 clients
 const generated = Array.from({ length: 75 }, (_, i) => generateClient(i + 2));
 
-// Sarah — protagonist (id c1) — pinned to top
+// Sarah - protagonist (id c1) - pinned to top
 const sarah: Client = {
   id: "c1",
   firstName: "שרה",
   lastName: "כהן",
   age: 78,
   city: "רמת גן",
-  phone: "052-1234567",
-  emergencyContact: { name: "אורי כהן", relation: "בן", phone: "054-9876543" },
+  phone: "050-0000001",
+  emergencyContact: { name: "אורי כהן", relation: "בן", phone: "050-0000000" },
   nursingLevel: 2,
   active: true,
   wallet: { total: 32, balance: 32, optimalAgingUnits: 6 },

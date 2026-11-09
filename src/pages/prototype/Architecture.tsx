@@ -40,13 +40,13 @@ export default function Architecture() {
                 <span className="text-xs font-medium bg-white/20 px-2 py-0.5 rounded">מאושר ✓</span>
               </div>
               <p className="text-sm opacity-90 mt-1 leading-relaxed">
-                ענן ממשלתי ישראלי — תאימות מלאה לדרישות אבטחה ופרטיות של מערך הדיגיטל הלאומי.
+                ענן ממשלתי ישראלי - תאימות מלאה לדרישות אבטחה ופרטיות של מערך הדיגיטל הלאומי.
               </p>
             </div>
           </div>
         </Card>
 
-        {/* 5 AI Layers — vertical stack with flow arrows */}
+        {/* 5 AI Layers - vertical stack with flow arrows */}
         <section>
           <h2 className="text-lg font-bold text-foreground mb-4">5 שכבות AI</h2>
           <div className="space-y-2">
@@ -88,10 +88,10 @@ export default function Architecture() {
           </div>
         </section>
 
-        {/* Data sources — 4 ministries */}
+        {/* Data sources - 4 ministries */}
         <section>
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-            <Database className="w-5 h-5 text-primary" aria-hidden="true" /> מקורות דאטה — 4 משרדים שותפים
+            <Database className="w-5 h-5 text-primary" aria-hidden="true" /> מקורות דאטה - 4 משרדים שותפים
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {MINISTRIES.map((m) => (

@@ -138,6 +138,11 @@ export function pointsSplit(
   const { settings } = seed;
   const category = seedIndex(seed).categories.get(s.categoryCode);
   if (category && (QOL_LAYERS as readonly string[]).includes(category.layer)) {
+    // פריט שהסכום שלו בכלל עוד לא נקבע (ארוחה חמה): פתוח בשני המצבים, ולא מחושב מאחוז.
+    const rule = qolRuleFor(seed, s);
+    if (rule && (rule.value === null || rule.value === undefined)) {
+      return { coveredPoints: null, copayPoints: null, copayBasis: qolMode(settings) === "fixed_amount" ? "qol_fixed" : "qol_percent" };
+    }
     if (qolMode(settings) === "fixed_amount") {
       const value = qolRuleFor(seed, s)?.value;
       if (value === null || value === undefined) return { coveredPoints: null, copayPoints: null, copayBasis: "qol_fixed" };

@@ -1,5 +1,5 @@
 /**
- * demoController.ts — Unified demo state management
+ * demoController.ts - Unified demo state management
  * 
  * Ensures only one demo overlay (GuidedDemo OR AutoDemoOverlay) is active at a time.
  * Single source of truth for demo state, with clear API.
@@ -16,7 +16,7 @@ const EVENTS = {
   auto: "auto_demo_change",
 } as const;
 
-/** Stop all demo overlays — clean slate */
+/** Stop all demo overlays - clean slate */
 export function stopAllDemos() {
   localStorage.removeItem(KEYS.guided);
   localStorage.removeItem(KEYS.guidedStep);
@@ -25,7 +25,7 @@ export function stopAllDemos() {
   window.dispatchEvent(new Event(EVENTS.auto));
 }
 
-/** Start the guided (manual) demo — stops auto if running */
+/** Start the guided (manual) demo - stops auto if running */
 export function startGuidedDemo() {
   // Stop auto first
   localStorage.removeItem(KEYS.auto);
@@ -36,7 +36,7 @@ export function startGuidedDemo() {
   window.dispatchEvent(new Event(EVENTS.guided));
 }
 
-/** Start the automatic demo — stops guided if running */
+/** Start the automatic demo - stops guided if running */
 export function startAutoDemo() {
   // Stop guided first
   localStorage.removeItem(KEYS.guided);

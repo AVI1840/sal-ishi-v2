@@ -96,12 +96,14 @@ describe("מחיר ייחוס בשלושה מצבים", () => {
 
 describe("איכות חיים בשני מצבים", () => {
   const coffee = svc("q", { categoryCode: "5.1", serviceTypeId: "T48", name: "שובר בית קפה זוגי", copayTier: "qol" });
+  // ברירת המחדל ב-seed: percent (מפגש 2). סכום קבוע נבדק כמצב מפורש.
+  const fixed = mode("qol_mode", "fixed_amount");
   it("fixed_amount: הסכום מהכלל מכוסה, והשאר על הקשיש", () => {
-    expect(pointsSplit(coffee, 70, seed)).toEqual({ coveredPoints: 50, copayPoints: 20, copayBasis: "qol_fixed" });
+    expect(pointsSplit(coffee, 70, fixed)).toEqual({ coveredPoints: 50, copayPoints: 20, copayBasis: "qol_fixed" });
   });
   it("fixed_amount: פריט בלי סכום (ארוחה חמה) נשאר פתוח", () => {
     const meal = svc("m", { categoryCode: "5.4", serviceTypeId: "T52", copayTier: "qol" });
-    expect(pointsSplit(meal, 100, seed)).toEqual({ coveredPoints: null, copayPoints: null, copayBasis: "qol_fixed" });
+    expect(pointsSplit(meal, 100, fixed)).toEqual({ coveredPoints: null, copayPoints: null, copayBasis: "qol_fixed" });
   });
   it("percent: qol_copay על הקשיש, עם תקרה חודשית", () => {
     const percent = mode("qol_mode", "percent");
@@ -219,14 +221,18 @@ describe("תקן קליטת מפעילים 1.1", () => {
 
   it("שירות מאושר בלי שדות 0.4 לא נכנס, ומדווח כדורש השלמה", async () => {
     const { export: exp, skipped } = await buildOnboardingStandard(source, seed);
-    const legacy = data.services.find((s) => s.status === "אושר" && !s.hoursPerUnit)!;
-    expect(exp.services.some((s) => s.serviceId === legacy.id)).toBe(false);
-    expect(skipped.find((s) => s.serviceId === legacy.id)?.reason).toContain("דורש השלמה");
+    const old = buildDemoAuthority(0);
+    const legacy = old.services.find((s) => s.status === "אושר" && !s.hoursPerUnit)!;
+    const r = await buildOnboardingStandard(old, seed);
+    expect(r.export.services.some((s) => s.serviceId === legacy.id)).toBe(false);
+    expect(r.skipped.find((s) => s.serviceId === legacy.id)?.reason).toContain("דורש השלמה");
+    void exp;
+    void skipped;
   });
 
   it("שינוי qol_mode ו-reference_price_mode מתעדכן מיד בייצוא", async () => {
     const qolItem = async (s = seed) => (await buildOnboardingStandard(source, s)).export.services.find((x) => x.categoryCode === "5.1")!;
-    expect((await qolItem()).copayBasis).toBe("qol_fixed");
+    expect((await qolItem(mode("qol_mode", "fixed_amount"))).copayBasis).toBe("qol_fixed");
     const percent = mode("qol_mode", "percent");
     expect((await qolItem(percent)).copayBasis).toBe("qol_percent");
     expect((await buildOnboardingStandard(source, percent)).export.rules.qolMode).toBe("percent");
@@ -282,7 +288,7 @@ describe("הגירה מגרסה 0.3", () => {
   it("ההגדרות החדשות מסומנות כהצעה, עם טקסט הסטטוס", () => {
     expect(proposalKeys(seed.settings)).toEqual(expect.arrayContaining(["qol_mode", "reference_price_mode", "products_quarterly_cap_share", "no_show_charge_rule"]));
     expect(statusNote(seed.settings, "qol_mode")).toContain("מפגש 3");
-    expect(parseSeed(JSON.parse(JSON.stringify(seed))).settings.qol_mode.value).toBe("fixed_amount");
+    expect(parseSeed(JSON.parse(JSON.stringify(seed))).settings.qol_mode.value).toBe("percent");
   });
 });
 
@@ -305,7 +311,7 @@ describe("דירוג ספקים פנימי", () => {
   it("כיבוי הדירוג מסתיר את הציון בכל מקום, גם בקטלוג לאזרח", () => {
     const supplier = { evaluations: [{ quarter: "2026-Q3", quality: 5, outcomes: 5, satisfaction: 5, value: 5 }] };
     const off = s04({ supplier_rating_enabled: false });
-    expect(supplierScore(supplier, seed.settings)?.score).toBe(5);
+    expect(supplierScore(supplier, s04({ supplier_rating_enabled: true }).settings)?.score).toBe(5);
     expect(supplierScore(supplier, off.settings)).toBeNull();
     const data = buildDemoAuthority(0);
     const { catalog } = buildCitizenCatalog(data, data.neighborhoods[0]!.id, off);

@@ -20,6 +20,31 @@ export const SERVICE_MODES = ["group", "individual", "home", "remote"] as const;
 /** על מה מבוסס החלק שהקשיש משלם בייצוא. */
 export const COPAY_BASES = ["tier", "qol_fixed", "qol_percent", "reference_binding"] as const;
 
+/** פרופיל התאמה (תוספת 3): מתאר את השירות, לא את האדם. הכל בחירה, בלי טקסט חופשי. */
+export const FUNCTIONAL_LEVELS = ["independent", "partial_help", "homebound"] as const;
+export const MOBILITY_LEVELS = ["independent_walking", "walker_wheelchair", "home_remote"] as const;
+export const DIGITAL_LEVELS = ["none", "basic_phone", "smartphone"] as const;
+export const EVIDENCE_LEVELS = ["high", "medium", "low", "unknown"] as const;
+export const fitProfileSchema = z
+  .object({
+    functionalLevels: z.array(z.enum(FUNCTIONAL_LEVELS)).min(1),
+    mobility: z.array(z.enum(MOBILITY_LEVELS)).min(1),
+    digitalRequired: z.enum(DIGITAL_LEVELS),
+    goals: z.array(z.string()).optional(),
+    intensity: z.enum(["low", "medium", "high"]).optional(),
+    suitableMildCognitiveDecline: z.boolean().optional(),
+    culturalAdaptation: z.array(z.enum(COMMUNITIES)).optional(),
+    medicalClearanceRequired: z.boolean().optional(),
+    evidenceLevel: z.enum(EVIDENCE_LEVELS).optional(),
+  })
+  .strict();
+export type FitProfile = z.infer<typeof fitProfileSchema>;
+
+/** כיסוי המממן האחר: סכום, אחוז, או משתנה לפי מקרה. */
+export const otherFunderCoverageSchema = z
+  .object({ kind: z.enum(["amount", "percent", "varies"]), value: z.number().finite().nonnegative().optional() })
+  .strict();
+
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "חודש בפורמט YYYY-MM");
 const nonNegative = z.number().finite().nonnegative();
 const count = z.number().int().nonnegative();
@@ -36,14 +61,19 @@ export const copayBasisSchema = z.enum(COPAY_BASES);
 
 const score = z.number().int().min(1).max(5);
 
-// הערכת ספק רבעונית: ארבעה מדדים מ-1 עד 5. המשקלות בהגדרות (supplier_rating_weights).
+// הערכת ספק רבעונית, 1 עד 5. דירוג הספק בנוי מחמישה רכיבים: התאמה לקהל היעד
+// (audienceFit), דירוג לקוחות ושביעות רצון (satisfaction), דירוג מלווה (quality),
+// עמידה ברמת השירות שנקבעה (serviceLevel) ותוצאות (outcomes). value (עלות-תועלת)
+// נשאר לקריאת קבצים ישנים ולא נכנס לדירוג.
 export const supplierEvaluationSchema = z
   .object({
     quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "רבעון בפורמט 2026-Q3"),
     quality: score,
     outcomes: score,
     satisfaction: score,
-    value: score,
+    value: score.optional(),
+    audienceFit: score.optional(),
+    serviceLevel: score.optional(),
     note: z.string().optional(),
   })
   .strict();
@@ -103,6 +133,14 @@ export const serviceSchema = z
     attendanceMethod: z.array(attendanceMethodSchema),
     cancellationPolicy: z.string().optional(),
     otherFunder: z.boolean(),
+    // תוספת 3: סל משלים בלבד. אופציונליים, כדי שנתונים מגרסאות קודמות ייקלטו.
+    otherFunderName: z.enum(["סל בריאות", "משרד הבריאות", "גמלת סיעוד", "רווחה", "אחר", "אין"]).optional(),
+    otherFunderCoverage: otherFunderCoverageSchema.optional(),
+    /** חובה לממש קודם מול המממן האחר. */
+    requiresPriorClaim: z.boolean().optional(),
+    /** אזור השירות בטקסט חופשי קצר (למשל "מזרח העיר"). */
+    serviceArea: z.string().optional(),
+    fitProfile: fitProfileSchema.optional(),
     enforceable: z.boolean(),
     programId: z.string().optional(),
     /** ברירת מחדל: שכונה. שירות ברמת רשות נספר בכיסוי של כל שכונות הרשות. */
@@ -237,6 +275,11 @@ export const onboardingItemSchema = catalogItemSchema
     productQuarterlyCap: z.boolean(),
     countsInFloor: z.boolean(),
     ...pointsSplit,
+    // 1.2: שדות ההצעה לפיילוט (פרופיל התאמה וסל משלים), אופציונליים כדי שקליטה לפי 1.1 תמשיך לעבוד.
+    fitProfile: fitProfileSchema.optional(),
+    otherFunderName: z.string().nullable().optional(),
+    complementState: z.enum(["none", "partial", "prior_claim", "full", "varies", "missing"]).optional(),
+    otherPaysPoints: nonNegative.nullable().optional(),
   })
   .strict();
 
@@ -257,13 +300,19 @@ export const citizenCatalogItemSchema = catalogItemSchema
     coveredPoints: nonNegative.nullable().optional(),
     copayPoints: nonNegative.nullable().optional(),
     copayBasis: copayBasisSchema.optional(),
+    // תוספת 3
+    fitProfile: fitProfileSchema.optional(),
+    otherFunderName: z.string().nullable().optional(),
+    complementState: z.enum(["none", "partial", "prior_claim", "full", "varies", "missing"]).optional(),
+    otherPaysPoints: nonNegative.nullable().optional(),
   })
   .strict();
 
 export const onboardingStandardSchema = z
   .object({
     schema: z.literal("operator_onboarding_standard"),
-    version: z.literal("1.1"),
+    /** 1.2: שדות ההצעה לפיילוט נוספו כאופציונליים. 1.1 נקרא עדיין. */
+    version: z.enum(["1.1", "1.2"]),
     owner: z.string(),
     generatedAt: z.string(),
     seedVersion: z.string(),

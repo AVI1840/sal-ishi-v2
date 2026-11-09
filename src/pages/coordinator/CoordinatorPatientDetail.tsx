@@ -1,7 +1,9 @@
 /**
- * פרופיל מטופל עשיר — מנוע חיזוק חיים אישי
- * Timeline טיפולי + מעגל חוזקות + תוכנית אישית + Nudges + Risk
+ * פרופיל מטופל עשיר - מנוע חיזוק חיים אישי
+ * מה האזרח סיפר, תוכנית אישית (אותה המלצה שהאזרח רואה, עם הפירוק המלא),
+ * ציר זמן מיומן האירועים, וחוזקות. כלים של המלווה: לא מוצגים לאזרח.
  */
+import { GIVE, GOALS, HELP, MEANING, intakeAnswers, parseList } from "@/lib/intakeProfile";
 import { useParams, Link } from "react-router-dom";
 import { useMemo } from "react";
 import {
@@ -14,11 +16,16 @@ import { Avatar } from "@/components/shared/Avatar";
 import { Chip } from "@/components/shared/Chip";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { SubsidyBadge } from "@/components/shared/SubsidyBadge";
-import { CITIZENS, TIMELINE_EVENTS, NUDGES, AI_RECOMMENDATIONS } from "@/data/mockData";
+import { CITIZENS } from "@/data/mockData";
+import { usePilot } from "@/pilot/store";
+import { describe as describeEvent } from "@/pilot/companion/Log";
+import { withAnswers } from "@/lib/personalMatch";
 import { MOTIVATION_LABELS, BARRIER_LABELS, STRENGTH_LABELS, READINESS_LABELS } from "@/data/types";
 import { matchServicesForCitizen } from "@/lib/matchingEngine";
+import { personalRecommendations } from "@/lib/personalMatch";
 import { getServiceImageInfo } from "@/lib/serviceImages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PersonActions } from "@/components/companion/PersonActions";
 
 // Strength colors for radar
 const STRENGTH_COLORS: Record<string, string> = {
@@ -29,20 +36,33 @@ const STRENGTH_COLORS: Record<string, string> = {
 export default function CoordinatorPatientDetail() {
   const { id } = useParams();
   const citizen = CITIZENS.find((c) => c.id === id) || CITIZENS[0];
-  const timeline = TIMELINE_EVENTS.filter((e) => e.citizenId === citizen.id);
-  const nudges = NUDGES.filter((n) => n.citizenId === citizen.id);
-  const recommendations = AI_RECOMMENDATIONS.filter((r) => r.citizenId === citizen.id);
-
-  // Level-2 wallet model — 32 יחידות / 775₪ (consistent with CitizenProfile + CitizenHome)
-  const walletTotal = 32;
-  const walletUsed = Math.round(walletTotal * Math.min(0.92, citizen.engagementScore / 100 + 0.1));
-  const walletBalance = Math.max(0, walletTotal - walletUsed);
+  const { state, derived } = usePilot();
+  const timeline = state.events.filter((e) => e.citizenId === citizen.id).slice().reverse();
+  const answers = derived.answers.get(citizen.id);
+  const told = withAnswers(citizen, answers);
+  // הפרופיל מהקליטה ומה שהאזרח עדכן ("מה חשוב לי"), בשפה פשוטה.
+  const intake = intakeAnswers(citizen);
+  const now = answers && "activities" in answers ? { ...intake, ...answers } : intake;
+  const labelsOf = (opts: { id: string; label: string }[], v?: string) => parseList(v).map((id) => opts.find((o) => o.id === id)?.label ?? id).join(", ");
+  const profileLines: [string, string][] = (
+    [
+      ["מה נותן משמעות", labelsOf(MEANING, now.motivations)],
+      ["יעדים לחצי שנה", labelsOf(GOALS, now.goals)],
+      ["מה יעזור לצאת", labelsOf(HELP, now.help)],
+      ["מה יכול/ה לתת", labelsOf(GIVE, now.give)],
+    ] as [string, string][]
+  ).filter(([, v]) => v);
+  const SECTION: Record<string, string> = { motivations: "מה נותן משמעות", dream: "החלום", activities: "מה אוהב/ת", goals: "יעדים", format: "עם מי", hours: "מתי", days: "כמה פעמים", languages: "שפה", where: "איפה", help: "מה יעזור לצאת", give: "מה יכול/ה לתת" };
+  const changedNow = answers && "activities" in answers ? Object.keys(SECTION).filter((k) => (answers[k] ?? "") !== (intake[k] ?? "")).map((k) => SECTION[k]) : [];
 
   // Matched services from the real engine (no legacy SERVICES array)
-  const matchedServices = useMemo(
-    () => matchServicesForCitizen(citizen, { topN: 5 }),
-    [citizen]
-  );
+  // מה שהאזרח סיפר קודם (כמו אצלו), ואחריו שאר ההתאמות של המנוע עם הפירוק המלא.
+  const matchedServices = useMemo(() => {
+    const all = matchServicesForCitizen(citizen, { topN: 500, minScore: 0 });
+    const first = personalRecommendations(citizen, all, 3).map((p) => p.result);
+    const rest = all.filter((r) => !first.includes(r));
+    return [...first, ...rest].slice(0, 5);
+  }, [citizen]);
 
   return (
     <div className="space-y-6">
@@ -71,14 +91,6 @@ export default function CoordinatorPatientDetail() {
               <Chip tone="muted">מעורבות: {citizen.engagementScore}%</Chip>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button className="h-10 px-4 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2">
-              <Phone className="w-4 h-4" /> שיחה
-            </button>
-            <button className="h-10 px-4 border border-border text-foreground rounded-xl text-xs font-medium hover:bg-muted transition-colors flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" /> הערה
-            </button>
-          </div>
         </div>
 
         {/* Quick Stats */}
@@ -102,12 +114,15 @@ export default function CoordinatorPatientDetail() {
         </div>
       </div>
 
+      {/* 0.5 מאוחד: פעולות המלווה בתיק */}
+      <PersonActions citizen={citizen} />
+
       {/* Tabs */}
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="w-full justify-start flex-wrap">
           <TabsTrigger value="profile">פרופיל דינמי</TabsTrigger>
           <TabsTrigger value="plan">תוכנית אישית</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="timeline">ציר זמן</TabsTrigger>
           <TabsTrigger value="strengths">חוזקות</TabsTrigger>
         </TabsList>
 
@@ -127,7 +142,7 @@ export default function CoordinatorPatientDetail() {
                 ))}
               </div>
               <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                <p className="text-xs text-amber-600 font-medium mb-0.5">החלום</p>
+                <p className="text-xs text-amber-800 font-medium mb-0.5">החלום</p>
                 <p className="text-sm text-amber-900 italic">"{citizen.dream}"</p>
               </div>
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
@@ -151,19 +166,16 @@ export default function CoordinatorPatientDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">אין חסמים מזוהים 🌿</p>
+                <p className="text-sm text-muted-foreground">אין חסמים מזוהים</p>
               )}
 
               <h4 className="text-sm font-semibold text-foreground mt-5 mb-2">מוכנות לשינוי</h4>
-              <div className="flex gap-1">
+              <div className="flex gap-1" role="img" aria-label={`מוכנות לשינוי: ${READINESS_LABELS[citizen.readiness]}`}>
                 {(["precontemplation", "contemplation", "preparation", "action", "maintenance"] as const).map((stage, i) => (
                   <div key={stage} className={cn("flex-1 h-3 rounded-full", citizen.readiness === stage ? "bg-primary" : i < ["precontemplation", "contemplation", "preparation", "action", "maintenance"].indexOf(citizen.readiness) ? "bg-primary/40" : "bg-muted")} />
                 ))}
               </div>
-              <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-muted-foreground">לא מודע</span>
-                <span className="text-[10px] text-muted-foreground">מתמיד/ה</span>
-              </div>
+              <p className="text-sm text-foreground mt-1.5">שלב נוכחי: <span className="font-semibold">{READINESS_LABELS[citizen.readiness]}</span></p>
             </div>
 
             {/* מצב תפקודי */}
@@ -220,38 +232,32 @@ export default function CoordinatorPatientDetail() {
         {/* ═══ Tab 2: תוכנית אישית ═══ */}
         <TabsContent value="plan">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* AI Recommendations */}
+            {/* מה האזרח סיפר: הבסיס להמלצה. שאלון האזרח והפגישה המשותפת */}
             <div className="lg:col-span-2 space-y-4">
               <div className="libi-card p-5">
-                <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" /> המלצות AI מותאמות
+                <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-primary" aria-hidden="true" /> מה {citizen.name.split(" ")[0]} סיפר/ה
                 </h3>
-                {recommendations.length > 0 ? recommendations.map((rec) => (
-                  <div key={rec.id} className="p-4 rounded-xl border border-border bg-muted/20 mb-3 last:mb-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Chip tone={rec.urgency === "high" ? "destructive" : rec.urgency === "medium" ? "warning" : "info"}>
-                        {rec.urgency === "high" ? "דחוף" : rec.urgency === "medium" ? "חשוב" : "מומלץ"}
-                      </Chip>
-                      <span className="text-xs text-muted-foreground">ביטחון: {rec.confidence}%</span>
-                    </div>
-                    <h4 className="text-sm font-bold text-foreground">{rec.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">{rec.whyRecommended}</p>
-                    <div className="mt-3 p-2.5 bg-info-soft rounded-lg">
-                      <p className="text-xs text-info font-medium">ערך: {rec.valueForCitizen}</p>
-                    </div>
-                    {rec.expectedBarriers.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {rec.expectedBarriers.map((b) => <span key={b} className="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-100">{b}</span>)}
-                      </div>
-                    )}
-                    <button className="mt-3 text-xs text-primary font-medium hover:underline">{rec.nextAction} →</button>
-                  </div>
-                )) : (
-                  <p className="text-sm text-muted-foreground">אין המלצות פעילות כרגע</p>
-                )}
+                <dl className="space-y-2 text-sm">
+                  {citizen.dream ? (<div><dt className="text-muted-foreground">החלום</dt><dd className="text-foreground font-medium">{citizen.dream}</dd></div>) : null}
+                  {citizen.meaningStatement ? (<div><dt className="text-muted-foreground">במילים שלה/ו</dt><dd className="text-foreground">"{citizen.meaningStatement}"</dd></div>) : null}
+                  <div><dt className="text-muted-foreground">אוהב/ת לעשות</dt><dd className="text-foreground">{told.preferredActivities.join(", ")}</dd></div>
+                  <div><dt className="text-muted-foreground">נוח</dt><dd className="text-foreground">{told.preferredHours}</dd></div>
+                  {profileLines.map(([k, v]) => (
+                    <div key={k}><dt className="text-muted-foreground">{k}</dt><dd className="text-foreground">{v}</dd></div>
+                  ))}
+                </dl>
+                {changedNow.length ? (
+                  <p className="text-sm text-foreground mt-3 p-2 rounded-lg bg-accent">
+                    {citizen.name.split(" ")[0]} עדכנ/ה בעצמ/ה: {changedNow.join(", ")}.
+                  </p>
+                ) : null}
+                <p className="text-xs text-muted-foreground mt-3">
+                  {answers ? "מהקליטה, עם מה שעודכן ב\"מה חשוב לי\" או בפגישה המשותפת." : "מהקליטה. עוד לא עודכן ב\"מה חשוב לי\"."}
+                </p>
               </div>
 
-              {/* Matched Services — from real matching engine */}
+              {/* Matched Services - from real matching engine */}
               <div className="libi-card p-5">
                 <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" /> שירותים מותאמים לפרופיל
@@ -291,37 +297,6 @@ export default function CoordinatorPatientDetail() {
 
             {/* Sidebar */}
             <div className="space-y-4">
-              {/* Wallet — level 2 model */}
-              <div className="libi-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3">ארנק יחידות</h4>
-                <div className="flex items-end gap-2 mb-2">
-                  <div className="text-2xl font-bold text-primary">{walletBalance}</div>
-                  <div className="text-xs text-muted-foreground pb-0.5">מתוך {walletTotal}</div>
-                  <div className="mr-auto text-xs font-semibold text-emerald-700">775₪</div>
-                </div>
-                <ProgressBar value={walletUsed} max={walletTotal} tone="primary" />
-                <p className="text-[10px] text-muted-foreground mt-1.5">רמה 2 · {walletUsed} יחידות נוצלו</p>
-              </div>
-
-              {/* Nudges */}
-              <div className="libi-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <MessageCircle className="w-3.5 h-3.5 text-info" /> חיזוקים שנשלחו
-                </h4>
-                {nudges.length > 0 ? nudges.map((n) => (
-                  <div key={n.id} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/30 mb-2 last:mb-0">
-                    <MessageCircle className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-foreground">{n.message}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {n.sentAt} · {n.opened ? "נפתח" : "לא נפתח"}
-                      </p>
-                    </div>
-                  </div>
-                )) : (
-                  <p className="text-xs text-muted-foreground">לא נשלחו חיזוקים עדיין</p>
-                )}
-              </div>
             </div>
           </div>
         </TabsContent>
@@ -330,54 +305,21 @@ export default function CoordinatorPatientDetail() {
         <TabsContent value="timeline">
           <div className="libi-card p-5">
             <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" /> Timeline טיפולי
+              <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> ציר זמן, מיומן האירועים
             </h3>
             {timeline.length > 0 ? (
-              <div className="relative border-r-2 border-primary/20 pr-6 space-y-4">
-                {timeline.map((event) => {
-                  const iconMap: Record<string, typeof Phone> = {
-                    intake: User, call: Phone, visit: Activity, note: MessageCircle,
-                    service_start: CheckCircle2, service_end: Calendar, nudge_sent: Sparkles,
-                    milestone: Target, risk_alert: AlertTriangle, mood_change: Heart, ai_recommendation: Sparkles,
-                  };
-                  const Icon = iconMap[event.type] || Clock;
-                  const toneMap: Record<string, string> = {
-                    risk_alert: "bg-destructive text-destructive-foreground",
-                    milestone: "bg-success text-success-foreground",
-                    mood_change: "bg-warning text-warning-foreground",
-                    service_start: "bg-info text-white",
-                  };
-                  const iconTone = toneMap[event.type] || "bg-accent text-primary";
-
-                  return (
-                    <div key={event.id} className="relative">
-                      <div className={cn("absolute -right-[19px] top-0 w-8 h-8 rounded-full flex items-center justify-center", iconTone)}>
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="text-sm font-semibold text-foreground">{event.title}</h4>
-                          <span className="text-[11px] text-muted-foreground">{event.timestamp}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{event.description}</p>
-                        {event.by && <p className="text-[10px] text-muted-foreground mt-1">ע״י {event.by}</p>}
-                        {event.mood && (
-                          <div className="mt-2 flex items-center gap-1">
-                            <span className="text-[10px] text-muted-foreground">מצב רוח:</span>
-                            {[1, 2, 3, 4, 5].map((v) => (
-                              <span key={v} className={cn("w-4 h-4 rounded-full text-[10px] flex items-center justify-center", v <= event.mood! ? (event.mood! <= 2 ? "bg-destructive/20 text-destructive" : event.mood! <= 3 ? "bg-warning/20 text-warning-foreground" : "bg-success/20 text-success") : "bg-muted")}>
-                                {v <= event.mood! ? "●" : "○"}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <ol className="relative border-r-2 border-primary/20 pr-6 space-y-3">
+                {timeline.map((e) => (
+                  <li key={e.id} className="bg-muted/30 rounded-xl p-3 border border-border/50">
+                    <p className="text-sm text-foreground">{describeEvent(e)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(e.at).toLocaleDateString("he-IL")} · {e.actor === "citizen" ? "האזרח/ית" : e.actor === "companion" ? "המלווה" : "המערכת"}
+                    </p>
+                  </li>
+                ))}
+              </ol>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-8">אין אירועים ב-Timeline עדיין</p>
+              <p className="text-sm text-muted-foreground text-center py-8">עוד אין אירועים בתיק</p>
             )}
           </div>
         </TabsContent>
@@ -389,7 +331,7 @@ export default function CoordinatorPatientDetail() {
               <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Target className="w-4 h-4 text-purple-500" /> מעגל חוזקות (VIA)
               </h3>
-              <p className="text-xs text-muted-foreground mb-4">חוזקות דומיננטיות שזוהו — משמשות להתאמת שירותים ולחיזוק</p>
+              <p className="text-xs text-muted-foreground mb-4">חוזקות דומיננטיות שזוהו - משמשות להתאמת שירותים ולחיזוק</p>
 
               {/* VIA strengths with lucide icons */}
               <div className="grid grid-cols-2 gap-3">
@@ -416,7 +358,7 @@ export default function CoordinatorPatientDetail() {
             {/* Services aligned with top matches (engine-sourced, no legacy SERVICES) */}
             <div className="libi-card p-5">
               <h3 className="text-base font-semibold text-foreground mb-4">שירותים מובילים</h3>
-              <p className="text-xs text-muted-foreground mb-3">שירותים מותאמים לפרופיל — מחוזקות, מוטיבציות ומצב תפקודי</p>
+              <p className="text-xs text-muted-foreground mb-3">שירותים מותאמים לפרופיל - מחוזקות, מוטיבציות ומצב תפקודי</p>
               <div className="space-y-2">
                 {matchedServices.map((result) => {
                   const { image, gradient } = getServiceImageInfo(result.service);

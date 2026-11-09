@@ -57,7 +57,7 @@ describe("FileSyncAdapter", () => {
     const { io, adapter } = setup();
     const { export: exp } = await buildOnboardingStandard(demoAuthority(), seed, NOW);
     await adapter.sendIntegratorExport(exp);
-    expect([...io.saved.keys()]).toEqual(["operator_onboarding_standard_v1.1_2026-11-20.json"]);
+    expect([...io.saved.keys()]).toEqual(["operator_onboarding_standard_v1.2_2026-11-20.json"]);
   });
 
   it("הפצת seed מהמטה וקבלתו בשטח", async () => {

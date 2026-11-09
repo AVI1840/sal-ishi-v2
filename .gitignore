@@ -4,3 +4,7 @@ dist
 *.local
 infra/cdk.out
 infra/node_modules
+
+# Playwright
+test-results/
+playwright-report/

@@ -1,0 +1,461 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "operator_onboarding_standard"
+    },
+    "version": {
+      "type": "string",
+      "enum": [
+        "1.1",
+        "1.2"
+      ]
+    },
+    "owner": {
+      "type": "string"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "seedVersion": {
+      "type": "string"
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "qolMode": {
+          "type": "string"
+        },
+        "referencePriceMode": {
+          "type": "string"
+        },
+        "pointsPerShekel": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "productsQuarterlyCapPoints": {
+          "type": "number",
+          "minimum": 0
+        },
+        "activeParticipantMinSessionsMonth": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "qolMode",
+        "referencePriceMode",
+        "pointsPerShekel",
+        "productsQuarterlyCapPoints",
+        "activeParticipantMinSessionsMonth"
+      ],
+      "additionalProperties": false
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "neighborhoodId": {
+            "type": "string"
+          },
+          "neighborhoodName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "categoryCode": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "serviceTypeId": {
+            "type": "string"
+          },
+          "serviceTypeName": {
+            "type": "string"
+          },
+          "supplierCode": {
+            "type": "string"
+          },
+          "supplierType": {
+            "type": "string",
+            "enum": [
+              "exempt",
+              "licensed",
+              "company",
+              "npo",
+              "authority"
+            ]
+          },
+          "format": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pricePoints": {
+            "type": "number",
+            "minimum": 0
+          },
+          "copayTier": {
+            "type": "string",
+            "enum": [
+              "core_and_prevention",
+              "classes",
+              "qol"
+            ]
+          },
+          "copayRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "deliveryMode": {
+            "type": "string",
+            "enum": [
+              "community",
+              "home",
+              "remote"
+            ]
+          },
+          "communityFit": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "general",
+                "haredi",
+                "arab"
+              ]
+            }
+          },
+          "attendanceMethod": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "operator",
+                "companion",
+                "bot"
+              ]
+            }
+          },
+          "cancellationPolicy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reach": {
+            "type": "string",
+            "enum": [
+              "neighborhood",
+              "authority",
+              "regional",
+              "national"
+            ]
+          },
+          "startMonth": {
+            "type": "string"
+          },
+          "hoursPerUnit": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pointsPerHour": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "serviceMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "group",
+                  "individual",
+                  "home",
+                  "remote"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "capacityLimited": {
+            "type": "boolean"
+          },
+          "gatedByCompanion": {
+            "type": "boolean"
+          },
+          "gateReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cancellationNoticeHours": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "noShowCharged": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "hospitalizationRefund": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "productQuarterlyCap": {
+            "type": "boolean"
+          },
+          "countsInFloor": {
+            "type": "boolean"
+          },
+          "coveredPoints": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "copayPoints": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "copayBasis": {
+            "type": "string",
+            "enum": [
+              "tier",
+              "qol_fixed",
+              "qol_percent",
+              "reference_binding"
+            ]
+          },
+          "fitProfile": {
+            "type": "object",
+            "properties": {
+              "functionalLevels": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "independent",
+                    "partial_help",
+                    "homebound"
+                  ]
+                },
+                "minItems": 1
+              },
+              "mobility": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "independent_walking",
+                    "walker_wheelchair",
+                    "home_remote"
+                  ]
+                },
+                "minItems": 1
+              },
+              "digitalRequired": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "basic_phone",
+                  "smartphone"
+                ]
+              },
+              "goals": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "intensity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "suitableMildCognitiveDecline": {
+                "type": "boolean"
+              },
+              "culturalAdaptation": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "haredi",
+                    "arab"
+                  ]
+                }
+              },
+              "medicalClearanceRequired": {
+                "type": "boolean"
+              },
+              "evidenceLevel": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  "unknown"
+                ]
+              }
+            },
+            "required": [
+              "functionalLevels",
+              "mobility",
+              "digitalRequired"
+            ],
+            "additionalProperties": false
+          },
+          "otherFunderName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "complementState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "partial",
+              "prior_claim",
+              "full",
+              "varies",
+              "missing"
+            ]
+          },
+          "otherPaysPoints": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "serviceId",
+          "authority",
+          "neighborhoodId",
+          "neighborhoodName",
+          "name",
+          "categoryCode",
+          "categoryName",
+          "serviceTypeId",
+          "serviceTypeName",
+          "supplierCode",
+          "supplierType",
+          "format",
+          "unit",
+          "languages",
+          "pricePoints",
+          "copayTier",
+          "copayRate",
+          "deliveryMode",
+          "communityFit",
+          "attendanceMethod",
+          "cancellationPolicy",
+          "reach",
+          "startMonth",
+          "hoursPerUnit",
+          "pointsPerHour",
+          "serviceMode",
+          "capacityLimited",
+          "gatedByCompanion",
+          "gateReason",
+          "cancellationNoticeHours",
+          "noShowCharged",
+          "hospitalizationRefund",
+          "productQuarterlyCap",
+          "countsInFloor",
+          "coveredPoints",
+          "copayPoints",
+          "copayBasis"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "version",
+    "owner",
+    "generatedAt",
+    "seedVersion",
+    "contentHash",
+    "rules",
+    "services"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sal-ishi:operator_onboarding_standard:1.2",
+  "title": "operator_onboarding_standard 1.2",
+  "description": "תקן קליטת מפעילים: הקטלוג המאושר של הסל האישי להזדקנות מיטבית, לספק העל. בלי נתוני תושבים, בלי פרטי קשר של ספק יחיד ובלי מחיר בשקלים. מחיר בנקודות, לפי points_per_shekel."
+}

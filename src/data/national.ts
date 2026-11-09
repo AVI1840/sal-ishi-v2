@@ -1,7 +1,7 @@
 /**
  * Static reference data for the inter-ministerial prototype (national view).
  *
- * Sourced from the קול קורא ‎3.0 document — Israel National Digital
+ * Sourced from the קול קורא ‎3.0 document - Israel National Digital
  * Headquarters + AI HQ joint call, published 06.05.2026.
  */
 
@@ -62,7 +62,7 @@ export const ECOSYSTEM: Ministry[] = [
     id: "hmo",
     name: "קופות החולים",
     role: "ממשק קליני, שירותי מניעה",
-    data: "כללית, מכבי, מאוחדת, לאומית — שותפות נתונים בלבד",
+    data: "כללית, מכבי, מאוחדת, לאומית - שותפות נתונים בלבד",
     status: "data_only",
     statusLabel: "נתונים בלבד",
   },
@@ -99,8 +99,8 @@ export const AI_LAYERS: AILayer[] = [
     id: "nlp_ocr",
     number: 1,
     name: "NLP + OCR על תיקי תביעה",
-    role: "פרופיל תפקודי אוטומטי — בסיס לקביעת זכאות",
-    rationale: "240,000 תיקים, 1.7 מיליון מסמכים — לא ניתן ידנית",
+    role: "פרופיל תפקודי אוטומטי - בסיס לקביעת זכאות",
+    rationale: "240,000 תיקים, 1.7 מיליון מסמכים - לא ניתן ידנית",
     status: "active",
     statusLabel: "MVP פעיל",
   },
@@ -118,7 +118,7 @@ export const AI_LAYERS: AILayer[] = [
     number: 3,
     name: "Early Warning",
     role: "זיהוי סיכון הידרדרות לפני המשבר",
-    rationale: "מעקב רציף אחרי אלפי לקוחות — בלתי אפשרי ידנית",
+    rationale: "מעקב רציף אחרי אלפי לקוחות - בלתי אפשרי ידנית",
     status: "developing",
     statusLabel: "בפיתוח",
   },
@@ -126,7 +126,7 @@ export const AI_LAYERS: AILayer[] = [
     id: "outcomes",
     number: 4,
     name: "Outcome Monitoring",
-    role: "מה עובד, מה לא — התאמת הסל לאורך זמן",
+    role: "מה עובד, מה לא - התאמת הסל לאורך זמן",
     rationale: "Feedback loop שמשפר את כל המערכת",
     status: "planned",
     statusLabel: "מתוכנן",
@@ -206,7 +206,7 @@ export interface ScalabilityRow {
 export const SCALABILITY: ScalabilityRow[] = [
   {
     domain: "סיעוד (עכשיו)",
-    basket: "סל הזדקנות מיטבית — מניעת הידרדרות",
+    basket: "סל הזדקנות מיטבית - מניעת הידרדרות",
     objective: "KPI: דחיית הידרדרות, חיסכון +2 מיליארד ₪",
   },
   {
