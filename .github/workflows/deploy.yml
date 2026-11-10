@@ -4,6 +4,7 @@ name: Deploy to GitHub Pages
 #   main:.        הגרסה היציבה בשורש (היום 0.4)
 #   v0.5:next     גרסת 0.5 הנפרדת, לעיון בלבד, ב-/next/
 #   v0.5-merge:merge  הכלי הקיים עם מה שעבר מ-0.5, ב-/merge/
+#   booth-live:booth  גרסת הדוכן בכנס, ב-/booth/ (נבנית ב-build:booth, וכישלון בה לא עוצר את שאר האתרים)
 # בהחלפה (אחרי שער הבדיקה): "main:. v0.4-stable:v04".
 # הפריסה רצה תמיד בהקשר של main, כי סביבת github-pages מאשרת פריסה רק מ-main.
 # דחיפה ל-v0.5 מריצה את "Next build", ובסיומו הוא מפעיל את הפריסה הזו.
@@ -26,7 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SITES: "main:. v0.5:next v0.5-merge:merge"
+  SITES: "main:. v0.5:next v0.5-merge:merge booth-live:booth"
 
 jobs:
   build-and-deploy:
@@ -56,6 +57,17 @@ jobs:
             if [ -z "$sha" ]; then echo "skip $ref: not found"; continue; fi
             dir="$RUNNER_TEMP/src-${dest//\//_}"
             git worktree add --detach "$dir" "$sha"
+            if [ "$dest" = booth ]; then
+              # הדוכן: בנייה נפרדת (קובץ אחד), ולא חלק מהפריסה הקריטית. כישלון כאן רק מדלג עליו.
+              if (cd "$dir" && npm ci && npm run build:booth); then
+                mkdir -p "site/$dest"
+                cp -r "$dir/dist-booth-offline/." "site/$dest/"
+                echo "$ref -> /$dest ($sha)"
+              else
+                echo "booth build failed: /booth/ skipped"
+              fi
+              continue
+            fi
             (cd "$dir" && npm ci && npm run build:all)
             mkdir -p "site/$dest"
             cp -r "$dir/dist/." "site/$dest/"
