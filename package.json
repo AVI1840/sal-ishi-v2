@@ -17,6 +17,7 @@
     "test:core": "npm run test -w @sal-ishi/core",
     "typecheck:core": "npm run typecheck -w @sal-ishi/core",
     "build:field": "npm run build -w @sal-ishi/field",
+    "build:booth": "vite build -c vite.config.booth.ts",
     "build:all": "npm run build && npm run build:field && npm run build:hq && npm run build:offline",
     "dev:field": "npm run dev -w @sal-ishi/field",
     "build:hq": "npm run build -w @sal-ishi/hq",
@@ -24,7 +25,8 @@
     "build:offline": "npm run build:offline -w @sal-ishi/field && npm run build:offline -w @sal-ishi/hq",
     "test:e2e": "npm run build:all && playwright test",
     "e2e": "playwright test",
-    "check:live": "node scripts/check-live.mjs"
+    "check:live": "node scripts/check-live.mjs",
+    "verify:booth": "npm run build:booth && node scripts/booth/verify.mjs && node scripts/booth/kiosk.mjs && node scripts/booth/isolate.mjs && node scripts/booth/wall.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",

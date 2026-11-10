@@ -8,3 +8,8 @@ infra/node_modules
 # Playwright
 test-results/
 playwright-report/
+dist-booth/
+dist-booth-offline/
+dist-normal/
+
+share/

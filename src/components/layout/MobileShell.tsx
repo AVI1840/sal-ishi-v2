@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
-import { CITIZEN_CHAT_ENABLED } from "@/lib/edition";
+import { CITIZEN_CHAT_ENABLED, IS_BOOTH } from "@/lib/edition";
 import { Store, CalendarCheck, MessageCircle, User, HeartHandshake, ImageOff, Image, Volume2, Square, Contrast, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVisualMode } from "@/hooks/use-visual-mode";
@@ -44,6 +44,11 @@ function useStored(key: string, fallback: number) {
 function useTextScale() {
   const [scale, setScale] = useStored(SCALE_KEY, 100);
   useEffect(() => {
+    // בדוכן הגודל הבסיסי נקבע ב-booth.css, וההגדלה היא מכפלה שלו.
+    if (IS_BOOTH) {
+      document.documentElement.style.setProperty("--booth-text", String(scale / 100));
+      return () => document.documentElement.style.removeProperty("--booth-text");
+    }
     document.documentElement.style.fontSize = scale === 100 ? "" : `${scale}%`;
     return () => {
       document.documentElement.style.fontSize = "";

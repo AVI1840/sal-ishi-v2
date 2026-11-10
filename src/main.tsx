@@ -1,3 +1,5 @@
+import "./booth/isolate"; // בידוד אחסון: פעיל רק בגרסת הדוכן, ולכן חייב להיטען ראשון
+import "./booth/online"; // בדוכן אין "אין חיבור": פעיל רק בגרסת הדוכן
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";

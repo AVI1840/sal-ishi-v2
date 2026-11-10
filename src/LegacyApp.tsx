@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
-import { CITIZEN_CHAT_ENABLED, SHOW_DEMO_LAYERS } from "@/lib/edition";
+import { CITIZEN_CHAT_ENABLED, IS_BOOTH, SHOW_DEMO_LAYERS } from "@/lib/edition";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MessageCircle } from "lucide-react";
@@ -11,6 +11,13 @@ import { RouteFallback } from "@/components/system/RouteFallback";
 import { ScrollToTop } from "@/components/system/ScrollToTop";
 import { resolveConflicts } from "@/lib/demoController";
 import DemoNav from "@/components/layout/DemoNav";
+import BoothChrome from "@/booth/BoothChrome";
+import BoothHome from "@/booth/BoothHome";
+import BoothEnd from "@/booth/BoothEnd";
+import BoothTour from "@/booth/BoothTour";
+import { BoothAgents, BoothReady, BoothWeek } from "@/booth/BoothStory";
+import { BoothSummary, BoothWall } from "@/booth/BoothDay";
+import { BoothBoard, BoothChallenge, BoothResults, BoothScale } from "@/booth/BoothPanels";
 import AppShell from "@/components/layout/AppShell";
 import MobileShell from "@/components/layout/MobileShell";
 import { GuidedDemo } from "@/components/GuidedDemo";
@@ -76,12 +83,24 @@ export default function LegacyApp() {
           <Toaster position="bottom-left" richColors />
           <HashRouter>
             <ScrollToTop />
-            <DemoNav />
+            {IS_BOOTH ? <BoothChrome /> : <DemoNav />}
             <div className="pt-10"> {/* offset for DemoNav */}
             <Routes>
               {/* Demo Home - Module Switcher */}
-              <Route path="/" element={<DemoHome />} />
+              <Route path="/" element={IS_BOOTH ? <BoothHome /> : <DemoHome />} />
               <Route path="/scope" element={<ScopePage />} />
+              {IS_BOOTH && (<>
+                <Route path="/booth/end" element={<BoothEnd />} />
+                <Route path="/booth/challenge" element={<BoothChallenge />} />
+                <Route path="/booth/board" element={<BoothBoard />} />
+                <Route path="/booth/scale" element={<BoothScale />} />
+                <Route path="/booth/results" element={<BoothResults />} />
+                <Route path="/booth/week" element={<BoothWeek />} />
+                <Route path="/booth/agents" element={<BoothAgents />} />
+                <Route path="/booth/ready" element={<BoothReady />} />
+                <Route path="/booth/wall" element={<BoothWall />} />
+                <Route path="/booth/summary" element={<BoothSummary />} />
+              </>)}
 
               {/* Citizen App (Mobile) */}
               <Route path="/citizen" element={<MobileShell />}>
@@ -154,6 +173,7 @@ export default function LegacyApp() {
             </Routes>
             </div>
 
+            {IS_BOOTH && <BoothTour />}
             {/* GuidedDemo MUST be inside HashRouter - uses Link */}
             {SHOW_DEMO_LAYERS && <GuidedDemo />}
             {SHOW_DEMO_LAYERS && <AutoDemoOverlay />}
@@ -168,8 +188,8 @@ export default function LegacyApp() {
           </div>
           )}
 
-          {/* Feedback FAB */}
-          <button
+          {/* Feedback FAB: לא בדוכן */}
+          {!IS_BOOTH && <button
             onClick={() => setFeedbackOpen(true)}
             className="fixed bottom-24 left-4 z-50 flex items-center gap-2 px-4 min-h-[48px] rounded-full shadow-lg text-white text-sm font-medium transition-transform hover:scale-105 active:scale-95"
             style={{ backgroundColor: "#1B3A5C" }}
@@ -177,7 +197,7 @@ export default function LegacyApp() {
           >
             <MessageCircle className="h-5 w-5" />
             <span className="hidden sm:inline">משוב פיילוט</span>
-          </button>
+          </button>}
           <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
         </TooltipProvider>
       </QueryClientProvider>

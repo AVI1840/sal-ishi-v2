@@ -1,0 +1,17 @@
+/* השבוע של שרה, הסוכנים, "הבחירה שלכם", הכניסה במצב משיכה. נטען עם דפי החוט. */
+.booth-week { background: #fff; border: 2px solid #e5e7eb; border-radius: 24px; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.booth-week--after { border-color: #1b3a5c; box-shadow: 0 6px 24px rgba(27, 58, 92, 0.15); }
+.booth-week__new { background: #1b3a5c; color: #fff; border-radius: 1rem; padding: 0.3rem 0.9rem; line-height: 1.35; font-weight: 800; animation: booth-in 600ms ease both; }
+.booth-agent { animation: booth-in 600ms ease both; }
+.booth-mine { margin-right: 0.5rem; background: #1b3a5c; color: #fff; border-radius: 9999px; padding: 0 0.6rem; font-size: 0.8rem; }
+
+/* מצב משיכה בכניסה: שלוש שקופיות מתחלפות בכרטיס הגיבור. CSS בלבד, נעצר במגע. */
+.booth-attract { position: relative; min-height: 5.5rem; }
+.booth-attract__slide { position: absolute; inset: 0; opacity: 0; animation: booth-cycle 18s infinite; display: flex; flex-direction: column; justify-content: center; gap: 0.15rem; }
+.booth-attract__slide:nth-child(2) { animation-delay: 6s; }
+.booth-attract__slide:nth-child(3) { animation-delay: 12s; }
+@keyframes booth-cycle { 0% { opacity: 0; } 4%, 30% { opacity: 1; } 34%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .booth-attract__slide { animation: none; position: static; opacity: 1; }
+  .booth-attract__slide:not(:first-child) { display: none; }
+}
