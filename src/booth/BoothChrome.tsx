@@ -10,7 +10,10 @@ import DemoNav from "@/components/layout/DemoNav";
 import { resetDemo } from "@/pilot/reset";
 import { booth, useBooth } from "./store";
 import { startBoothCopy } from "./boothCopy";
+import BoothA11y from "./BoothA11y";
+import { a11y, initKiosk } from "./a11y";
 import "./booth.css";
+import "./booth-a11y.css";
 
 export const BADGE = "אב טיפוס להמחשה · נתונים סינתטיים";
 /** שניות בלי מגע עד הספירה לאחור, ואורך הספירה. */
@@ -108,7 +111,10 @@ export default function BoothChrome() {
   const reset = useBoothReset();
   const atStart = pathname === "/";
   useEffect(() => startBoothCopy(), []);
-  const left = useKioskIdle(!atStart && !presenter && !pathname.startsWith("/booth/wall"), () => void reset());
+  // העדפות הנגישות השמורות מוחלות בכל מסך. הקיוסק (איפוס אחרי חוסר פעילות) רק בדוכן הפיזי: kiosk=1.
+  useEffect(() => a11y.init(), []);
+  const [kiosk] = useState(initKiosk);
+  const left = useKioskIdle(kiosk && !atStart && !presenter && !pathname.startsWith("/booth/wall"), () => void reset());
 
   // 5 הקשות על התווית בתוך 3 שניות מחליפות מצב מציג.
   const taps = useRef<number[]>([]);
@@ -126,7 +132,17 @@ export default function BoothChrome() {
       {presenter ? (
         <DemoNav />
       ) : (
-        <div className="fixed top-0 left-0 right-0 z-[60] h-10 bg-[#1B3A5C] text-white" dir="rtl">
+        <header className="fixed top-0 left-0 right-0 z-[60] h-10 bg-[#1B3A5C] text-white" dir="rtl">
+          <a
+            href="#main"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("main")?.focus();
+            }}
+            className="sr-only focus:not-sr-only focus:fixed focus:top-1 focus:right-2 focus:z-[70] focus:bg-white focus:text-[#1B3A5C] focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg"
+          >
+            לדלג לתוכן
+          </a>
           <div className="flex items-center gap-2 px-2 sm:px-4 h-full max-w-7xl mx-auto">
             <LogoButton onLongPress={() => void reset()} />
             <span className="hidden sm:block text-sm font-bold text-white/95 whitespace-nowrap">מגמלה לצמיחה</span>
@@ -145,12 +161,14 @@ export default function BoothChrome() {
               </button>
             )}
             <span className="flex-1" />
+            <BoothA11y />
             <span className="booth-badge" onClick={onBadge}>
               {BADGE}
             </span>
           </div>
-        </div>
+        </header>
       )}
+      {presenter ? <BoothA11y floating /> : null}
       {presenter ? (
         <span className="booth-badge booth-badge--float" onClick={onBadge}>
           {BADGE}

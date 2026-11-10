@@ -26,7 +26,7 @@
     "test:e2e": "npm run build:all && playwright test",
     "e2e": "playwright test",
     "check:live": "node scripts/check-live.mjs",
-    "verify:booth": "npm run build:booth && node scripts/booth/verify.mjs && node scripts/booth/kiosk.mjs && node scripts/booth/isolate.mjs && node scripts/booth/wall.mjs"
+    "verify:booth": "npm run build:booth && node scripts/booth/verify.mjs && node scripts/booth/kiosk.mjs && node scripts/booth/isolate.mjs && node scripts/booth/wall.mjs && node scripts/booth/a11y.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",

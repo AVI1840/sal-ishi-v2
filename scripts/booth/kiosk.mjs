@@ -1,7 +1,7 @@
 // קיוסק: ספירה לאחור אחרי חוסר פעילות, איפוס במגע ובלחיצה ארוכה, מצב מציג.
 import { boothUrl, launch } from "./common.mjs";
 
-const url = boothUrl + "#/";
+const url = boothUrl + "#/?kiosk=1";
 const issues = [];
 const expect = (ok, msg) => { console.log(ok ? "ok  " : "FAIL", msg); if (!ok) issues.push(msg); };
 

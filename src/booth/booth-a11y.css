@@ -1,0 +1,34 @@
+/* הנגשה בטלפון: פס הדרכה צפוף, ניגודיות גבוהה, ובחירת טקסט חסומה רק בקיוסק. נטען מ-BoothChrome. */
+
+/* בחירת טקסט וקריאת מסך: חסומות רק בדוכן הפיזי (kiosk=1), לא בקישור שמשתפים. */
+html[data-edition="booth"] body {
+  -webkit-user-select: text;
+  user-select: text;
+}
+html[data-edition="booth"][data-kiosk] body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* פס ההדרכה בטלפון: כל הכפתורים בשורה אחת, "הבא" תופס את המקום שנשאר. */
+@media (max-width: 639px) {
+  .booth-bar { padding: 0.4rem 0.75rem; gap: 0.35rem; }
+  .booth-bar__ctl { width: 100%; flex-wrap: wrap; gap: 0.4rem; }
+  .booth-bar__ctl .booth-tour__btn:not(.booth-tour__btn--sec) { flex: 1 1 auto; }
+  .booth-prev-text { display: none; }
+  /* התווית "אב טיפוס... נתונים סינתטיים" נשארת מלאה, בשתי שורות, במקום להיחתך. */
+  .booth-badge { white-space: normal; flex: 1 1 0; min-width: 0; line-height: 1.15; border-radius: 0.9rem; padding: 0.15rem 0.5rem; }
+  .booth-tour__text { font-size: 0.9rem; line-height: 1.3; }
+  .booth-tour__title { font-size: 1.1rem; }
+}
+
+/* ניגודיות גבוהה בדוכן: טקסט שחור על לבן, גבולות כהים, ופוקוס בולט. */
+html.hc[data-edition="booth"] body { background: #fff; color: #000; }
+html.hc[data-edition="booth"] [class*="text-[#4b5563]"],
+html.hc[data-edition="booth"] [class*="text-[#6b7280]"],
+html.hc[data-edition="booth"] [class*="text-[#2d5a8c]"] { color: #000 !important; }
+html.hc[data-edition="booth"] [class*="border-[#e5e7eb]"],
+html.hc[data-edition="booth"] [class*="border-[#cfdcea]"] { border-color: #000 !important; }
+html.hc[data-edition="booth"] [class*="bg-[#eef3f8]"] { background: #fff !important; border: 2px solid #000; color: #000 !important; }
+html.hc[data-edition="booth"] .booth-tour__count { color: #000; }
+html.hc[data-edition="booth"] :focus-visible { outline: 4px solid #b00020; outline-offset: 3px; }

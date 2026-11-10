@@ -196,8 +196,8 @@ export default function BoothTour() {
           <button type="button" className="booth-tour__skip" onClick={() => { booth.finish(); navigate("/booth/end"); }}>
             לסיום
           </button>
-          <button type="button" className="booth-tour__btn booth-tour__btn--sec" disabled={step === 0} onClick={() => booth.goto(step - 1)}>
-            <ChevronRight className="w-5 h-5" aria-hidden="true" /> הקודם
+          <button type="button" className="booth-tour__btn booth-tour__btn--sec" aria-label="לתחנה הקודמת" disabled={step === 0} onClick={() => booth.goto(step - 1)}>
+            <ChevronRight className="w-5 h-5" aria-hidden="true" /> <span className="booth-prev-text">הקודם</span>
           </button>
           <button type="button" className="booth-tour__btn" onClick={next}>
             {nextText} <ChevronLeft className="w-5 h-5" aria-hidden="true" />

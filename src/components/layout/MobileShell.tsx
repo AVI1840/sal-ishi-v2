@@ -8,6 +8,7 @@ import { useReadAloud } from "@/pilot/speech";
 import { useOnline } from "@/pilot/components/Frame";
 import { he } from "@/pilot/i18n/he";
 import { CallbackCard } from "@/components/citizen/CallbackCard";
+import { a11y, SCALES as BOOTH_SCALES, useA11y } from "@/booth/a11y";
 
 // ארבע לשוניות: השוק (כניסה), השירותים שלי, הפרופיל שלי, המלווה שלי.
 const TABS = [
@@ -43,17 +44,19 @@ function useStored(key: string, fallback: number) {
 
 function useTextScale() {
   const [scale, setScale] = useStored(SCALE_KEY, 100);
+  const booth = useA11y();
   useEffect(() => {
-    // בדוכן הגודל הבסיסי נקבע ב-booth.css, וההגדלה היא מכפלה שלו.
-    if (IS_BOOTH) {
-      document.documentElement.style.setProperty("--booth-text", String(scale / 100));
-      return () => document.documentElement.style.removeProperty("--booth-text");
-    }
+    // בדוכן הגודל נשלט מ-src/booth/a11y.ts בכל מסך, ולא כאן.
+    if (IS_BOOTH) return;
     document.documentElement.style.fontSize = scale === 100 ? "" : `${scale}%`;
     return () => {
       document.documentElement.style.fontSize = "";
     };
   }, [scale]);
+  if (IS_BOOTH) {
+    const bi = Math.max(0, (BOOTH_SCALES as readonly number[]).indexOf(booth.scale));
+    return { scale: booth.scale, up: bi < BOOTH_SCALES.length - 1 ? () => a11y.up() : undefined, down: bi > 0 ? () => a11y.down() : undefined };
+  }
   const i = Math.max(0, SCALES.indexOf(scale as (typeof SCALES)[number]));
   return {
     scale,
@@ -65,10 +68,13 @@ function useTextScale() {
 /** ניגודיות גבוהה: 1 פעיל, 2 כבוי (0 אינו נשמר כערך). */
 function useContrast() {
   const [hc, setHc] = useStored(HC_KEY, 2);
+  const booth = useA11y();
   useEffect(() => {
+    if (IS_BOOTH) return;
     document.documentElement.classList.toggle("hc", hc === 1);
     return () => document.documentElement.classList.remove("hc");
   }, [hc]);
+  if (IS_BOOTH) return [booth.hc, () => a11y.toggleContrast()] as const;
   return [hc === 1, () => setHc(hc === 1 ? 2 : 1)] as const;
 }
 
