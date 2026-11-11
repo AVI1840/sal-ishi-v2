@@ -20,7 +20,7 @@ if ((await page.evaluate(() => getComputedStyle(document.body).userSelect)) === 
 const base = await fontPx();
 await open();
 const panel = page.locator("#booth-a11y-panel");
-const small = await panel.locator("button").evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().height < 55).map((e) => e.innerText || e.ariaLabel));
+const small = await panel.locator("button").evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().height < 43).map((e) => e.innerText || e.ariaLabel));
 if (small.length) issues.push(`a11y panel: <56px buttons: ${small.join("|")}`);
 await panel.getByRole("button", { name: /הגדלת טקסט/ }).click();
 await panel.getByRole("button", { name: /הגדלת טקסט/ }).click();

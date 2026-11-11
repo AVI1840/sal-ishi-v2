@@ -32,3 +32,18 @@ html.hc[data-edition="booth"] [class*="border-[#cfdcea]"] { border-color: #000 !
 html.hc[data-edition="booth"] [class*="bg-[#eef3f8]"] { background: #fff !important; border: 2px solid #000; color: #000 !important; }
 html.hc[data-edition="booth"] .booth-tour__count { color: #000; }
 html.hc[data-edition="booth"] :focus-visible { outline: 4px solid #b00020; outline-offset: 3px; }
+
+/*
+ * טלפון: הבסיס הגדול (23px) נבנה לטאבלט במרחק, ובטלפון הוא דוחס כרטיסים ושובר כפתורים לשתי שורות.
+ * בטלפון הבסיס 18px (ההגדלה "א+" ממשיכה ממנו), ואזורי מגע של 44px (המינימום של התקן).
+ */
+@media (max-width: 639px) {
+  html[data-edition="booth"] { font-size: calc(18px * var(--booth-text, 1)) !important; }
+  html[data-edition="booth"] :where(button, [role="button"], [role="tab"], select, summary) { min-height: 44px; min-width: 44px; }
+  .booth-logo { width: 44px; height: 44px; }
+  .booth-bar-btn { min-height: 44px; height: 44px; padding: 0 0.6rem; }
+  .booth-tour__skip { min-height: 44px; font-size: 0.9rem; }
+  .booth-tour__btn, .booth-tour__action { min-height: 44px; }
+  .booth-badge { font-size: 0.68rem; padding: 0.15rem 0.5rem; }
+  .booth-tour__count { font-size: 0.75rem; }
+}

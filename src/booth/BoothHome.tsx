@@ -60,9 +60,9 @@ export default function BoothHome() {
   return (
     <main id="main" tabIndex={-1} dir="rtl" className="min-h-[calc(100vh-2.5rem)] bg-[#f8fafc] px-4 sm:px-8 py-4 focus:outline-none">
       <div className="max-w-6xl mx-auto space-y-4">
-        <section className="rounded-3xl bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] p-4 sm:p-5 text-white shadow-lg space-y-1">
+        <section className="rounded-3xl bg-gradient-to-l from-[#1B3A5C] to-[#2d5a8c] p-3 sm:p-5 text-white shadow-lg space-y-1">
           <span className="inline-block rounded-full bg-white/20 px-4 py-1 text-base font-bold">תחרות החדשנות הממשלתית 2026</span>
-          <h1 className={attract ? "sr-only" : "text-3xl sm:text-4xl font-extrabold leading-tight"}>{QUESTION}</h1>
+          <h1 className={attract ? "sr-only" : "text-2xl sm:text-4xl font-extrabold leading-tight"}>{QUESTION}</h1>
           {attract ? (
             <div className="booth-attract" aria-hidden="true">
               <p className="booth-attract__slide text-3xl sm:text-4xl font-extrabold leading-tight">{QUESTION}</p>
@@ -73,7 +73,7 @@ export default function BoothHome() {
               <p className="booth-attract__slide text-3xl sm:text-4xl font-extrabold leading-tight">געו כדי להתחיל. דקה אחת מספיקה.</p>
             </div>
           ) : (
-            <p className="text-xl text-white/90">בחירה אחת של שרה, ושלושה מסכים זזים: שלה, של המלווה ושל המדינה.</p>
+            <p className="text-base sm:text-xl text-white/90">בחירה אחת של שרה, ושלושה מסכים זזים: שלה, של המלווה ושל המדינה.</p>
           )}
         </section>
         <div className="grid gap-4 md:grid-cols-3">
@@ -82,7 +82,7 @@ export default function BoothHome() {
               key={d.lens}
               type="button"
               data-booth-door
-              className="relative h-44 sm:h-52 rounded-2xl overflow-hidden border-2 border-transparent text-right shadow-sm hover:border-[#1B3A5C] hover:shadow-md transition-all focus-visible:ring-4 focus-visible:ring-[#1B3A5C]/30"
+              className="relative h-36 sm:h-52 rounded-2xl overflow-hidden border-2 border-transparent text-right shadow-sm hover:border-[#1B3A5C] hover:shadow-md transition-all focus-visible:ring-4 focus-visible:ring-[#1B3A5C]/30"
               onClick={() => go(d.lens, d.to)}
             >
               <img src={d.photo} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" />

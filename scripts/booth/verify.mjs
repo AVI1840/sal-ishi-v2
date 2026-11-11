@@ -2,7 +2,7 @@
 // החוט (שרה, רונית, מטה), הבחירה שמגיעה לרונית ולמטה, הפס שלא מכסה, נגישות בסיסית, ניסוח ובלי בקשות חוץ.
 import { boothUrl, launch, outDir, report } from "./common.mjs";
 
-const sizes = { d: [1280, 800], m: [390, 844], w: [1920, 1080] };
+const sizes = { d: [1280, 800], m: [390, 844], s: [360, 740], w: [1920, 1080] };
 const issues = [];
 const ext = [];
 const bad = [/הוכחנו/, /מניעת הידרדרות/, /—/, /–/, /ROI/i, /חיסכון/, /nudge/i, /אין חיבור/, /[א-ת]\/[יתא]\b/];
@@ -17,7 +17,7 @@ async function check(page, k, tag) {
       sw: document.documentElement.scrollWidth,
       iw: innerWidth,
       small: [...document.querySelectorAll("button,[role=button],[role=tab],select")]
-        .filter((e) => e.offsetParent && e.getBoundingClientRect().height < 55 && e.getBoundingClientRect().width > 0)
+        .filter((e) => e.offsetParent && e.getBoundingClientRect().height < (innerWidth < 640 ? 43 : 55) && e.getBoundingClientRect().width > 0)
         .map((e) => (e.innerText || e.ariaLabel || "").trim().slice(0, 18)),
       txt: document.body.innerText,
       overlap: !!overlap,

@@ -16,6 +16,7 @@ import "./booth.css";
 import "./booth-a11y.css";
 
 export const BADGE = "אב טיפוס להמחשה · נתונים סינתטיים";
+const BADGE_SHORT = "אב טיפוס · נתונים סינתטיים";
 /** שניות בלי מגע עד הספירה לאחור, ואורך הספירה. */
 export const IDLE_BEFORE = 50;
 export const IDLE_COUNTDOWN = 10;
@@ -163,7 +164,8 @@ export default function BoothChrome() {
             <span className="flex-1" />
             <BoothA11y />
             <span className="booth-badge" onClick={onBadge}>
-              {BADGE}
+              <span className="sm:hidden">{BADGE_SHORT}</span>
+<span className="hidden sm:inline">{BADGE}</span>
             </span>
           </div>
         </header>
@@ -171,7 +173,8 @@ export default function BoothChrome() {
       {presenter ? <BoothA11y floating /> : null}
       {presenter ? (
         <span className="booth-badge booth-badge--float" onClick={onBadge}>
-          {BADGE}
+          <span className="sm:hidden">{BADGE_SHORT}</span>
+<span className="hidden sm:inline">{BADGE}</span>
         </span>
       ) : null}
 

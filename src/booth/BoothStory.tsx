@@ -45,12 +45,12 @@ function Week({ title, entries, days, tone }: { title: string; entries: Entry[];
         {days.map((d, i) => {
           const items = entries.filter((e) => sameDay(e.at, d));
           return (
-            <li key={i} className="grid grid-cols-[5rem_1fr] items-center gap-2 text-lg">
+            <li key={i} className="grid grid-cols-1 sm:grid-cols-[5rem_1fr] items-center gap-1 sm:gap-2 text-lg">
               <span className="font-bold text-[#4b5563]">{sameDay(d, now) ? "היום" : dayName(d)}</span>
               <span className="flex flex-wrap gap-2">
                 {items.length === 0 ? <span className="text-[#6b7280]" aria-label="אין פעילות">-</span> : null}
                 {items.map((e) => (
-                  <span key={e.id} className={e.fresh ? "booth-week__new" : "rounded-full bg-white border-2 border-[#e5e7eb] px-3 py-0.5 font-bold"}>
+                  <span key={e.id} className={e.fresh ? "booth-week__new" : "rounded-2xl bg-white border-2 border-[#e5e7eb] px-3 py-0.5 font-bold"}>
                     {e.fresh ? <CheckCircle2 className="inline w-5 h-5 ml-1" aria-hidden="true" /> : null}
                     {e.name}, {timeOf(e.at)}
                     {e.fresh ? " · הבחירה שלכם" : ""}
@@ -86,7 +86,7 @@ export function BoothWeek() {
     <Page>
       <h1 className="text-3xl sm:text-5xl font-extrabold text-[#1B3A5C]">השבוע של שרה</h1>
       {hasNew ? (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="flex flex-col-reverse gap-4 lg:grid lg:grid-cols-2 lg:gap-6">
           <Week title="לפני" entries={before} days={shown} tone="before" />
           <Week title="אחרי הבחירה שלכם" entries={all} days={shown} tone="after" />
         </div>
@@ -109,8 +109,8 @@ export function BoothAgents() {
       <h1 className="text-3xl sm:text-5xl font-extrabold text-[#1B3A5C]">מי עבד על הבחירה הזו</h1>
       <ol className="space-y-3">
         {AGENT_STORY.map((a, i) => (
-          <li key={a.name} className="booth-agent rounded-3xl bg-white border-2 border-[#e5e7eb] shadow-sm p-4 flex flex-wrap items-center gap-3" style={{ animationDelay: `${i * 250}ms` }}>
-            <span className="grid place-items-center w-10 h-10 rounded-full bg-[#1B3A5C] text-white text-xl font-black" aria-hidden="true">{i + 1}</span>
+          <li key={a.name} className="booth-agent rounded-3xl bg-white border-2 border-[#e5e7eb] shadow-sm p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-3" style={{ animationDelay: `${i * 250}ms` }}>
+            <span className="grid place-items-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1B3A5C] text-white text-xl font-black" aria-hidden="true">{i + 1}</span>
             <span className="flex-1 min-w-[12rem]">
               <span className="block text-xl font-extrabold text-[#1B3A5C]">{a.name}</span>
               <span className="block text-lg">{a.line(pick)}</span>
