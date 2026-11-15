@@ -94,12 +94,12 @@
   },
   "products_count_in_floor": false,
   "qol_mode": {
-   "value": "fixed_amount",
+   "value": "percent",
    "options": [
     "fixed_amount",
     "percent"
    ],
-   "status": "proposal - הכרעה במפגש 3"
+   "status": "proposal - ברירת המחדל לפי מפגש 2: השתתפות 50% עם תקרה של 100 בחודש. סכום קבוע (הצעת החשכ\"ל) נשאר אפשרות, הכרעה במפגש 3"
   },
   "active_participant_min_sessions_month": {
    "value": 2,
@@ -121,34 +121,45 @@
   "supplier_contact_to_hq_status": "הוכרע 28.10.2026 - פרטי ספק יחיד עוברים למטה, לא לייצוא. לבדיקת אבטחת מידע 20.11",
   "matching_weights": {
    "prevention": 0.3,
-   "motivation": 0.25,
-   "profileFit": 0.2,
-   "socialProof": 0.15,
-   "proximity": 0.1
+   "motivation": 0.3,
+   "profileFit": 0.25,
+   "proximity": 0.15,
+   "socialProof": 0
   },
-  "matching_weights_status": "proposal - ועדת הסל קובעת אחת לחציון (מסמך הקטלוג, מפגש 2). ערכי ברירת המחדל מהכלי הקיים",
+  "matching_weights_status": "proposal - תוספת 3: מניעה 30, רצון 30, התאמה ליכולות 25, זמינות מעשית 15, המלצות 0 (מגיע מספק העל). ועדת הסל קובעת",
   "selection_min_per_domain": 1,
   "selection_max_active": 8,
   "selection_change_months": 1,
   "selection_status": "proposal - מסמך הקטלוג (מפגש 2), להכרעה במפגש 3",
   "suggestions_per_domain": 3,
-  "supplier_rating_weights": {
-   "quality": 0.4,
-   "outcomes": 0.3,
-   "satisfaction": 0.2,
-   "value": 0.1
-  },
-  "supplier_rating_status": "proposal - דירוג פנימי של הרשות והמטה, לא בייצוא. ניתן לכיבוי (supplier_rating_enabled). הדירוג המחייב אצל ספק העל",
+  "supplier_rating_status": "proposal - חמישה רכיבים: התאמה לקהל היעד, דירוג לקוחות ושביעות רצון, דירוג מלווה, עמידה ברמת השירות ותוצאות. המשקלות ייקבעו בהמשך (עד אז ממוצע שווה). מוצג מעל 2 הערכות, אחרת ספק חדש. הדירוג המחייב אצל ספק העל",
   "competition_max_suppliers_local": 3,
   "competition_max_suppliers_national": 5,
   "competition_status": "proposal - מסמך הקטלוג (מפגש 2), מדד בלבד ולא חוסם",
   "subcategory_breadth_min": 2,
   "subcategory_status": "proposal - רצפה של 3 לכל קטגוריית ליבה נשארת. נוסף מדד רוחב: לפחות 2 תתי-קטגוריות שונות",
+  "floor_min_accessible": {
+   "value": 1,
+   "status": "proposal - תוספת 3: לפחות שירות אחד מהשלושה נגיש להליכון ולכיסא גלגלים"
+  },
+  "target_per_category": {
+   "value": 5,
+   "status": "proposal - תוספת 3: יעד עושר, מדד בלבד ולא חסימה"
+  },
+  "floor_max_nonlocal": {
+   "large_city": 0,
+   "small_authority": 1,
+   "status": "proposal - תוספת 3: כמה שירותים לא מקומיים (רשותי או אזורי) נספרים ברצפה של שכונה. שירות מרחוק לא נספר"
+  },
+  "large_city_authorities": [
+   "ירושלים (הדגמה)"
+  ],
   "subarea_alert_min": 1,
   "subarea_status": "proposal - התראה קוגניטיבית כשאין אף שירות רציף בתת-התחום",
   "supplier_rating_enabled": true,
   "reference_price_binding_scope": [],
-  "reference_price_binding_scope_status": "proposal - רשימת קטגוריה ורשות שבהן מחיר הייחוס מחייב. אזור = רשות"
+  "reference_price_binding_scope_status": "proposal - רשימת קטגוריה ורשות שבהן מחיר הייחוס מחייב. אזור = רשות",
+  "supplier_rating_min_evaluations": 2
  },
  "categories": [
   {
@@ -1431,7 +1442,7 @@
  ],
  "export_contract": {
   "name": "operator_onboarding_standard",
-  "version": "1.1",
+  "version": "1.2",
   "owner": "המוסד לביטוח לאומי",
   "includes": [
    "approved services",

@@ -24,7 +24,7 @@ const EXTRACTED_BY_DOC: Record<string, ExtractedField[]> = {
   doc1: [
     { field: "שם מלא + ת.ז.", value: "כהן שרה (ת.ז. ████████)", confidence: 99, source: "כותרת + עמ' 1" },
     { field: "גיל", value: "78", confidence: 99, source: "עמ' 1" },
-    { field: "ניידות בסיסית (ADL)", value: "בסיוע קל — 5/6 פעולות עצמאיות", confidence: 92, source: "טופס הערכה תפקודית" },
+    { field: "ניידות בסיסית (ADL)", value: "בסיוע קל - 5/6 פעולות עצמאיות", confidence: 92, source: "טופס הערכה תפקודית" },
     { field: "מצב קוגניטיבי (MMSE)", value: "28/30", confidence: 95, source: "הערכת גריאטר" },
     { field: "אבחנות פעילות", value: "יל\"ד · אוסטיאופורוזיס קלה", confidence: 91, source: "סיכום רפואי" },
     { field: "המלצת רופא משפחה", value: "ליווי קהילתי + פיזיותרפיה ביתית", confidence: 84, source: "מכתב רופא" },
@@ -34,21 +34,21 @@ const EXTRACTED_BY_DOC: Record<string, ExtractedField[]> = {
   doc2: [
     { field: "שם מלא + ת.ז.", value: "לוי יוסף (ת.ז. ████████)", confidence: 99, source: "כותרת" },
     { field: "גיל", value: "82", confidence: 99, source: "עמ' 1" },
-    { field: "ניידות בסיסית", value: "בסיוע מלא — מקל הליכה", confidence: 88, source: "הערכה תפקודית" },
-    { field: "מצב קוגניטיבי", value: "MMSE 24/30 — ירידה קלה", confidence: 93, source: "גריאטר" },
+    { field: "ניידות בסיסית", value: "בסיוע מלא - מקל הליכה", confidence: 88, source: "הערכה תפקודית" },
+    { field: "מצב קוגניטיבי", value: "MMSE 24/30 - ירידה קלה", confidence: 93, source: "גריאטר" },
     { field: "אבחנות פעילות", value: "פוסט-שבץ · יל\"ד · דמנציה קלה", confidence: 96, source: "סיכום קופ\"ח" },
     { field: "המלצת רופא", value: "מעקב נוירולוג + טיפול פיזיותרפיה", confidence: 90, source: "מכתב מומחה" },
-    { field: "חוות דעת עו\"ס", value: "תלוי בבן בלבד — חוסר רשת תמיכה", confidence: 73, source: "ביקור בית" },
+    { field: "חוות דעת עו\"ס", value: "תלוי בבן בלבד - חוסר רשת תמיכה", confidence: 73, source: "ביקור בית" },
     { field: "פרסונה משוערת", value: "תלוי-מטפל", confidence: 76, source: "אגרגציה" },
   ],
   doc3: [
     { field: "שם מלא + ת.ז.", value: "פרץ דוד (ת.ז. ████████)", confidence: 99, source: "כותרת" },
     { field: "גיל", value: "75", confidence: 99, source: "עמ' 1" },
-    { field: "ניידות בסיסית", value: "ירידה — היו שתי נפילות בחודשיים", confidence: 85, source: "מד\"א + מיון" },
+    { field: "ניידות בסיסית", value: "ירידה - היו שתי נפילות בחודשיים", confidence: 85, source: "מד\"א + מיון" },
     { field: "מצב קוגניטיבי", value: "MMSE 27/30", confidence: 95, source: "גריאטר" },
     { field: "אבחנות פעילות", value: "אוסטיאופורוזיס · סוכרת מאוזנת", confidence: 92, source: "קופ\"ח" },
     { field: "המלצת רופא", value: "מקל חכם + פיזיותרפיה בבית · דחוף", confidence: 89, source: "אורתופד" },
-    { field: "חוות דעת עו\"ס", value: "סיכון נפילה גבוה — להזיז מהר", confidence: 81, source: "ביקור בית" },
+    { field: "חוות דעת עו\"ס", value: "סיכון נפילה גבוה - להזיז מהר", confidence: 81, source: "ביקור בית" },
     { field: "פרסונה משוערת", value: "ביתי-מסורתי", confidence: 78, source: "אגרגציה" },
   ],
 };
@@ -150,7 +150,7 @@ export default function AIIntake() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Source document */}
           <Card>
-            <CardHeader title="תיק תביעה — מקור" subtitle={doc.filename} />
+            <CardHeader title="תיק תביעה - מקור" subtitle={doc.filename} />
             <div className="bg-muted/50 rounded-lg p-6 border-2 border-dashed border-border text-center">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-2" aria-hidden="true" />
               <div className="text-sm font-mono text-muted-foreground">{doc.filename}</div>
@@ -203,7 +203,7 @@ export default function AIIntake() {
           {/* Extracted profile */}
           <Card>
             <CardHeader
-              title="פרופיל תפקודי — אקסטרקציה"
+              title="פרופיל תפקודי - אקסטרקציה"
               subtitle={status === "idle" ? "לחצי 'הפעלת אקסטרקציה' כדי להתחיל" : `${visibleFields.length}/${fullExtraction.length} שדות`}
             />
             {visibleFields.length === 0 ? (
@@ -237,7 +237,7 @@ export default function AIIntake() {
           </Card>
         </div>
 
-        {/* Approval block — only when done */}
+        {/* Approval block - only when done */}
         {status === "done" && (
           <Card className={cn("border-2 animate-fade-in", lowConfidenceCount > 0 ? "border-warning/40 bg-warning-soft/30" : "border-success/40 bg-success-soft/30")}>
             <div className="flex items-start gap-4">
@@ -249,13 +249,13 @@ export default function AIIntake() {
               <div className="flex-1">
                 <div className="font-bold text-foreground">
                   {lowConfidenceCount > 0
-                    ? `דרוש אישור מלווה — ${lowConfidenceCount} שדות בביטחון נמוך`
-                    : "כל השדות אומתו בביטחון גבוה — מוכן לוועדה"}
+                    ? `דרוש אישור מלווה - ${lowConfidenceCount} שדות בביטחון נמוך`
+                    : "כל השדות אומתו בביטחון גבוה - מוכן לוועדה"}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                   {lowConfidenceCount > 0
                     ? "המודל סימן שדות בביטחון נמוך מ-85%. נדרשת סקירה ידנית לפני סגירת הזכאות."
-                    : "כל השדות נמשכו בביטחון >= 85%. ניתן להעביר ישירות לוועדה — חיסכון של ~50% בזמן הטיפול."}
+                    : "כל השדות נמשכו בביטחון >= 85%. ניתן להעביר ישירות לוועדה - חיסכון של ~50% בזמן הטיפול."}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   <button

@@ -1,8 +1,9 @@
 /**
- * ServicesCatalog — קטלוג סל שירותי הזדקנות מיטבית
+ * ServicesCatalog - קטלוג סל שירותי הזדקנות מיטבית
  * מבוסס על החלטות ממשלה 127 ו-150
  * 5 תחומי ליבה · קטגוריות משנה · רמות שירות
  */
+import { catalogState, MATCHING_LAYER_SOURCES } from "@/data/catalogSource";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -91,9 +92,9 @@ const DOMAINS: Domain[] = [
         { name: "סדנאות בישול בריא", level: "local" },
       ]},
       { icon: Home, label: "בטיחות ומניעה", services: [
-        { name: "התאמת הבית למניעת נפילות", level: "local", linkedIds: ["srv_040"] },
+        { name: "התאמת הבית לבטיחות", level: "local", linkedIds: ["srv_040"] },
         { name: "בדיקות בריאות מונעות", level: "local", linkedIds: ["srv_038"] },
-        { name: "מניעת נפילות — הדרכה", level: "local", linkedIds: ["srv_097"] },
+        { name: "מניעת נפילות - הדרכה", level: "local", linkedIds: ["srv_097"] },
       ]},
     ],
   },
@@ -104,7 +105,6 @@ const DOMAINS: Domain[] = [
       { icon: Coins, label: "יציבות כלכלית", services: [
         { name: "ייעוץ למיצוי זכויות", level: "regional", linkedIds: ["srv_004","srv_066","srv_079","srv_101"] },
         { name: "ניהול תקציב אישי", level: "regional" },
-        { name: "ייעוץ משפטי בסיסי", level: "local", linkedIds: ["srv_052"] },
         { name: "סיוע בירוקרטי", level: "local", linkedIds: ["srv_004","srv_092"] },
       ]},
       { icon: HeartHandshake, label: "חוסן נפשי", services: [
@@ -114,10 +114,8 @@ const DOMAINS: Domain[] = [
         { name: "פיתוח עמידות נפשית", level: "national" },
       ]},
       { icon: Lock, label: "עצמאות יומיומית", services: [
-        { name: "שירותי עזר ביתיים", level: "local", linkedIds: ["srv_041","srv_065","srv_080"] },
         { name: "ליווי לרופאים ומוסדות", level: "local", linkedIds: ["srv_046","srv_071"] },
-        { name: "חברה לשעה — מתנדבים", level: "local", linkedIds: ["srv_048","srv_098"] },
-        { name: "הכנה למעברי חיים", level: "national", linkedIds: ["srv_057"] },
+        { name: "חברה לשעה - מתנדבים", level: "local", linkedIds: ["srv_048","srv_098"] },
       ]},
     ],
   },
@@ -139,7 +137,7 @@ const DOMAINS: Domain[] = [
       { icon: Globe, label: "קישוריות חברתית", services: [
         { name: "וידאו-שיחות עם המשפחה", level: "national" },
         { name: "מועדון דיגיטלי מרחוק", level: "national", linkedIds: ["srv_023"] },
-        { name: "טלמדיסין — רפואה מרחוק", level: "national", linkedIds: ["srv_095"] },
+        { name: "טלמדיסין - רפואה מרחוק", level: "national", linkedIds: ["srv_095"] },
         { name: "פלטפורמות למידה דיגיטליות", level: "national" },
       ]},
     ],
@@ -187,12 +185,12 @@ export default function ServicesCatalog() {
     <div className="min-h-screen bg-gray-50 pb-28" dir="rtl">
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/citizen" className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
+          <Link to="/executive" aria-label="חזרה למבט מטה" className="w-11 h-11 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
             <ChevronLeft className="w-4 h-4 text-gray-500 rotate-180" />
           </Link>
           <span className="text-sm font-bold text-gray-900">קטלוג סל שירותים</span>
         </div>
-        <span className="text-[10px] text-gray-400">{totalServices} שירותים · {linkedCount} זמינים בפיילוט</span>
+        <span className="text-[10px] text-gray-600">{totalServices} שירותים · {linkedCount} זמינים בפיילוט</span>
       </header>
 
       <main className="px-5 lg:px-8 py-6 max-w-5xl mx-auto space-y-6">
@@ -200,12 +198,12 @@ export default function ServicesCatalog() {
         {/* Title */}
         <div className="bg-[#1B3A5C] rounded-xl p-6 text-white">
           <h1 className="text-lg font-bold">סל שירותי הזדקנות מיטבית</h1>
-          <p className="text-sm text-white/60 mt-1">מבוסס על החלטות ממשלה 127 ו-150 · מפת המדדים הלאומיים</p>
+          <p className="text-sm text-white/80 mt-1">מבוסס על החלטות ממשלה 127 ו-150 · מפת המדדים הלאומיים</p>
           <div className="grid grid-cols-4 gap-3 mt-5 pt-4 border-t border-white/10 text-center">
-            <div><div className="text-xl font-bold">5</div><div className="text-[10px] text-white/40">תחומי ליבה</div></div>
-            <div><div className="text-xl font-bold">{totalServices}</div><div className="text-[10px] text-white/40">שירותים</div></div>
-            <div><div className="text-xl font-bold">102</div><div className="text-[10px] text-white/40">ממופים בפיילוט</div></div>
-            <div><div className="text-xl font-bold">5</div><div className="text-[10px] text-white/40">שכונות</div></div>
+            <div><div className="text-xl font-bold">5</div><div className="text-[10px] text-white/80">תחומי ליבה</div></div>
+            <div><div className="text-xl font-bold">{totalServices}</div><div className="text-[10px] text-white/80">שירותים</div></div>
+            <div><div className="text-xl font-bold">102</div><div className="text-[10px] text-white/80">ממופים בפיילוט</div></div>
+            <div><div className="text-xl font-bold">5</div><div className="text-[10px] text-white/80">שכונות</div></div>
           </div>
         </div>
 
@@ -234,7 +232,7 @@ export default function ServicesCatalog() {
                   <Icon className="w-4 h-4" style={{ color: d.color }} />
                 </div>
                 <span className="text-[10px] font-semibold text-gray-700 leading-tight">{d.title}</span>
-                <span className="text-xs text-gray-400">{count} שירותים</span>
+                <span className="text-xs text-gray-600">{count} שירותים</span>
               </button>
             );
           })}
@@ -267,10 +265,10 @@ export default function ServicesCatalog() {
                       <div key={key}>
                         <button onClick={() => setExpandedSub(isOpen ? null : key)}
                           className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors text-right">
-                          <SubIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                          <SubIcon className="w-4 h-4 text-gray-600 shrink-0" />
                           <span className="text-sm font-medium text-gray-800 flex-1">{sub.label}</span>
-                          <span className="text-[10px] text-gray-400">{sub.services.length}</span>
-                          <ChevronLeft className={cn("w-3.5 h-3.5 text-gray-400 transition-transform", isOpen && "-rotate-90")} />
+                          <span className="text-[10px] text-gray-600">{sub.services.length}</span>
+                          <ChevronLeft className={cn("w-3.5 h-3.5 text-gray-600 transition-transform", isOpen && "-rotate-90")} />
                         </button>
                         {isOpen && (
                           <div className="px-5 pb-4 space-y-1">
@@ -279,7 +277,7 @@ export default function ServicesCatalog() {
                               const linked = sv.linkedIds && sv.linkedIds.length > 0;
                               return (
                                 <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors">
-                                  <span className="text-xs text-gray-400 w-5 shrink-0 text-center">{i + 1}</span>
+                                  <span className="text-xs text-gray-600 w-5 shrink-0 text-center">{i + 1}</span>
                                   <span className="text-sm text-gray-800 flex-1">{sv.name}</span>
                                   {linked && (
                                     <Link to={`/citizen/services/${sv.linkedIds![0]}`}
@@ -306,18 +304,13 @@ export default function ServicesCatalog() {
 
         {/* Algorithm */}
         <div className="bg-white border border-gray-100 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">אלגוריתם התאמה — 5 שכבות</h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">אלגוריתם התאמה - 5 שכבות</h3>
+          <p className="text-xs text-gray-600 mb-4">המשקלות מההגדרות. הצעה: ועדת הסל קובעת.</p>
           <div className="space-y-2.5">
-            {[
-              { w: "40%", title: "מניעת הידרדרות", desc: "מה מוכח מחקרית שמעכב ירידה תפקודית, מותאם לגורמי סיכון מזוהים" },
-              { w: "25%", title: "רצון ומוטיבציות", desc: "מה האדם רוצה, מה מתאים לאישיותו, מה מוכן להשקיע" },
-              { w: "20%", title: "התאמה לפרופיל", desc: "יכולות פיזיות, קוגניטיביות, שפה, מגזר, מגבלות" },
-              { w: "10%", title: "זמינות מעשית", desc: "קרבה גיאוגרפית, שעות, הסעות, עלות" },
-              { w: "5%", title: "המלצות וניסיון", desc: "דירוגי משתמשים, המלצות מקצועיות" },
-            ].map((l, i) => (
+            {MATCHING_LAYER_SOURCES.map((x) => ({ w: `${Math.round(((catalogState.seed.settings.matching_weights as Record<string, number>)[x.key] ?? 0) * 100)}%`, title: x.label, desc: x.source })).map((l, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-11 h-6 rounded bg-[#1B3A5C]/10 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-[#1B3A5C]">{l.w}</span>
+                  <span className="text-xs font-bold text-[#1B3A5C]">{l.w}</span>
                 </div>
                 <div><p className="text-sm font-medium text-gray-900">{l.title}</p><p className="text-xs text-gray-500">{l.desc}</p></div>
               </div>
@@ -329,9 +322,10 @@ export default function ServicesCatalog() {
         <div className="bg-[#1B3A5C]/5 border border-[#1B3A5C]/10 rounded-xl p-4 space-y-2">
           <p className="text-xs font-semibold text-[#1B3A5C]">כללי בחירה</p>
           <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
-            <li>מינימום שירות אחד מכל תחום</li>
-            <li>מקסימום 8 שירותים פעילים במקביל</li>
+            <li>מומלץ לפחות שירות אחד מכל תחום (המלצה רכה, לא חסימה)</li>
+            <li>עד {catalogState.seed.settings.selection_max_active} שירותים פעילים במקביל</li>
             <li>אפשרות שינוי כל חודש עם ליווי</li>
+            <li>כללי הבחירה: הצעה, להכרעה במפגש 3</li>
             <li>עדיפות לשירותים מוכחי יעילות למניעת הידרדרות</li>
             <li>משקלות האלגוריתם נקבעים ע"י ועדת הסל אחת לחציון</li>
           </ul>

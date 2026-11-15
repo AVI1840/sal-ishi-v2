@@ -5,7 +5,7 @@ import { create } from "zustand";
 import {
   defaultSeed,
   isOlderSeedBase,
-  openStore,
+  openVersionedStore,
   upgradeSeed,
   upsertActivity,
   type AuthorityData,
@@ -19,7 +19,7 @@ import {
   type UnmetDemand,
   type WorkflowStatus,
 } from "@sal-ishi/core";
-import { buildDemoAuthority } from "@sal-ishi/core";
+import { buildDemoAuthority, DEMO_JERUSALEM } from "@sal-ishi/core";
 import { EDITION } from "@sal-ishi/ui";
 
 export type EnrollmentPatch = Partial<Omit<NeighborhoodMonth, "neighborhoodId" | "month">>;
@@ -86,7 +86,7 @@ export const useField = create<FieldState>()((set, get) => {
     isDemo: false,
 
     async hydrate() {
-      kv = await openStore("sal-ishi-field");
+      kv = (await openVersionedStore("sal-ishi-field", [KEY])).store;
       const saved = await kv.get<Persisted>(KEY);
       if (saved) {
         let seed = defaultSeed;
@@ -95,7 +95,7 @@ export const useField = create<FieldState>()((set, get) => {
         if (saved.seed && isOlderSeedBase(saved.seed)) {
           // מבנה ההגדרות השתנה בין גרסאות הבסיס: עוברים ל-seed המובנה ומודיעים.
           const from = (saved.seed as { meta?: { version?: string } }).meta?.version ?? "קודמת";
-          seedNotice = `גרסת הבסיס עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ההגדרות שהגיעו מהמטה בגרסה הקודמת הוחלפו בהגדרות של ${defaultSeed.meta.version}. אם המטה שינה ערכים, בקשו ממנו גרסת בסיס חדשה.`;
+          seedNotice = `גרסת הכללים עודכנה מ-${from} ל-${defaultSeed.meta.version} (מודל התשלום של החשכ"ל). ההגדרות שהגיעו מהמטה בגרסה הקודמת הוחלפו בהגדרות של ${defaultSeed.meta.version}. אם המטה שינה ערכים, בקשו ממנו גרסת כללים חדשה.`;
         } else if (saved.seed) {
           try {
             seed = upgradeSeed(saved.seed);
@@ -107,7 +107,7 @@ export const useField = create<FieldState>()((set, get) => {
         set({ data: saved.data, isDemo: saved.isDemo, lastPackage: saved.lastPackage, seed, seedFromHq, seedNotice });
       } else if (EDITION === "preview") {
         // בגרסת התצוגה לשותפים, ביקור ראשון נפתח עם נתוני הדגמה ולא במסך ריק.
-        set({ data: buildDemoAuthority(), isDemo: true });
+        set({ data: buildDemoAuthority(DEMO_JERUSALEM), isDemo: true });
       }
       set({ hydrated: true });
     },
@@ -217,7 +217,7 @@ export const useField = create<FieldState>()((set, get) => {
     },
 
     loadDemo() {
-      set({ data: buildDemoAuthority(), isDemo: true, lastPackage: undefined });
+      set({ data: buildDemoAuthority(DEMO_JERUSALEM), isDemo: true, lastPackage: undefined });
     },
 
     reset() {

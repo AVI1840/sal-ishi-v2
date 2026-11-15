@@ -5,7 +5,10 @@ import { buildPilotPackage, emptyHqState, mergePackage, parsePilotPackage } from
 import { coverage, suggestServiceTypes, unmetByCell } from "../rules/coverage";
 import { competitionFlags, supplierScore } from "../rules/suppliers";
 import { proposalKeys } from "../settings";
-import { defaultSeed as seed, upgradeSeed, withSettings } from "../seed";
+import { defaultSeed, upgradeSeed, withSettings } from "../seed";
+
+// הדירוג כבוי כברירת מחדל (תוספת 3, הדירוג אצל ספק העל). הבדיקות כאן בודקות את המנגנון כשמדליקים אותו.
+const seed = withSettings(defaultSeed, { supplier_rating_enabled: true });
 import { act, continuousMonths, nGeneral, nHaredi, svc } from "./fixtures";
 
 const cover = (services: ReturnType<typeof svc>[], s = seed) =>
@@ -61,19 +64,27 @@ describe("רוחב בתוך קטגוריה ותת-תחום קוגניטיבי", 
 });
 
 describe("דירוג ספקים", () => {
-  it("ציון משוקלל לפי ההערכה האחרונה", () => {
-    const s = supplierScore({ evaluations: [{ quarter: "2026-Q2", quality: 1, outcomes: 1, satisfaction: 1, value: 1 }, { quarter: "2026-Q3", quality: 5, outcomes: 4, satisfaction: 3, value: 2 }] }, seed.settings);
-    expect(s).toEqual({ score: 4, quarter: "2026-Q3", evaluations: 2 }); // 5*.4+4*.3+3*.2+2*.1
+  it("חמשת הרכיבים, ממוצע שווה עד שייקבעו משקלות, לפי ההערכה האחרונה", () => {
+    const last = { quarter: "2026-Q3", quality: 5, outcomes: 4, satisfaction: 3, audienceFit: 4, serviceLevel: 4 };
+    const s = supplierScore({ evaluations: [{ quarter: "2026-Q2", quality: 1, outcomes: 1, satisfaction: 1 }, last] }, seed.settings);
+    expect(s).toEqual({ score: 4, quarter: "2026-Q3", evaluations: 2, newSupplier: false }); // (5+4+3+4+4)/5
+    // עם משקלות: ממוצע משוקלל.
+    const w = supplierScore({ evaluations: [last, { ...last, quarter: "2026-Q4" }] }, { ...seed.settings, supplier_rating_component_weights: { quality: 0.5, outcomes: 0.5 } });
+    expect(w?.score).toBe(4.5);
+  });
+
+  it("פחות הערכות מהמינימום: ספק חדש", () => {
+    const s = supplierScore({ evaluations: [{ quarter: "2026-Q3", quality: 5, outcomes: 5, satisfaction: 5 }] }, seed.settings);
+    expect(s?.newSupplier).toBe(true);
   });
 
   it("בלי הערכות: אין ציון", () => {
     expect(supplierScore({}, seed.settings)).toBeNull();
   });
 
-  it("מדד תחרות: יותר מ-3 ספקים לאותו סוג שירות בשכונה", () => {
+  it("מדד התחרות הוסר: המאגר פתוח לכל ספק שעומד בתקן", () => {
     const services = ["s1", "s2", "s3", "s4"].map((code, i) => svc(`x${i}`, { supplierCode: code }));
-    expect(competitionFlags(services, seed.settings)).toEqual([{ authority: services[0]!.authority, neighborhoodId: nGeneral.id, serviceTypeId: "T17", suppliers: 4, max: 3 }]);
-    expect(competitionFlags(services.slice(0, 3), seed.settings)).toEqual([]);
+    expect(competitionFlags(services, seed.settings)).toEqual([]);
   });
 
   it("seed ישן מקבל את ההגדרות החדשות בלי לדרוס ערכים קיימים", () => {
@@ -83,12 +94,12 @@ describe("דירוג ספקים", () => {
     expect(up.settings.core_floor).toBe(4);
     expect(up.settings.selection_max_active).toBe(8);
     expect(up.settings.matching_weights).toEqual(seed.settings.matching_weights);
-    expect(upgradeSeed(seed)).toBe(seed);
+    expect(upgradeSeed(defaultSeed)).toBe(defaultSeed);
   });
 
   it("ההגדרות החדשות מסומנות כהצעה", () => {
     const keys = proposalKeys(seed.settings);
-    expect(keys).toEqual(expect.arrayContaining(["supplier_rating_weights", "matching_weights", "selection_max_active", "competition_max_suppliers_local", "subcategory_breadth_min"]));
+    expect(keys).toEqual(expect.arrayContaining(["supplier_rating_enabled", "matching_weights", "selection_max_active", "subcategory_breadth_min"]));
   });
 });
 
@@ -98,9 +109,9 @@ describe("קטלוג לאזרח עם ערוץ ארצי, ביקוש וציון ס
   const source = { ...data, suppliers: [...data.suppliers, ...national.suppliers], services: [...data.services, ...national.services] };
 
   it("שכונה מקבלת את השירותים שלה, את הרשותיים ואת הארציים", () => {
-    const n = data.neighborhoods.find((x) => x.name === "גילה")!;
+    const n = data.neighborhoods.find((x) => x.name === "בית וגן")!;
     const { catalog } = buildCitizenCatalog(source, n.id, seed);
-    expect(catalog.services.filter((s) => s.reach === "national")).toHaveLength(6);
+    expect(catalog.services.filter((s) => s.reach === "national" && s.categoryCode === "6")).toHaveLength(national.services.length);
     expect(catalog.services.some((s) => s.reach === "authority")).toBe(true);
     expect(catalog.services.every((s) => s.reach !== "neighborhood" || s.neighborhoodId === n.id)).toBe(true);
   });
@@ -119,7 +130,8 @@ describe("קטלוג לאזרח עם ערוץ ארצי, ביקוש וציון ס
     expect(catalog.services.some((s) => s.supplierScore !== null)).toBe(true);
     const { export: exp } = await buildOnboardingStandard(source, seed);
     expect(JSON.stringify(exp)).not.toContain("supplierScore");
-    expect(exp.services.filter((s) => s.reach === "national")).toHaveLength(6);
+    // הליכון במימון מלא של מממן אחר: הפניה בלבד, לא בתקן.
+    expect(exp.services.filter((s) => s.reach === "national" && s.categoryCode === "6")).toHaveLength(national.services.length - 1);
   });
 });
 

@@ -1,5 +1,5 @@
 /**
- * CRM Actions — פעולות מומלצות עם escalation timers
+ * CRM Actions - פעולות מומלצות עם escalation timers
  * Priority grouping, suggested services, action buttons
  */
 import { useState } from "react";
@@ -28,11 +28,11 @@ interface Action {
 }
 
 const ACTIONS: Action[] = [
-  { id: "a1", citizenId: "c4", citizenName: "רבקה לוי", priority: "high", type: "נסיגה חברתית", title: "רבקה לא בפעילות 21 יום", description: "ביטלה 3 הזמנות. בדידות 5/5. מעורבות 8%. חסמים: בושה, קושי חברתי.", suggestion: "ביקור בית עדין — ללא לחץ. הציעי שיחה קצרה על בישול (המוטיבציה שלה).", suggestedServices: ["s7", "s4"], hoursOpen: 48, escalated: true, status: "pending" },
-  { id: "a2", citizenId: "c2", citizenName: "אהרון מזרחי", priority: "high", type: "ירידה קוגניטיבית", title: "אהרון — 14 יום ללא פעילות", description: "ירידה קוגניטיבית אפשרית. מעורבות 18%. לא מגיב לשיחות.", suggestion: "שיחת טלפון + תיאום הערכה תפקודית. שקלי ביקור בית עם בן משפחה.", suggestedServices: ["s10", "s7"], hoursOpen: 72, escalated: true, status: "pending" },
-  { id: "a3", citizenId: "c1", citizenName: "שרה רוזנברג", priority: "high", type: "ירידת מעורבות", title: "שרה — ירידה במצב רוח", description: "לא הגיעה למקהלה. אמרה שמרגישה 'לא רלוונטית'. 7 ימים ללא פעילות.", suggestion: "שיחה אישית + הזכרי לה את ההצלחה (3 מפגשים ברצף!). הציעי ליווי למקהלה.", suggestedServices: ["s1", "s9"], hoursOpen: 24, escalated: false, status: "pending" },
-  { id: "a4", citizenId: "c6", citizenName: "משה דהן", priority: "medium", type: "ירידת התמדה", title: "משה — ביטל 2 פעילויות ברצף", description: "התמדה ירדה מ-75% ל-60%. ביטל הליכה וקבוצת תפילה.", suggestion: "בירור סיבה — אולי בעיית ניידות? הצע התאמת לוח זמנים.", suggestedServices: ["s5", "s2"], hoursOpen: 36, escalated: false, status: "in_progress" },
-  { id: "a5", citizenId: "c3", citizenName: "יוסף כהן", priority: "low", type: "חיזוק", title: "יוסף — ציון דרך: 4 פעילויות השבוע!", description: "מעורבות 78%, התמדה 85%. מתפקד מצוין.", suggestion: "שלחי nudge חיזוק + שקלי להציע לו תפקיד מנטור לאזרחים חדשים.", suggestedServices: [], hoursOpen: 0, escalated: false, status: "pending" },
+  { id: "a1", citizenId: "c4", citizenName: "רבקה לוי", priority: "high", type: "נסיגה חברתית", title: "רבקה לא בפעילות 21 יום", description: "ביטלה 3 הזמנות. בדידות 5/5. מעורבות 8%. חסמים: בושה, קושי חברתי.", suggestion: "ביקור בית עדין - ללא לחץ. הציעי שיחה קצרה על בישול (המוטיבציה שלה).", suggestedServices: ["s7", "s4"], hoursOpen: 48, escalated: true, status: "pending" },
+  { id: "a2", citizenId: "c2", citizenName: "אהרון מזרחי", priority: "high", type: "ירידה קוגניטיבית", title: "אהרון - 14 יום ללא פעילות", description: "ירידה קוגניטיבית אפשרית. מעורבות 18%. לא מגיב לשיחות.", suggestion: "שיחת טלפון + תיאום הערכה תפקודית. שקלי ביקור בית עם בן משפחה.", suggestedServices: ["s10", "s7"], hoursOpen: 72, escalated: true, status: "pending" },
+  { id: "a3", citizenId: "c1", citizenName: "שרה רוזנברג", priority: "high", type: "ירידת מעורבות", title: "שרה - ירידה במצב רוח", description: "לא הגיעה למקהלה. אמרה שמרגישה 'לא רלוונטית'. 7 ימים ללא פעילות.", suggestion: "שיחה אישית + הזכרי לה את ההצלחה (3 מפגשים ברצף!). הציעי ליווי למקהלה.", suggestedServices: ["s1", "s9"], hoursOpen: 24, escalated: false, status: "pending" },
+  { id: "a4", citizenId: "c6", citizenName: "משה דהן", priority: "medium", type: "ירידת התמדה", title: "משה - ביטל 2 פעילויות ברצף", description: "התמדה ירדה מ-75% ל-60%. ביטל הליכה וקבוצת תפילה.", suggestion: "בירור סיבה - אולי בעיית ניידות? הצע התאמת לוח זמנים.", suggestedServices: ["s5", "s2"], hoursOpen: 36, escalated: false, status: "in_progress" },
+  { id: "a5", citizenId: "c3", citizenName: "יוסף כהן", priority: "low", type: "חיזוק", title: "יוסף - ציון דרך: 4 פעילויות השבוע!", description: "מעורבות 78%, התמדה 85%. מתפקד מצוין.", suggestion: "שלחי nudge חיזוק + שקלי להציע לו תפקיד מנטור לאזרחים חדשים.", suggestedServices: [], hoursOpen: 0, escalated: false, status: "pending" },
 ];
 
 export default function CoordinatorActions() {

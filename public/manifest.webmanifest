@@ -1,0 +1,12 @@
+{
+  "name": "הסל האישי להזדקנות מיטבית",
+  "short_name": "הסל האישי",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F0F8FF",
+  "theme_color": "#0368b0",
+  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

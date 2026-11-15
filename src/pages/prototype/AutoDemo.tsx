@@ -1,5 +1,5 @@
 /**
- * AutoDemo — trigger page
+ * AutoDemo - trigger page
  * When user navigates to /demo, this activates the global overlay and redirects to home.
  */
 import { useEffect } from "react";
@@ -11,7 +11,7 @@ export default function AutoDemo() {
 
   useEffect(() => {
     startAutoDemo();
-    // Navigate to home — the overlay is global so it stays visible
+    // Navigate to home - the overlay is global so it stays visible
     navigate("/", { replace: true });
   }, [navigate]);
 

@@ -1,6 +1,8 @@
-import { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
-import { Heart, Home, Users, Calendar, Bell, FileText, Activity, Settings, LogOut, Wallet, Sparkles, BarChart3, Building2, Bot, BookOpen } from "lucide-react";
+import { Home, Users, Wallet, BarChart3, BookOpen, Menu, X, WifiOff, MapPinned, Store, Map as MapIcon, Bot } from "lucide-react";
+import { appSettings } from "@/pilot/settings";
+import { useOnline } from "@/pilot/components/Frame";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -11,26 +13,27 @@ interface NavItem {
   end?: boolean;
 }
 
+// הדגמה: שלושה מסכים שמספרים את הסיפור. שאר המסכים (קליטה, משימות, הזמנות,
+// ניטור, שירותים ממופים) נשארים בכתובת ישירה ולא נמחקו.
 const COORDINATOR_NAV: NavItem[] = [
-  { to: "/coordinator", label: "דף הבית", icon: Home, end: true },
-  { to: "/coordinator/patients", label: "אזרחים", icon: Users },
-  { to: "/coordinator/services-map", label: "שירותים ממופים", icon: Activity },
-  { to: "/coordinator/deterioration", label: "ניטור הידרדרות", icon: Bell, badge: 4 },
-  { to: "/coordinator/ai", label: "עוזר AI", icon: Sparkles },
-  { to: "/coordinator/intake", label: "קליטה חדשה", icon: Heart },
-  { to: "/coordinator/actions", label: "משימות", icon: FileText },
-  { to: "/coordinator/bookings", label: "הזמנות", icon: Calendar },
+  { to: "/coordinator", label: "היום שלי", icon: Home, end: true },
+  { to: "/coordinator/patients", label: "האזרחים שלי", icon: Users },
+  { to: "/coordinator/services-map", label: "השירותים בשכונה", icon: BookOpen },
+  { to: "/coordinator/community", label: "הקהילה שלי", icon: MapPinned },
+  { to: "/coordinator/atlas", label: "אטלס השכונה", icon: MapIcon },
 ];
 
 const EXECUTIVE_NAV: NavItem[] = [
   { to: "/executive", label: "מבט על", icon: Home, end: true },
-  { to: "/executive/catalog", label: "קטלוג סל", icon: BookOpen },
+  { to: "/executive/atlas", label: "אטלס המטה", icon: MapIcon },
+  { to: "/executive/catalog", label: "ספריית הסל", icon: BookOpen },
+  { to: "/executive/suppliers", label: "ניהול ספקים", icon: Store },
   { to: "/executive/algorithm", label: "אלגוריתם התאמה", icon: BarChart3 },
-  { to: "/executive/agents", label: "אייג'נטים AI", icon: Bot },
+  { to: "/executive/agents", label: "סוכני המערכת", icon: Bot },
 ];
 
 const PROVIDER_NAV: NavItem[] = [
-  { to: "/providers", label: "דשבורד", icon: Home, end: true },
+  { to: "/providers", label: "הדף של הספק", icon: Store, end: true },
 ];
 
 interface AppShellProps {
@@ -39,14 +42,26 @@ interface AppShellProps {
 
 export default function AppShell({ variant }: AppShellProps) {
   const nav = variant === "coordinator" ? COORDINATOR_NAV : variant === "executive" ? EXECUTIVE_NAV : PROVIDER_NAV;
-  const title = variant === "coordinator" ? "סל אישי" : variant === "executive" ? "סל אישי — ניהולי" : "פורטל ספקים";
-  const subtitle = variant === "coordinator" ? "לוח בקרה למלווה חברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
+  const title = variant === "coordinator" ? "מלווה" : variant === "executive" ? "סל אישי - מטה" : "פורטל ספקים";
+  const subtitle = variant === "coordinator" ? "סל אישי · לוח העבודה של המלווה החברתית" : variant === "executive" ? "מבט על הרפורמה" : "ניהול שירותים";
   const { pathname } = useLocation();
+  // בטלפון התפריט נפתח בכפתור ולא מכסה את התוכן (0.5: המלווה עובדת מהנייד).
+  const [open, setOpen] = useState(false);
+  const online = useOnline();
+  useEffect(() => setOpen(false), [pathname]);
 
   return (
     <div dir="rtl" className="min-h-screen bg-background">
+      <div className="lg:hidden sticky top-10 z-30 flex items-center justify-between bg-white border-b border-border px-4 h-14">
+        <span className="font-bold text-primary">{title}</span>
+        <button type="button" className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1 rounded-lg border border-border px-3 text-sm font-semibold" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(!open)}>
+          {open ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+          תפריט
+        </button>
+      </div>
+      {open ? <div className="lg:hidden fixed inset-0 z-30 bg-black/30" aria-hidden="true" onClick={() => setOpen(false)} /> : null}
       {/* Sidebar */}
-      <aside className="fixed top-0 right-0 h-screen w-64 border-l border-border bg-white flex flex-col z-30">
+      <aside id="app-sidebar" className={cn("fixed top-10 right-0 h-[calc(100vh-2.5rem)] w-64 border-l border-border bg-white flex-col z-40 lg:z-30", open ? "flex" : "hidden lg:flex")}>
         <div className="px-5 py-5 border-b border-border">
           <NavLink to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
@@ -92,42 +107,30 @@ export default function AppShell({ variant }: AppShellProps) {
         </nav>
 
         <div className="border-t border-border p-3 space-y-2">
-          {/* External: SAL-ISHI-SIUD link for coordinator only */}
-          {variant === "coordinator" && (
-            <a
-              href="https://avi1840.github.io/SAL-ISHI-SIUD/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors border border-border/50"
-            >
-              <Activity className="w-3.5 h-3.5" />
-              <span>דשבורד SDI/RDI מפורט</span>
-              <span className="text-[9px] mr-auto text-muted-foreground/50">↗</span>
-            </a>
-          )}
-
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent transition-colors">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-glow text-primary-foreground flex items-center justify-center text-sm font-semibold">
-              {variant === "coordinator" ? "רל" : variant === "executive" ? "מנ" : "ספ"}
+              {variant === "coordinator" ? appSettings.companion.name.charAt(0) : variant === "executive" ? "מט" : "ספ"}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-foreground truncate">
-                {variant === "coordinator" ? "רונית לוי" : variant === "executive" ? "מנהל בכיר" : "מתנ״ס פסגת זאב"}
+                {variant === "coordinator" ? appSettings.companion.name : variant === "executive" ? "מטה התכנית" : "מתנ״ס פסגת זאב"}
               </div>
               <div className="text-[11px] text-muted-foreground truncate">
-                {variant === "coordinator" ? "מלווה חברתית" : variant === "executive" ? "סמנכ״ל" : "ספק שירות"}
+                {variant === "coordinator" ? "מלווה חברתית · פסגת זאב" : variant === "executive" ? "ביטוח לאומי ומשרד הרווחה" : "ספק שירות"}
               </div>
             </div>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-background hover:text-destructive transition-colors" aria-label="יציאה">
-              <LogOut className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="mr-64 min-h-screen">
-        <div className="p-8 animate-fade-in">
+      <main id="main" tabIndex={-1} className="lg:mr-64 min-h-screen">
+        {!online ? (
+          <div role="status" className="sticky top-10 z-30 flex items-center gap-2 bg-warning-soft border-b border-border text-foreground px-4 lg:px-8 py-2.5 text-sm font-medium">
+            <WifiOff className="w-4 h-4 shrink-0" aria-hidden="true" /> אין חיבור. אפשר להמשיך לעבוד: הכל נשמר במכשיר ויסונכרן כשהחיבור יחזור.
+          </div>
+        ) : null}
+        <div className="p-4 lg:p-8 animate-fade-in">
           <Outlet />
         </div>
       </main>

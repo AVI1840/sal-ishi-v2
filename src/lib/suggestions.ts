@@ -34,10 +34,10 @@ export function selectionRules(): SelectionRules {
   };
 }
 
-export function suggestByDomain(citizen: PersonalProfile, neighborhood?: string): DomainSuggestion[] {
+export function suggestByDomain(citizen: PersonalProfile, neighborhood?: string, opts: { walletLeft?: number } = {}): DomainSuggestion[] {
   const { perDomain } = selectionRules();
   const byId = new Map(realServices.map((s) => [s.id, s]));
-  const ranked = matchServicesForCitizen(citizen, { topN: 500, minScore: 0 })
+  const ranked = matchServicesForCitizen(citizen, { topN: 500, minScore: 0, walletLeft: opts.walletLeft })
     .map((result) => ({ result, service: byId.get(result.service.id) }))
     .filter((x): x is { result: MatchResult; service: RealService } => Boolean(x.service))
     .filter(({ service }) => !neighborhood || service.neighborhood === neighborhood || service.reach === "national" || (service.servesNeighborhoods ?? []).includes(neighborhood));

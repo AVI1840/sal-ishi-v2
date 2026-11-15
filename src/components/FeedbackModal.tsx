@@ -26,7 +26,7 @@ async function sendToSheet(entry: FeedbackEntry, page: string): Promise<boolean>
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         app: APP_NAME, name: entry.name || "אנונימי",
-        category: entry.category || "כללי", severity: entry.severity || "—",
+        category: entry.category || "כללי", severity: entry.severity || "-",
         text: entry.text, page,
       }),
     });
@@ -83,9 +83,9 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const handleExport = () => {
     if (!items.length) return;
     const lines = items.map((fb) =>
-      `[${new Date(fb.timestamp).toLocaleString("he-IL")}] [${fb.name}] [${fb.category || "—"}] [${fb.severity || "—"}] ${fb.text}`
+      `[${new Date(fb.timestamp).toLocaleString("he-IL")}] [${fb.name}] [${fb.category || "-"}] [${fb.severity || "-"}] ${fb.text}`
     );
-    navigator.clipboard.writeText(`משובי פיילוט — ${APP_NAME}\n${"=".repeat(50)}\n\n${lines.join("\n\n")}`);
+    navigator.clipboard.writeText(`משובי פיילוט - ${APP_NAME}\n${"=".repeat(50)}\n\n${lines.join("\n\n")}`);
   };
 
   const handleClear = () => { save([]); };
@@ -126,7 +126,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
               {sending ? "שולח..." : "שלח משוב"}
             </Button>
             {lastStatus === "ok" && <p className="text-xs text-green-600 text-center mt-1">✅ נשלח בהצלחה</p>}
-            {lastStatus === "offline" && <p className="text-xs text-orange-500 text-center mt-1">נשמר מקומית — יישלח כשיהיה חיבור</p>}
+            {lastStatus === "offline" && <p className="text-xs text-orange-500 text-center mt-1">נשמר מקומית - יישלח כשיהיה חיבור</p>}
           </div>
           {items.length > 0 && (
             <div className="border-t pt-3 space-y-2">
@@ -145,7 +145,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                       {fb.severity && <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sevColor(fb.severity as Severity)}`}>{fb.severity}</span>}
                       {!fb.sent && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">⏳</span>}
                       {fb.sent && <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">✅</span>}
-                      <span className="text-xs text-gray-400">{fb.name} · {new Date(fb.timestamp).toLocaleString("he-IL")}</span>
+                      <span className="text-xs text-gray-600">{fb.name} · {new Date(fb.timestamp).toLocaleString("he-IL")}</span>
                     </div>
                     <p className="text-sm text-gray-800">{fb.text}</p>
                   </div>

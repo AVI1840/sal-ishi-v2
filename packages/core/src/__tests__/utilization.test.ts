@@ -84,3 +84,18 @@ describe("מיצוי בחלון מתגלגל", () => {
     ]);
   });
 });
+
+describe("נתוני ההדגמה: מיצוי לעולם לא מעל 100%", () => {
+  it("בכל הגרסאות, בכל שכונה ובכל חודש", async () => {
+    const { buildDemoAuthority, DEMO_VARIANT_COUNT } = await import("../demo");
+    for (let variant = 0; variant < DEMO_VARIANT_COUNT; variant++) {
+      const d = buildDemoAuthority(variant);
+      const months = [...new Set(d.activity.map((a) => a.month))];
+      for (const n of d.neighborhoods)
+        for (const asOfMonth of months) {
+          const u = utilization({ neighborhoodId: n.id, asOfMonth, services: d.services, activity: d.activity, enrollment: d.enrollment }, seed);
+          expect(u.rate ?? 0, `${d.authority} ${n.name} ${asOfMonth}`).toBeLessThanOrEqual(1);
+        }
+    }
+  });
+});

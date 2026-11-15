@@ -2,7 +2,7 @@
 // כל שורה מראה גם מאיזה נתון באטלס השכבה ניזונה.
 
 import { useEffect, useState } from "react";
-import { isProposal, type Settings } from "@sal-ishi/core";
+import { isProposal, statusNote, type Settings } from "@sal-ishi/core";
 import { Alert, Badge, Button, ProposalBadge, TableWrap, useToast } from "@sal-ishi/ui";
 import { useHq } from "../store";
 
@@ -16,7 +16,7 @@ export function WeightsCard(props: {
   id: string;
   title: string;
   description: string;
-  settingKey: "matching_weights" | "supplier_rating_weights";
+  settingKey: "matching_weights";
   statusKey: string;
   items: WeightItem[];
   defaults: Record<string, number>;
@@ -45,7 +45,7 @@ export function WeightsCard(props: {
         <h2 id={props.id}>{props.title}</h2>
         {proposal ? (
           <span className="row">
-            <ProposalBadge note={String((props.settings as Record<string, unknown>)[props.statusKey] ?? "")} />
+            <ProposalBadge note={statusNote(props.settings, props.settingKey)} />
             <Button small variant="ghost" onClick={() => updateSetting(props.statusKey, `סופי ${new Date().toLocaleDateString("he-IL")}`)}>סימון כסופי</Button>
           </span>
         ) : (

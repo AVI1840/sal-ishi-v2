@@ -4,10 +4,10 @@
  * Central image registry for service cards.
  *
  * getServiceImage(service) → image path | undefined
- *   Returns undefined when no image exists — UI should render gradient fallback.
+ *   Returns undefined when no image exists - UI should render gradient fallback.
  *
  * getCategoryGradient(category) → Tailwind gradient classes
- *   Always returns a valid gradient — safe to use as fallback everywhere.
+ *   Always returns a valid gradient - safe to use as fallback everywhere.
  *
  * getCategoryIcon(category) → lucide icon name string
  *   For use inside gradient fallbacks.
@@ -26,7 +26,7 @@ const CATEGORY_IMAGE: Record<number, string | undefined> = {
   2: "./images/exercise-weights.png", // בריאות ותפקוד
   3: "./images/volunteering.png",     // חוסן אישי וכלכלי
   4: "./images/telemedicine.png",     // נגישות דיגיטלית
-  5: undefined,                      // מוצרים מסייעים — gradient only
+  5: undefined,                      // מוצרים מסייעים - gradient only
 };
 
 const CATEGORY_GRADIENT: Record<number, { light: string; dark: string }> = {
@@ -76,7 +76,7 @@ export function getServiceImage(service: ServiceLike): string | undefined {
 
 /**
  * Tailwind gradient string for a category.
- * Always returns a value — safe as unconditional fallback.
+ * Always returns a value - safe as unconditional fallback.
  */
 export function getCategoryGradient(category: number, dark = false): string {
   const g = CATEGORY_GRADIENT[category] ?? CATEGORY_GRADIENT[1];
@@ -84,7 +84,7 @@ export function getCategoryGradient(category: number, dark = false): string {
 }
 
 /**
- * Full image info for a service — image + gradient + darkGradient.
+ * Full image info for a service - image + gradient + darkGradient.
  */
 export function getServiceImageInfo(service: ServiceLike): ServiceImageInfo {
   const g = CATEGORY_GRADIENT[service.category] ?? CATEGORY_GRADIENT[1];

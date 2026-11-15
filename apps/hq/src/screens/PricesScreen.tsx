@@ -13,8 +13,7 @@ import {
   referenceBindings,
   referencePriceMode,
   statusNote,
-  writeWorkbook,
-} from "@sal-ishi/core";
+  writeWorkbook, quarterText } from "@sal-ishi/core";
 import { Alert, Badge, Button, PageHeader, ProposalBadge, SelectField, TableWrap, downloadBytes, todayStamp } from "@sal-ishi/ui";
 import { percent, shekel, useHqAnalysis } from "../analysis";
 
@@ -159,7 +158,7 @@ export default function PricesScreen() {
       ) : null}
 
       <section className="stack" aria-labelledby="hourly-h">
-        <h2 id="hourly-h">{metricName(seed, "hourly_price_index")}, {pricePeriod(latest, seed.settings)}</h2>
+        <h2 id="hourly-h">{metricName(seed, "hourly_price_index")}, {quarterText(pricePeriod(latest, seed.settings))}</h2>
         <p className="muted">ממוצע של מחיר ליחידה חלקי שעות השירות ביחידה, לפי קטגוריה ורשות (אזור = רשות). שירות בלי שעות ליחידה לא נכנס עד שיושלם.</p>
         {hourly.length ? (
           <TableWrap label={metricName(seed, "hourly_price_index")}>

@@ -67,7 +67,7 @@ function matchClients(prompt: string): QueryResult {
 
   return {
     intro: results.length === 0 ? "לא נמצאו תוצאות תואמות." : `נמצאו ${results.length} מטופלים שעונים על הקריטריונים.`,
-    rationale: reasons.length === 0 ? "לא זוהו פילטרים — מציג עד 5 מטופלים אקראיים מתוך 75." : `פילטרים שהופעלו: ${reasons.join(" · ")}`,
+    rationale: reasons.length === 0 ? "לא זוהו פילטרים - מציג עד 5 מטופלים אקראיים מתוך 75." : `פילטרים שהופעלו: ${reasons.join(" · ")}`,
     matches: results.slice(0, 8),
   };
 }
@@ -83,7 +83,7 @@ export default function Assistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      text: "שלום! אני עוזרת AI עבור מתאמות טיפול. שאלי אותי על הקשישים שלך — אזהה את הקריטריונים, אריץ סינון ואחזיר תוצאות עם רציונל גלוי. כל המלצה כפופה לאישור מקצועי שלך.",
+      text: "שלום! אני עוזרת AI עבור מתאמות טיפול. שאלי אותי על הקשישים שלך - אזהה את הקריטריונים, אריץ סינון ואחזיר תוצאות עם רציונל גלוי. כל המלצה כפופה לאישור מקצועי שלך.",
     },
   ]);
   const totalClients = useMemo(() => clients.length, []);
@@ -114,8 +114,8 @@ export default function Assistant() {
           <div className="flex items-start gap-3">
             <ShieldCheck className="w-5 h-5 text-warning shrink-0 mt-0.5" aria-hidden="true" />
             <div className="text-xs text-foreground/80 leading-relaxed">
-              <strong>הבהרה:</strong> דמו זה מבוסס heuristic engine מקומי — אין שיחה עם LLM חיצוני, אין שיתוף
-              דאטה מחוץ למערכת. במודל הקרוב — חיבור ל-LLM ייעודי בתוך נימבוס תחת בקרה של Data & Responsible AI Review.
+              <strong>הבהרה:</strong> דמו זה מבוסס heuristic engine מקומי - אין שיחה עם LLM חיצוני, אין שיתוף
+              דאטה מחוץ למערכת. במודל הקרוב - חיבור ל-LLM ייעודי בתוך נימבוס תחת בקרה של Data & Responsible AI Review.
             </div>
           </div>
         </Card>

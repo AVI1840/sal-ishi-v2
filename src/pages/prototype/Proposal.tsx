@@ -53,7 +53,7 @@ export default function Proposal() {
           <CardHeader title="א. למה עכשיו" />
           <p className="text-sm text-foreground leading-relaxed">
             <strong>החלטת ממשלה 127</strong> קבעה את מפת המדדים להזדקנות מיטבית. ועדה בין-משרדית כבר אישרה מעבר
-            למודל שירותים וסל אישי בסיעוד (מסגרת תקציבית ~5 מיליארד ₪ שנתי). זו לא תוכנית חדשה — זו החלטה שכבר התקבלה.
+            למודל שירותים וסל אישי בסיעוד (מסגרת תקציבית ~5 מיליארד ₪ שנתי). זו לא תוכנית חדשה - זו החלטה שכבר התקבלה.
             הקול קורא מספק את הכלי AI לממש אותה בסקייל לאומי.
           </p>
         </Card>
@@ -141,7 +141,7 @@ export default function Proposal() {
           </div>
           <div className="mt-3 text-xs text-muted-foreground bg-muted/40 rounded-lg p-3 flex items-start gap-2">
             <Banknote className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-            <span>הארנק עצמו (~₪1,200/אזרח/חודש) ממומן מגמלת הסיעוד הקיימת — לא תקציב חדש.</span>
+            <span>הארנק עצמו (~₪1,200/אזרח/חודש) ממומן מגמלת הסיעוד הקיימת - לא תקציב חדש.</span>
           </div>
         </Card>
 
@@ -180,7 +180,7 @@ export default function Proposal() {
         <Card className="bg-warning-soft/40 border-warning/30">
           <CardHeader title="ט. מה מבקשים מכם · עד 15/06/2026" />
           <ol className="space-y-2 text-sm text-foreground">
-            <li className="flex items-start gap-2"><span className="font-bold">1.</span> אישור עקרוני להגשה משותפת — ברמת מנכ"ל/סמנכ"ל</li>
+            <li className="flex items-start gap-2"><span className="font-bold">1.</span> אישור עקרוני להגשה משותפת - ברמת מנכ"ל/סמנכ"ל</li>
             <li className="flex items-start gap-2"><span className="font-bold">2.</span> מינוי איש קשר לצוות הגיבוש (2-3 פגישות עד ההגשה)</li>
             <li className="flex items-start gap-2"><span className="font-bold">3.</span> אישור עקרוני של הלשכה המשפטית לשיתוף דאטה על נימבוס</li>
           </ol>

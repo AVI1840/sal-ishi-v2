@@ -3,7 +3,7 @@ import { Home, MessageCircle, Star, User, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WEEK_SCHEDULE = [
-  { day: "יום א׳", date: "18.05", items: [{ time: "14:00", name: "ביקור בית — מתנדבת", status: "pending" }] },
+  { day: "יום א׳", date: "18.05", items: [{ time: "14:00", name: "ביקור בית - מתנדבת", status: "pending" }] },
   { day: "יום ב׳", date: "19.05", items: [] },
   { day: "יום ג׳", date: "20.05", items: [{ time: "10:00", name: "התעמלות קבוצתית", status: "confirmed" }, { time: "15:00", name: "שיחה עם מלווה", status: "confirmed" }] },
   { day: "יום ד׳", date: "21.05", items: [] },
@@ -19,7 +19,7 @@ export default function CitizenSchedule() {
           <Calendar className="w-5 h-5 text-[#1B3A5C]" />
           <h1 className="text-xl font-bold text-[#1B3A5C]">לוח הזמנים שלי</h1>
         </div>
-        <p className="text-xs text-gray-400 mt-1">השבוע — 18-23 במאי 2026</p>
+        <p className="text-xs text-gray-600 mt-1">השבוע - 18-23 במאי 2026</p>
       </header>
 
       <main className="px-5 pt-4 space-y-3">
@@ -27,7 +27,7 @@ export default function CitizenSchedule() {
           <div key={day.day} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
               <span className="text-sm font-bold text-gray-700">{day.day}</span>
-              <span className="text-xs text-gray-400">{day.date}</span>
+              <span className="text-xs text-gray-600">{day.date}</span>
             </div>
             {day.items.length > 0 ? (
               <div className="divide-y divide-gray-50">
@@ -64,7 +64,7 @@ export default function CitizenSchedule() {
             { icon: MessageCircle, label: "שיחה", to: "/citizen", active: false },
             { icon: User, label: "פרופיל", to: "/citizen/profile", active: false },
           ].map((item) => (
-            <Link key={item.label} to={item.to} className={cn("flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all", item.active ? "bg-[#1B3A5C] text-white shadow-md" : "text-gray-400")} style={{ minHeight: 48, minWidth: 48 }}>
+            <Link key={item.label} to={item.to} className={cn("flex flex-col items-center justify-center gap-1 w-16 h-16 rounded-xl transition-all", item.active ? "bg-[#1B3A5C] text-white shadow-md" : "text-gray-600")} style={{ minHeight: 48, minWidth: 48 }}>
               <item.icon className="w-5 h-5" />
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>

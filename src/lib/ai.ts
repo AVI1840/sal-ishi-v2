@@ -1,5 +1,5 @@
 /**
- * AI client — thin wrapper for real Claude/Bedrock streaming.
+ * AI client - thin wrapper for real Claude/Bedrock streaming.
  * Falls back to scripted responses when no endpoint is configured,
  * so the demo always works even without backend credentials.
  *
@@ -11,7 +11,7 @@
 const ENDPOINT = (import.meta.env.VITE_AI_ENDPOINT as string | undefined) || "";
 const STREAM_CHAR_DELAY = 18; // ms per char in fallback/stream-text mode
 
-/** Stream any fixed string character-by-character — useful for scripted demos */
+/** Stream any fixed string character-by-character - useful for scripted demos */
 export async function streamText(
   text: string,
   callbacks: StreamCallbacks
@@ -89,7 +89,7 @@ export async function streamChat(
     return;
   }
 
-  // No endpoint — use scripted fallback with streaming effect
+  // No endpoint - use scripted fallback with streaming effect
   const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
   const response = SCRIPTED_RESPONSES[lastUser] ?? SCRIPTED_FALLBACK_GENERIC;
   await simulateStream(response, callbacks);
@@ -99,15 +99,15 @@ const SCRIPTED_FALLBACK_GENERIC =
   "אני מנתח את הנתונים... בהתבסס על הפרופיל האישי שלך, יש לי המלצות מותאמות. רוצה שאפרט?";
 
 /**
- * Scripted fallback bank — matches CoordinatorAI quick prompts.
+ * Scripted fallback bank - matches CoordinatorAI quick prompts.
  * Extend as needed; all responses stream character-by-character.
  */
 const SCRIPTED_RESPONSES: Record<string, string> = {
   "מי בסיכון הכי גבוה היום?":
     "לפי הנתונים, 3 אזרחים בסיכון קריטי:\n\n" +
-    "1. רבקה לוי — 21 יום ללא פעילות, בדידות 5/5, מעורבות 8%\n" +
-    "2. אהרון מזרחי — ירידה קוגניטיבית, 14 יום ללא פעילות\n" +
-    "3. שרה רוזנברג — ירידה במצב רוח, 7 ימים ללא פעילות\n\n" +
+    "1. רבקה לוי - 21 יום ללא פעילות, בדידות 5/5, מעורבות 8%\n" +
+    "2. אהרון מזרחי - ירידה קוגניטיבית, 14 יום ללא פעילות\n" +
+    "3. שרה רוזנברג - ירידה במצב רוח, 7 ימים ללא פעילות\n\n" +
     "המלצה: ביקור בית לרבקה, שיחת טלפון לאהרון, nudge לשרה.",
 
   "תן לי סיכום על שרה רוזנברג":
@@ -122,14 +122,14 @@ const SCRIPTED_RESPONSES: Record<string, string> = {
 
   "אילו שירותים הכי מצליחים?":
     "לפי נתוני התמדה (% ממשיכים אחרי חודש):\n\n" +
-    "1. סדנת בישול — 88%\n2. מקהלה קהילתית — 82%\n" +
-    "3. חוג ציור — 80%\n4. קבוצת הליכה — 78%\n5. התעמלות — 75%\n\n" +
-    "תובנה: שירותים יצירתיים מראים התמדה גבוהה יותר מספורט — בגלל הקשר החברתי ותחושת המשמעות.",
+    "1. סדנת בישול - 88%\n2. מקהלה קהילתית - 82%\n" +
+    "3. חוג ציור - 80%\n4. קבוצת הליכה - 78%\n5. התעמלות - 75%\n\n" +
+    "תובנה: שירותים יצירתיים מראים התמדה גבוהה יותר מספורט - בגלל הקשר החברתי ותחושת המשמעות.",
 
   "מה הדפוסים של נטישה?":
     "ניתוח 6 חודשים מראה 3 דפוסים עיקריים:\n\n" +
-    "1. שבוע 2-3 — הנטישה הגדולה ביותר (35%). סיבה: חוסר חיבור חברתי ראשוני\n" +
-    "2. אחרי מחלה — 28% לא חוזרים אחרי היעדרות של שבוע+\n" +
-    "3. חורף — ירידה של 20% בפעילויות חוץ\n\n" +
+    "1. שבוע 2-3 - הנטישה הגדולה ביותר (35%). סיבה: חוסר חיבור חברתי ראשוני\n" +
+    "2. אחרי מחלה - 28% לא חוזרים אחרי היעדרות של שבוע+\n" +
+    "3. חורף - ירידה של 20% בפעילויות חוץ\n\n" +
     "המלצות:\n• Nudge אישי ביום 10 לכל משתתף חדש\n• שיחת מעקב אחרי היעדרות 5+ ימים\n• הגברת שירותים ביתיים בחורף",
 };

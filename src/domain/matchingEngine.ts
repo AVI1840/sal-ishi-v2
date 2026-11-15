@@ -1,28 +1,28 @@
 /**
  * matchingEngine.ts
  * ─────────────────
- * אלגוריתם התאמה 5 שכבות — Sal Ishi
+ * אלגוריתם התאמה 5 שכבות - Sal Ishi
  * מבוסס נתוני פיילוט פסגת זאב (286 אזרחים)
  *
  * INPUT:  CitizenProfile + ServiceCatalog
  * OUTPUT: Scored + ranked services with explanations
  *
  * LAYERS (משקלות מאומתות מהשדה):
- *   L1: Prevention (30%) — מניעת הידרדרות תפקודית
- *   L2: Motivation (25%) — רצונות ומוטיבציות אישיות
- *   L3: Profile fit (20%) — ניידות, שפה, מגזר
- *   L4: Proximity (10%) — שכונה, הסעות, שעות
- *   L5: Social proof (15%) — דירוגי עמיתים ורמת אמון
+ *   L1: Prevention (30%) - מניעת הידרדרות תפקודית
+ *   L2: Motivation (25%) - רצונות ומוטיבציות אישיות
+ *   L3: Profile fit (20%) - ניידות, שפה, מגזר
+ *   L4: Proximity (10%) - שכונה, הסעות, שעות
+ *   L5: Social proof (15%) - דירוגי עמיתים ורמת אמון
  *
  * Canonical home of this module (moved from src/lib/matchingEngine.ts in
- * Sprint 0 so both the web app and Lambda handlers import the same logic —
+ * Sprint 0 so both the web app and Lambda handlers import the same logic -
  * see PROMPT_SONNET5_PRODUCTION.md "extract packages/domain"). Behavior is
  * unchanged from the pre-move version; src/lib/matchingEngine.ts now
  * re-exports from here for backward compatibility.
  *
  * This still operates on the legacy PersonalProfile shape (src/data/types.ts).
  * Adapting it to the pseudonymized Person/Enrollment shape in ./schema.ts is
- * Sprint 1 work, once the server-side API needs it — the golden tests in
+ * Sprint 1 work, once the server-side API needs it - the golden tests in
  * __tests__/matchingEngine.golden.test.ts pin today's scoring so that
  * refactor can be verified against a known-good baseline.
  */
@@ -59,11 +59,29 @@ export interface MatchConfig {
   };
   topN?: number;
   minScore?: number;
+  /** כמה נשאר בארנק החודש (נקודות). שכבת הזמינות המעשית מורידה שירות שלא נכנס. */
+  walletLeft?: number;
+}
+
+const DIGITAL_RANK: Record<string, number> = { none: 0, basic_phone: 1, smartphone: 2 };
+
+/**
+ * אי-התאמה בטיחותית גוברת על הציון (תוספת 3): שירות שדורש הליכה עצמאית לא
+ * מומלץ למי שמרותק לבית, ושירות שדורש סמארטפון לא למי שאין לו. רק כשיש גם
+ * פרופיל התאמה לשירות וגם תשובות מהשאלון.
+ */
+export function safetyMismatch(citizen: PersonalProfile, service: CatalogService): string | null {
+  const fp = service.fitProfile;
+  if (!fp) return null;
+  if (citizen.mobilityLevel && !fp.mobility.includes(citizen.mobilityLevel)) return "לא מתאים לניידות";
+  if (citizen.functionalLevel && !fp.functionalLevels.includes(citizen.functionalLevel)) return "לא מתאים לרמת התפקוד";
+  if (citizen.digitalLevel && (DIGITAL_RANK[fp.digitalRequired] ?? 0) > (DIGITAL_RANK[citizen.digitalLevel] ?? 0)) return "דורש טלפון שאין";
+  return null;
 }
 
 // ─── Default weights ────────────────────────────────────────────
 
-// משקלות מאומתות מנתוני פיילוט — סך 1.00
+// משקלות מאומתות מנתוני פיילוט - סך 1.00
 const DEFAULT_WEIGHTS = {
   prevention: 0.30,   // מניעת הידרדרות (הורד מ-40% → ממצאי שדה)
   motivation: 0.25,   // מוטיבציות ורצון אישי
@@ -110,7 +128,7 @@ function scorePrevention(citizen: PersonalProfile, service: CatalogService): { s
   // Specific risk signals
   if (citizen.loneliness >= 4 && dims.emotional_fit >= 4) {
     score += 15;
-    reasons.push("ממתן בדידות — מזוהה כגורם סיכון");
+    reasons.push("ממתן בדידות - מזוהה כגורם סיכון");
   }
   if (citizen.activityLevel <= 2 && dims.functional_fit >= 4) {
     score += 10;
@@ -177,7 +195,7 @@ function scoreProfileFit(citizen: PersonalProfile, service: CatalogService): { s
     reasons.push("מותאם למצב תפקודי");
   } else if (serviceMobility === "homebound" && mobilityLevel <= 1) {
     score += 25;
-    reasons.push("שירות ביתי — ללא צורך ביציאה");
+    reasons.push("שירות ביתי - ללא צורך ביציאה");
   } else if (serviceMobility === "frail-light" && mobilityLevel <= 3) {
     score += 15;
   } else {
@@ -193,7 +211,7 @@ function scoreProfileFit(citizen: PersonalProfile, service: CatalogService): { s
     if (citizenLangCode !== "hebrew") reasons.push(`זמין בשפה שלך (${citizenLang})`);
   } else {
     score -= 15;
-    reasons.push("שפה לא ודאית — לבדוק");
+    reasons.push("שפה לא ודאית - לבדוק");
   }
 
   // Age match
@@ -201,6 +219,11 @@ function scoreProfileFit(citizen: PersonalProfile, service: CatalogService): { s
     score += 5;
   }
 
+  // תוספת 3: פרופיל ההתאמה של השירות מול התשובות מהשאלון (אי-התאמה כבר סוננה).
+  if (service.fitProfile && (citizen.mobilityLevel || citizen.functionalLevel)) {
+    score += 20;
+    reasons.push("מתאים ליכולות שלך");
+  }
   return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
 }
 
@@ -216,7 +239,7 @@ const ADJACENT_NEIGHBORHOODS: Record<string, string[]> = {
   "רמות": ["פסגת זאב", "נווה יעקב"],
 };
 
-function scoreProximity(citizen: PersonalProfile, service: CatalogService): { score: number; reasons: string[] } {
+function scoreProximity(citizen: PersonalProfile, service: CatalogService, walletLeft?: number): { score: number; reasons: string[] } {
   const reasons: string[] = [];
   let score = 40; // baseline for city-wide
 
@@ -248,14 +271,20 @@ function scoreProximity(citizen: PersonalProfile, service: CatalogService): { sc
     reasons.push("זמין מרחוק");
   }
 
-  return { score: Math.min(100, Math.round(score)), reasons };
+  // תוספת 3: היתרה בארנק היא חלק מהזמינות המעשית.
+  if (walletLeft !== undefined && typeof service.coveredPoints === "number") {
+    if (service.coveredPoints > walletLeft) score -= 50;
+    else reasons.push("נכנס בסל של החודש");
+  }
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
 }
 
 // ─── Layer 5: Social Proof (5%) ─────────────────────────────────
 
 function scoreSocialProof(service: CatalogService): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  let score = 50; // baseline — no ratings yet
+  let score = 50; // baseline - no ratings yet
 
   // Certainty as proxy for now
   if (service.certainty === "high") {
@@ -299,11 +328,11 @@ export function matchServicesForCitizen(
   const topN = config.topN ?? 10;
   const minScore = config.minScore ?? 20;
 
-  const results: MatchResult[] = serviceCatalog.map((service) => {
+  const results: MatchResult[] = serviceCatalog.filter((service) => !safetyMismatch(citizen, service) && service.complementState !== "full").map((service) => {
     const l1 = scorePrevention(citizen, service);
     const l2 = scoreMotivation(citizen, service);
     const l3 = scoreProfileFit(citizen, service);
-    const l4 = scoreProximity(citizen, service);
+    const l4 = scoreProximity(citizen, service, config.walletLeft);
     const l5 = scoreSocialProof(service);
 
     const layers: LayerScores = {
