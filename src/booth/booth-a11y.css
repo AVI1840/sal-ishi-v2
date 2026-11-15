@@ -46,4 +46,10 @@ html.hc[data-edition="booth"] :focus-visible { outline: 4px solid #b00020; outli
   .booth-tour__btn, .booth-tour__action { min-height: 44px; }
   .booth-badge { font-size: 0.68rem; padding: 0.15rem 0.5rem; }
   .booth-tour__count { font-size: 0.75rem; }
+
+  /* מסך המלווה בטלפון: המדדים דחוסים (בלי אייקון, והכרטיס האחרון לבדו תופס שורה), כדי שהבקשה של שרה תגיע מהר למסך. */
+  html[data-edition="booth"] .booth-kpis { gap: 0.5rem; }
+  html[data-edition="booth"] .booth-kpis > * { padding: 0.65rem 0.8rem; }
+  html[data-edition="booth"] .booth-kpis > * > div:first-child { display: none; }
+  html[data-edition="booth"] .booth-kpis > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
